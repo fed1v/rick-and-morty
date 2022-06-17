@@ -3,12 +3,10 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.3828125" />
-        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/ic_launcher_background.xml" value="0.3828125" />
-        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/logo.xml" value="0.33" />
-        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/logo_rick_and_morty.xml" value="0.22135416666666666" />
-        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/rick_and_morty_logo.xml" value="0.22135416666666666" />
-        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/activity_main.xml" value="0.33" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/launch_screen.xml" value="0.25833333333333336" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/logo_rick_and_morty.xml" value="0.2609375" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/rick_and_morty_logo.xml" value="0.2609375" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/activity_splash_screen.xml" value="0.24479166666666666" />
       </map>
     </option>
   </component>

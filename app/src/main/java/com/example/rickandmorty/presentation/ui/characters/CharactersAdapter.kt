@@ -13,6 +13,7 @@ class CharactersAdapter(
     var charactersList: List<Character> = listOf()
         set(value) {
             field = value
+        //    notifyDataSetChanged()
         }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CharacterViewHolder {

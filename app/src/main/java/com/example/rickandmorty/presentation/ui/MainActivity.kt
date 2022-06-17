@@ -6,6 +6,8 @@ import androidx.fragment.app.Fragment
 import com.example.rickandmorty.R
 import com.example.rickandmorty.databinding.ActivityMainBinding
 import com.example.rickandmorty.presentation.ui.characters.CharactersListFragment
+import com.example.rickandmorty.presentation.ui.episodes.EpisodesListFragment
+import com.example.rickandmorty.presentation.ui.locations.LocationsListFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -17,23 +19,40 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.btnCharacters.setOnClickListener {
-            println("Characters")
-            openFragment(CharactersListFragment(), "CharactersListFragment")
+        binding.bottomNavigationView.setOnItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.item_characters -> {
+                    println("Characters")
+                    openFragment(CharactersListFragment(), "CharactersListFragment")
+                    true
+                }
+                R.id.item_episodes -> {
+                    println("Episodes")
+                    openFragment(EpisodesListFragment(), "EpisodesListFragment")
+                    true
+                }
+                R.id.item_locations -> {
+                    println("Locations")
+                    openFragment(LocationsListFragment(), "LocationsListFragment")
+                    true
+                }
+                else -> false
+            }
         }
-        binding.btnEpisodes.setOnClickListener {
-            println("Episodes")
-            openFragment(EpisodesListFragment(), "EpisodesListFragment")
-        }
-        binding.btnLocations.setOnClickListener {
-            println("Locations")
-            openFragment(LocationsListFragment(), "LocationsListFragment")
-        }
+
 
         if (savedInstanceState == null) {
             openCharactersListFragment()
         }
 
+    }
+
+    fun setBottomNavItemChecked(id: Int) {
+        binding
+            .bottomNavigationView
+            .menu
+            .getItem(id)
+            .isChecked = true
     }
 
     private fun openCharactersListFragment() {
@@ -51,7 +70,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun openFragment(fragment: Fragment, tag: String) {
+    fun openFragment(fragment: Fragment, tag: String) {
         supportFragmentManager
             .beginTransaction()
             .replace(R.id.fragment_container, fragment, tag)
@@ -60,3 +79,5 @@ class MainActivity : AppCompatActivity() {
     }
 
 }
+
+fun Fragment.hostActivity() = activity as MainActivity

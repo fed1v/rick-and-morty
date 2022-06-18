@@ -4,4 +4,7 @@
     <string name="characters">Characters</string>
     <string name="locations">Locations</string>
     <string name="episodes">Episodes</string>
+    <string name="episode">Episode</string>
+    <string name="character">Character</string>
+    <string name="location">Location</string>
 </resources>

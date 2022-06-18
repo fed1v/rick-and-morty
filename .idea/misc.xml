@@ -12,10 +12,14 @@
         <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/activity_main.xml" value="0.2421875" />
         <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/fragment_character_details.xml" value="0.33" />
         <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/fragment_characters_list.xml" value="0.2421875" />
-        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/fragment_episodes_list.xml" value="0.17552083333333332" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/fragment_episode_details.xml" value="0.33" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/fragment_episodes_list.xml" value="0.22" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/fragment_location_details.xml" value="0.33" />
         <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/fragment_locations.xml" value="0.20520833333333333" />
-        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/fragment_locations_list.xml" value="0.20520833333333333" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/fragment_locations_list.xml" value="0.33" />
         <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/item_character.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/item_episode.xml" value="0.5" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/item_location.xml" value="0.33" />
         <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/menu/bottom_navigation.xml" value="0.20520833333333333" />
       </map>
     </option>

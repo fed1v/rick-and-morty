@@ -27,20 +27,32 @@ class CharacterDetailsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentCharacterDetailsBinding.inflate(inflater)
+        setBottomNavigationCheckedItem()
 
-        binding.characterImage.setImageDrawable(AppCompatResources.getDrawable(requireContext(), R.drawable.rick_image))
-        binding.characterName.text = character.name
-        binding.characterSpecies.text = character.species
-        binding.characterStatus.text = character.status
-        binding.characterGender.text = character.gender
+        showCharacter()
 
         hostActivity().setSupportActionBar(binding.characterToolbar)
 
         return binding.root
     }
 
+    private fun setBottomNavigationCheckedItem() {
+        hostActivity().setBottomNavItemChecked(MENU_ITEM_NUMBER)
+    }
+
+    private fun showCharacter() {
+        binding.characterImage.setImageDrawable(AppCompatResources.getDrawable(requireContext(), R.drawable.rick_image))
+        binding.characterName.text = character.name
+        binding.characterSpecies.text = character.species
+        binding.characterStatus.text = character.status
+        binding.characterGender.text = character.gender
+    }
+
 
     companion object {
+
+        private const val MENU_ITEM_NUMBER: Int = 0
+
         fun newInstance(character: Character) =
             CharacterDetailsFragment().apply {
                 arguments = Bundle().apply {

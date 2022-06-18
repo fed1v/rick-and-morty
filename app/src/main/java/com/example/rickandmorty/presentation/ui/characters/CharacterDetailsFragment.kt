@@ -1,10 +1,9 @@
 package com.example.rickandmorty.presentation.ui.characters
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import com.example.rickandmorty.R
 import com.example.rickandmorty.data.Character
@@ -16,10 +15,12 @@ class CharacterDetailsFragment : Fragment() {
 
     private lateinit var binding: FragmentCharacterDetailsBinding
     private lateinit var character: Character
+    private lateinit var toolbar: Toolbar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         character = arguments?.getParcelable("Character") ?: Character(-1, "", "", "", "")
+        setHasOptionsMenu(true)
     }
 
     override fun onCreateView(
@@ -29,11 +30,31 @@ class CharacterDetailsFragment : Fragment() {
         binding = FragmentCharacterDetailsBinding.inflate(inflater)
         setBottomNavigationCheckedItem()
 
+        initToolbar()
         showCharacter()
 
         hostActivity().setSupportActionBar(binding.characterToolbar)
 
         return binding.root
+    }
+
+    private fun initToolbar() {
+        toolbar = binding.characterToolbar
+        hostActivity().setSupportActionBar(toolbar)
+        hostActivity().supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            setDisplayShowHomeEnabled(true)
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when(item.itemId){
+            android.R.id.home -> {
+                hostActivity().onBackPressed()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     private fun setBottomNavigationCheckedItem() {

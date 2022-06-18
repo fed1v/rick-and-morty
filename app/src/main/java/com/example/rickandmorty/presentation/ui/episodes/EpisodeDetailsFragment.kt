@@ -45,7 +45,7 @@ class EpisodeDetailsFragment : Fragment() {
 
     companion object {
 
-        private const val MENU_ITEM_NUMBER: Int = 1
+        private const val MENU_ITEM_NUMBER: Int = 2
 
         fun newInstance(episode: Episode) = EpisodeDetailsFragment().apply {
             arguments = Bundle().apply {

@@ -44,7 +44,7 @@ class LocationDetailsFragment : Fragment() {
 
     companion object {
 
-        private const val MENU_ITEM_NUMBER: Int = 2
+        private const val MENU_ITEM_NUMBER: Int = 1
 
         fun newInstance(location: Location) =
             LocationDetailsFragment().apply {

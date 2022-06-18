@@ -7,4 +7,7 @@
     <string name="episode">Episode</string>
     <string name="character">Character</string>
     <string name="location">Location</string>
+    <string name="search">Search</string>
+    <string name="filter">Filter</string>
+    <string name="hintSearchMessage">Search</string>
 </resources>

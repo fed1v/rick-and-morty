@@ -13,7 +13,9 @@ class CharactersProvider {
                         name = "name$it",
                         status = "status$it",
                         species = "species$it",
-                        gender = "gender$it"
+                        gender = "gender$it",
+                        location = Location(it, "locationName$it", "locationType$it", "locationDimension$it"),
+                        origin = Location(it, "originName$it", "originType$it", "originDimension$it"),
                     )
                 )
             }

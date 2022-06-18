@@ -72,6 +72,7 @@
         android:id="@+id/character_origin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="@color/purple_500"
         app:layout_constraintStart_toStartOf="@+id/character_name"
         app:layout_constraintTop_toBottomOf="@id/character_type"
         tools:text="Origin" />
@@ -80,6 +81,7 @@
         android:id="@+id/character_location"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="@color/purple_500"
         app:layout_constraintStart_toStartOf="@+id/character_name"
         app:layout_constraintTop_toBottomOf="@id/character_origin"
         tools:text="Location" />
@@ -91,15 +93,17 @@
         android:text="@string/episodes"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/character_name"
-        app:layout_constraintTop_toBottomOf="@id/character_location"
-        tools:text="@string/episodes" />
+        app:layout_constraintTop_toBottomOf="@id/character_location" />
 
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_episodes"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/character_episodes" />
+        app:layout_constraintTop_toBottomOf="@id/character_episodes"
+        tools:listitem="@layout/item_episode" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

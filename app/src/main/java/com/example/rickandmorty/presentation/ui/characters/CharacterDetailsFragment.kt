@@ -1,14 +1,24 @@
 package com.example.rickandmorty.presentation.ui.characters
 
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
 import com.example.rickandmorty.data.Character
+import com.example.rickandmorty.data.Episode
+import com.example.rickandmorty.data.EpisodesProvider
+import com.example.rickandmorty.data.Location
 import com.example.rickandmorty.databinding.FragmentCharacterDetailsBinding
+import com.example.rickandmorty.presentation.ui.episodes.EpisodeDetailsFragment
+import com.example.rickandmorty.presentation.ui.episodes.EpisodesAdapter
 import com.example.rickandmorty.presentation.ui.hostActivity
+import com.example.rickandmorty.presentation.ui.locations.LocationDetailsFragment
 
 
 class CharacterDetailsFragment : Fragment() {
@@ -16,10 +26,19 @@ class CharacterDetailsFragment : Fragment() {
     private lateinit var binding: FragmentCharacterDetailsBinding
     private lateinit var character: Character
     private lateinit var toolbar: Toolbar
+    private lateinit var episodesAdapter: EpisodesAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        character = arguments?.getParcelable("Character") ?: Character(-1, "", "", "", "")
+        character = arguments?.getParcelable("Character") ?: Character(
+            -1,
+            "",
+            "",
+            "",
+            "",
+            Location(-1, "", "", ""),
+            Location(-1, "", "", ""),
+        )
         setHasOptionsMenu(true)
     }
 
@@ -32,10 +51,29 @@ class CharacterDetailsFragment : Fragment() {
 
         initToolbar()
         showCharacter()
+        initRecyclerView()
+        showCharacterEpisodes(EpisodesProvider.episodesList)
 
         hostActivity().setSupportActionBar(binding.characterToolbar)
 
         return binding.root
+    }
+
+    private fun showCharacterEpisodes(episodes: List<Episode>) {
+        episodesAdapter.episodesList = episodes
+    }
+
+    private fun initRecyclerView() {
+        episodesAdapter = EpisodesAdapter { onEpisodeClicked(it) }
+        binding.rvEpisodes.layoutManager = GridLayoutManager(requireContext(), 1)
+        binding.rvEpisodes.adapter = episodesAdapter
+    }
+
+    private fun onEpisodeClicked(episode: Episode) {
+        hostActivity().openFragment(
+            EpisodeDetailsFragment.newInstance(episode),
+            "EpisodeDetailsFragment"
+        )
     }
 
     private fun initToolbar() {
@@ -48,7 +86,7 @@ class CharacterDetailsFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when(item.itemId){
+        return when (item.itemId) {
             android.R.id.home -> {
                 hostActivity().onBackPressed()
                 true
@@ -62,13 +100,39 @@ class CharacterDetailsFragment : Fragment() {
     }
 
     private fun showCharacter() {
-        binding.characterImage.setImageDrawable(AppCompatResources.getDrawable(requireContext(), R.drawable.rick_image))
+        binding.characterImage.setImageDrawable(
+            AppCompatResources.getDrawable(
+                requireContext(),
+                R.drawable.rick_image
+            )
+        )
         binding.characterName.text = character.name
         binding.characterSpecies.text = character.species
         binding.characterStatus.text = character.status
         binding.characterGender.text = character.gender
+        binding.characterLocation.apply {
+            text = character.location.name
+            setOnClickListener {
+                openFragment(
+                    LocationDetailsFragment.newInstance(character.location),
+                    "LocationDetailsFragment"
+                )
+            }
+        }
+        binding.characterOrigin.apply {
+            text = character.origin.name
+            setOnClickListener {
+                openFragment(
+                    LocationDetailsFragment.newInstance(character.origin),
+                    "LocationDetailsFragment"
+                )
+            }
+        }
     }
 
+    private fun openFragment(fragment: Fragment, tag: String) {
+        hostActivity().openFragment(fragment, tag)
+    }
 
     companion object {
 

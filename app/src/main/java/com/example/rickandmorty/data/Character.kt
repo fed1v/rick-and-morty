@@ -10,4 +10,6 @@ data class Character(
     val status: String,
     val species: String,
     val gender: String,
+    val location: Location,
+    val origin: Location
 ) : Parcelable

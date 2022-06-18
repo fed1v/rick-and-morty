@@ -7,8 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.GridLayoutManager
+import com.example.rickandmorty.data.Character
+import com.example.rickandmorty.data.CharactersProvider
 import com.example.rickandmorty.data.Episode
 import com.example.rickandmorty.databinding.FragmentEpisodeDetailsBinding
+import com.example.rickandmorty.presentation.ui.characters.CharacterDetailsFragment
+import com.example.rickandmorty.presentation.ui.characters.CharactersAdapter
 import com.example.rickandmorty.presentation.ui.hostActivity
 
 class EpisodeDetailsFragment : Fragment() {
@@ -16,6 +21,7 @@ class EpisodeDetailsFragment : Fragment() {
     private lateinit var binding: FragmentEpisodeDetailsBinding
     private lateinit var episode: Episode
     private lateinit var toolbar: Toolbar
+    private lateinit var charactersAdapter: CharactersAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,8 +39,27 @@ class EpisodeDetailsFragment : Fragment() {
 
         initToolbar()
         showEpisode()
+        initRecyclerView()
+        showEpisodeCharacters(CharactersProvider.charactersList)
 
         return binding.root
+    }
+
+    private fun showEpisodeCharacters(characters: List<Character>) {
+        charactersAdapter.charactersList = characters
+    }
+
+    private fun initRecyclerView() {
+        charactersAdapter = CharactersAdapter { onCharacterClicked(it) }
+        binding.rvEpisodeCharacters.layoutManager = GridLayoutManager(requireContext(), 2)
+        binding.rvEpisodeCharacters.adapter = charactersAdapter
+    }
+
+    private fun onCharacterClicked(character: Character) {
+        hostActivity().openFragment(
+            CharacterDetailsFragment.newInstance(character),
+            "CharacterDetailsFragment"
+        )
     }
 
     private fun initToolbar() {

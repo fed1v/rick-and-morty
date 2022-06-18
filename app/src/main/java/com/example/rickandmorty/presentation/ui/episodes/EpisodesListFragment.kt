@@ -11,8 +11,9 @@ import com.example.rickandmorty.R
 import com.example.rickandmorty.data.Episode
 import com.example.rickandmorty.data.EpisodesProvider
 import com.example.rickandmorty.databinding.FragmentEpisodesListBinding
-import com.example.rickandmorty.presentation.ui.characters.CharactersListFragment
 import com.example.rickandmorty.presentation.ui.hostActivity
+import com.example.rickandmorty.util.EpisodeFilter
+import com.example.rickandmorty.util.EpisodesFiltersHelper
 
 
 class EpisodesListFragment : Fragment() {
@@ -20,6 +21,7 @@ class EpisodesListFragment : Fragment() {
     private lateinit var binding: FragmentEpisodesListBinding
     private lateinit var episodesAdapter: EpisodesAdapter
     private lateinit var toolbar: Toolbar
+    private var episodesFiltersHelper: EpisodesFiltersHelper? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +37,8 @@ class EpisodesListFragment : Fragment() {
 
         toolbar = binding.episodesToolbar
         hostActivity().setSupportActionBar(toolbar)
+
+        episodesFiltersHelper = EpisodesFiltersHelper(requireContext()) { onFiltersApplied(it) }
 
         initRecyclerView()
         showEpisodes(EpisodesProvider.episodesList)
@@ -79,8 +83,7 @@ class EpisodesListFragment : Fragment() {
     }
 
     private fun openFilters() {
-        println("OpenFilters")
-        //TODO
+        episodesFiltersHelper?.openFilters()
     }
 
     private fun searchByQuery(query: String?) {
@@ -108,6 +111,15 @@ class EpisodesListFragment : Fragment() {
             EpisodeDetailsFragment.newInstance(episode),
             "EpisodeDetailsFragment"
         )
+    }
+
+    private fun onFiltersApplied(filters: EpisodeFilter) {
+        println("Filters applied: ${filters}")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        episodesFiltersHelper = null
     }
 
     companion object {

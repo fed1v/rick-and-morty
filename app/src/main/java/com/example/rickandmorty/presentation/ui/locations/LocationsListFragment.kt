@@ -11,14 +11,16 @@ import com.example.rickandmorty.R
 import com.example.rickandmorty.data.Location
 import com.example.rickandmorty.data.LocationsProvider
 import com.example.rickandmorty.databinding.FragmentLocationsListBinding
-import com.example.rickandmorty.presentation.ui.characters.CharactersListFragment
 import com.example.rickandmorty.presentation.ui.hostActivity
+import com.example.rickandmorty.util.LocationFilter
+import com.example.rickandmorty.util.LocationsFiltersHelper
 
 class LocationsListFragment : Fragment() {
 
     private lateinit var binding: FragmentLocationsListBinding
     private lateinit var locationsAdapter: LocationsAdapter
     private lateinit var toolbar: Toolbar
+    private var locationsFiltersHelper: LocationsFiltersHelper? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +36,8 @@ class LocationsListFragment : Fragment() {
 
         toolbar = binding.locationsToolbar
         hostActivity().setSupportActionBar(toolbar)
+
+        locationsFiltersHelper = LocationsFiltersHelper(requireContext()) { onFiltersApplied(it) }
 
         initRecyclerView()
         showLocations(LocationsProvider.locationsList)
@@ -74,12 +78,10 @@ class LocationsListFragment : Fragment() {
             }
             else -> super.onOptionsItemSelected(item)
         }
-
     }
 
     private fun openFilters() {
-        println("OpenFilters")
-        //TODO
+        locationsFiltersHelper?.openFilters()
     }
 
     private fun searchByQuery(query: String?) {
@@ -107,6 +109,15 @@ class LocationsListFragment : Fragment() {
             LocationDetailsFragment.newInstance(location),
             "LocationDetailsFragment"
         )
+    }
+
+    private fun onFiltersApplied(filters: LocationFilter) {
+        println("Filters applied: ${filters}")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        locationsFiltersHelper = null
     }
 
     companion object {

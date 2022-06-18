@@ -8,7 +8,7 @@
     <string name="character">Character</string>
     <string name="location">Location</string>
     <string name="search">Search</string>
-    <string name="filter">Filter</string>
+    <string name="filter">Filters</string>
     <string name="hintSearchMessage">Search</string>
     <string name="residents">Residents</string>
 </resources>

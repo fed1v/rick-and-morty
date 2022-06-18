@@ -12,6 +12,8 @@ import com.example.rickandmorty.data.Character
 import com.example.rickandmorty.data.CharactersProvider
 import com.example.rickandmorty.databinding.FragmentCharactersListBinding
 import com.example.rickandmorty.presentation.ui.hostActivity
+import com.example.rickandmorty.util.CharacterFilter
+import com.example.rickandmorty.util.CharactersFiltersHelper
 
 
 class CharactersListFragment : Fragment() {
@@ -19,6 +21,7 @@ class CharactersListFragment : Fragment() {
     private lateinit var binding: FragmentCharactersListBinding
     private lateinit var charactersAdapter: CharactersAdapter
     private lateinit var toolbar: Toolbar
+    private var charactersFiltersHelper: CharactersFiltersHelper? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,6 +41,8 @@ class CharactersListFragment : Fragment() {
         initRecyclerView()
 
         showCharacters(CharactersProvider.charactersList)
+
+        charactersFiltersHelper = CharactersFiltersHelper(requireContext()) { onFiltersApplied(it) }
 
         return binding.root
     }
@@ -101,13 +106,22 @@ class CharactersListFragment : Fragment() {
     }
 
     private fun openFilters() {
-        println("OpenFilters")
-        //TODO
+        charactersFiltersHelper?.openFilters()
     }
+
+    private fun onFiltersApplied(filters: CharacterFilter) {
+        println("Filters applied: ${filters}")
+    }
+
 
     private fun searchByQuery(query: String?) {
         println("Query: $query")
         //TODO
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        charactersFiltersHelper = null
     }
 
     companion object {

@@ -54,8 +54,6 @@ class CharacterDetailsFragment : Fragment() {
         initRecyclerView()
         showCharacterEpisodes(EpisodesProvider.episodesList)
 
-        hostActivity().setSupportActionBar(binding.characterToolbar)
-
         return binding.root
     }
 

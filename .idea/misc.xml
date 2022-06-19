@@ -3,10 +3,27 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/launch_screen.xml" value="0.25833333333333336" />
-        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/logo_rick_and_morty.xml" value="0.2609375" />
-        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/rick_and_morty_logo.xml" value="0.2609375" />
-        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/activity_splash_screen.xml" value="0.24479166666666666" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/ic_char.xml" value="0.20572916666666666" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/ic_characters.xml" value="0.20572916666666666" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/ic_characterss.xml" value="0.20572916666666666" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/ic_episodes.xml" value="0.20572916666666666" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/ic_filter_horizontal.xml" value="0.19947916666666668" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/ic_filter_vertical.xml" value="0.19947916666666668" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/ic_morty.xml" value="0.3828125" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/item_character.xml" value="0.3828125" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/activity_main.xml" value="0.2421875" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/fragment_character_details.xml" value="0.33" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/fragment_characters_list.xml" value="0.2421875" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/fragment_episode_details.xml" value="0.33" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/fragment_episodes_list.xml" value="0.22" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/fragment_location_details.xml" value="0.33" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/fragment_locations.xml" value="0.20520833333333333" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/fragment_locations_list.xml" value="0.33" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/item_character.xml" value="0.36666666666666664" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/item_episode.xml" value="0.5" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/item_location.xml" value="0.33" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/menu/bottom_navigation.xml" value="0.20520833333333333" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/menu/toolbar_menu.xml" value="0.25" />
       </map>
     </option>
   </component>

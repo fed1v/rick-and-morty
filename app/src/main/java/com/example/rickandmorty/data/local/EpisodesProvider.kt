@@ -1,14 +1,16 @@
-package com.example.rickandmorty.data
+package com.example.rickandmorty.data.local
+
+import com.example.rickandmorty.presentation.ui.models.EpisodePresentation
 
 class EpisodesProvider {
     companion object {
         val episodesList = generateList()
 
-        private fun generateList(): List<Episode> {
-            val resultList = mutableListOf<Episode>()
+        private fun generateList(): List<EpisodePresentation> {
+            val resultList = mutableListOf<EpisodePresentation>()
             (1..100).forEach {
                 resultList.add(
-                    Episode(
+                    EpisodePresentation(
                         id = it,
                         name = "name$it",
                         episode = "episode$it",

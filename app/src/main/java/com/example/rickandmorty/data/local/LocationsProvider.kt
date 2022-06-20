@@ -1,14 +1,16 @@
-package com.example.rickandmorty.data
+package com.example.rickandmorty.data.local
+
+import com.example.rickandmorty.presentation.ui.models.LocationPresentation
 
 class LocationsProvider {
     companion object {
         val locationsList = generateList()
 
-        private fun generateList(): List<Location> {
-            val resultList = mutableListOf<Location>()
+        private fun generateList(): List<LocationPresentation> {
+            val resultList = mutableListOf<LocationPresentation>()
             (1..100).forEach {
                 resultList.add(
-                    Location(
+                    LocationPresentation(
                         id = it,
                         name = "name$it",
                         type = "type$it",

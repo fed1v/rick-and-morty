@@ -3,14 +3,14 @@ package com.example.rickandmorty.presentation.ui.characters
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.rickandmorty.data.Character
 import com.example.rickandmorty.databinding.ItemCharacterBinding
+import com.example.rickandmorty.presentation.ui.models.CharacterPresentation
 
 class CharactersAdapter(
-    private val onCharacterClicked: (Character) -> Unit
+    private val onCharacterClicked: (CharacterPresentation) -> Unit
 ) : RecyclerView.Adapter<CharactersAdapter.CharacterViewHolder>() {
 
-    var charactersList: List<Character> = listOf()
+    var charactersList: List<CharacterPresentation> = listOf()
         set(value) {
             field = value
         //    notifyDataSetChanged()
@@ -34,7 +34,7 @@ class CharactersAdapter(
         val binding: ItemCharacterBinding,
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(character: Character) {
+        fun bind(character: CharacterPresentation) {
             binding.characterGender.text = character.gender
             binding.characterName.text = character.name
             binding.characterStatus.text = character.status

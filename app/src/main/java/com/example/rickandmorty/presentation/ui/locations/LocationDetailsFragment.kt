@@ -8,26 +8,25 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
-import com.example.rickandmorty.data.Character
-import com.example.rickandmorty.data.CharactersProvider
-import com.example.rickandmorty.data.Location
-import com.example.rickandmorty.data.LocationsProvider
+import com.example.rickandmorty.data.local.CharactersProvider
 import com.example.rickandmorty.databinding.FragmentLocationDetailsBinding
 import com.example.rickandmorty.presentation.ui.characters.CharacterDetailsFragment
 import com.example.rickandmorty.presentation.ui.characters.CharactersAdapter
 import com.example.rickandmorty.presentation.ui.hostActivity
+import com.example.rickandmorty.presentation.ui.models.CharacterPresentation
+import com.example.rickandmorty.presentation.ui.models.LocationPresentation
 
 
 class LocationDetailsFragment : Fragment() {
 
     private lateinit var binding: FragmentLocationDetailsBinding
-    private lateinit var location: Location
+    private lateinit var location: LocationPresentation
     private lateinit var toolbar: Toolbar
     private lateinit var charactersAdapter: CharactersAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        location = arguments?.getParcelable("Location") ?: Location(-1, "", "", "")
+        location = arguments?.getParcelable("Location") ?: LocationPresentation(-1, "", "", "")
         setHasOptionsMenu(true)
     }
 
@@ -46,7 +45,7 @@ class LocationDetailsFragment : Fragment() {
         return binding.root
     }
 
-    private fun showLocationResidents(charactersList: List<Character>) {
+    private fun showLocationResidents(charactersList: List<CharacterPresentation>) {
         charactersAdapter.charactersList = charactersList
     }
 
@@ -56,7 +55,7 @@ class LocationDetailsFragment : Fragment() {
         binding.rvLocationResidents.adapter = charactersAdapter
     }
 
-    private fun onCharacterClicked(character: Character) {
+    private fun onCharacterClicked(character: CharacterPresentation) {
         hostActivity().openFragment(
             CharacterDetailsFragment.newInstance(character),
             "CharacterDetailsFragment"
@@ -97,7 +96,7 @@ class LocationDetailsFragment : Fragment() {
 
         private const val MENU_ITEM_NUMBER: Int = 1
 
-        fun newInstance(location: Location) =
+        fun newInstance(location: LocationPresentation) =
             LocationDetailsFragment().apply {
                 arguments = Bundle().apply {
                     putParcelable("Location", location)

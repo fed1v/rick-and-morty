@@ -3,14 +3,14 @@ package com.example.rickandmorty.presentation.ui.locations
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.rickandmorty.data.Location
 import com.example.rickandmorty.databinding.ItemLocationBinding
+import com.example.rickandmorty.presentation.ui.models.LocationPresentation
 
 class LocationsAdapter(
-    private val onLocationClicked: (Location) -> Unit
+    private val onLocationClicked: (LocationPresentation) -> Unit
 ) : RecyclerView.Adapter<LocationsAdapter.LocationsViewHolder>() {
 
-    var locationsList: List<Location> = listOf()
+    var locationsList: List<LocationPresentation> = listOf()
         set(value) {
             field = value
             //    notifyDataSetChanged()
@@ -34,7 +34,7 @@ class LocationsAdapter(
         val binding: ItemLocationBinding,
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(location: Location) {
+        fun bind(location: LocationPresentation) {
             binding.locationDimension.text = location.dimension
             binding.locationName.text = location.name
             binding.locationType.text = location.type

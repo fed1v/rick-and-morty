@@ -8,10 +8,10 @@ import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
-import com.example.rickandmorty.data.Episode
-import com.example.rickandmorty.data.EpisodesProvider
+import com.example.rickandmorty.data.local.EpisodesProvider
 import com.example.rickandmorty.databinding.FragmentEpisodesListBinding
 import com.example.rickandmorty.presentation.ui.hostActivity
+import com.example.rickandmorty.presentation.ui.models.EpisodePresentation
 import com.example.rickandmorty.util.EpisodeFilter
 import com.example.rickandmorty.util.EpisodesFiltersHelper
 
@@ -91,7 +91,7 @@ class EpisodesListFragment : Fragment() {
         //TODO
     }
 
-    private fun showEpisodes(episodes: List<Episode>) {
+    private fun showEpisodes(episodes: List<EpisodePresentation>) {
         episodesAdapter.episodesList = episodes
     }
 
@@ -105,7 +105,7 @@ class EpisodesListFragment : Fragment() {
         hostActivity().setBottomNavItemChecked(MENU_ITEM_NUMBER)
     }
 
-    private fun onEpisodeClicked(episode: Episode) {
+    private fun onEpisodeClicked(episode: EpisodePresentation) {
         println("EpisodeDetailsFragment: ${episode.name}")
         hostActivity().openFragment(
             EpisodeDetailsFragment.newInstance(episode),

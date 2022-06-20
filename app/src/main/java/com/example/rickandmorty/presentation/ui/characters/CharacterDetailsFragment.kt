@@ -10,34 +10,34 @@ import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
-import com.example.rickandmorty.data.Character
-import com.example.rickandmorty.data.Episode
-import com.example.rickandmorty.data.EpisodesProvider
-import com.example.rickandmorty.data.Location
+import com.example.rickandmorty.data.local.EpisodesProvider
 import com.example.rickandmorty.databinding.FragmentCharacterDetailsBinding
 import com.example.rickandmorty.presentation.ui.episodes.EpisodeDetailsFragment
 import com.example.rickandmorty.presentation.ui.episodes.EpisodesAdapter
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.presentation.ui.locations.LocationDetailsFragment
+import com.example.rickandmorty.presentation.ui.models.CharacterPresentation
+import com.example.rickandmorty.presentation.ui.models.EpisodePresentation
+import com.example.rickandmorty.presentation.ui.models.LocationPresentation
 
 
 class CharacterDetailsFragment : Fragment() {
 
     private lateinit var binding: FragmentCharacterDetailsBinding
-    private lateinit var character: Character
+    private lateinit var character: CharacterPresentation
     private lateinit var toolbar: Toolbar
     private lateinit var episodesAdapter: EpisodesAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        character = arguments?.getParcelable("Character") ?: Character(
+        character = arguments?.getParcelable("Character") ?: CharacterPresentation(
             -1,
             "",
             "",
             "",
             "",
-            Location(-1, "", "", ""),
-            Location(-1, "", "", ""),
+            LocationPresentation(-1, "", "", ""),
+            LocationPresentation(-1, "", "", ""),
         )
         setHasOptionsMenu(true)
     }
@@ -57,7 +57,7 @@ class CharacterDetailsFragment : Fragment() {
         return binding.root
     }
 
-    private fun showCharacterEpisodes(episodes: List<Episode>) {
+    private fun showCharacterEpisodes(episodes: List<EpisodePresentation>) {
         episodesAdapter.episodesList = episodes
     }
 
@@ -67,7 +67,7 @@ class CharacterDetailsFragment : Fragment() {
         binding.rvEpisodes.adapter = episodesAdapter
     }
 
-    private fun onEpisodeClicked(episode: Episode) {
+    private fun onEpisodeClicked(episode: EpisodePresentation) {
         hostActivity().openFragment(
             EpisodeDetailsFragment.newInstance(episode),
             "EpisodeDetailsFragment"
@@ -136,7 +136,7 @@ class CharacterDetailsFragment : Fragment() {
 
         private const val MENU_ITEM_NUMBER: Int = 0
 
-        fun newInstance(character: Character) =
+        fun newInstance(character: CharacterPresentation) =
             CharacterDetailsFragment().apply {
                 arguments = Bundle().apply {
                     putParcelable("Character", character)

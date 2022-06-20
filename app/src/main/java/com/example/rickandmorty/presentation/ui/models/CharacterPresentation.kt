@@ -1,15 +1,15 @@
-package com.example.rickandmorty.data
+package com.example.rickandmorty.presentation.ui.models
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-data class Character(
+class CharacterPresentation(
     val id: Int,
     val name: String,
     val status: String,
     val species: String,
     val gender: String,
-    val location: Location,
-    val origin: Location
+    val location: LocationPresentation,
+    val origin: LocationPresentation
 ) : Parcelable

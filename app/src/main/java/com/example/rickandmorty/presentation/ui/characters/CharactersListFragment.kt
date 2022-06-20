@@ -8,10 +8,10 @@ import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
-import com.example.rickandmorty.data.Character
-import com.example.rickandmorty.data.CharactersProvider
+import com.example.rickandmorty.data.local.CharactersProvider
 import com.example.rickandmorty.databinding.FragmentCharactersListBinding
 import com.example.rickandmorty.presentation.ui.hostActivity
+import com.example.rickandmorty.presentation.ui.models.CharacterPresentation
 import com.example.rickandmorty.util.CharacterFilter
 import com.example.rickandmorty.util.CharactersFiltersHelper
 
@@ -53,7 +53,7 @@ class CharactersListFragment : Fragment() {
         binding.rvCharacters.adapter = charactersAdapter
     }
 
-    private fun showCharacters(characters: List<Character>) {
+    private fun showCharacters(characters: List<CharacterPresentation>) {
         charactersAdapter.charactersList = characters
     }
 
@@ -61,7 +61,7 @@ class CharactersListFragment : Fragment() {
         hostActivity().setBottomNavItemChecked(MENU_ITEM_NUMBER)
     }
 
-    private fun onCharacterClicked(character: Character) {
+    private fun onCharacterClicked(character: CharacterPresentation) {
         println("Character: ${character.name}")
         hostActivity().openFragment(
             fragment = CharacterDetailsFragment.newInstance(character),

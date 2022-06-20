@@ -8,10 +8,10 @@ import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
-import com.example.rickandmorty.data.Location
-import com.example.rickandmorty.data.LocationsProvider
+import com.example.rickandmorty.data.local.LocationsProvider
 import com.example.rickandmorty.databinding.FragmentLocationsListBinding
 import com.example.rickandmorty.presentation.ui.hostActivity
+import com.example.rickandmorty.presentation.ui.models.LocationPresentation
 import com.example.rickandmorty.util.LocationFilter
 import com.example.rickandmorty.util.LocationsFiltersHelper
 
@@ -89,7 +89,7 @@ class LocationsListFragment : Fragment() {
         //TODO
     }
 
-    private fun showLocations(locations: List<Location>) {
+    private fun showLocations(locations: List<LocationPresentation>) {
         locationsAdapter.locationsList = locations
     }
 
@@ -103,7 +103,7 @@ class LocationsListFragment : Fragment() {
         hostActivity().setBottomNavItemChecked(MENU_ITEM_NUMBER)
     }
 
-    private fun onLocationClicked(location: Location) {
+    private fun onLocationClicked(location: LocationPresentation) {
         println("Clicked ${location.name}")
         hostActivity().openFragment(
             LocationDetailsFragment.newInstance(location),

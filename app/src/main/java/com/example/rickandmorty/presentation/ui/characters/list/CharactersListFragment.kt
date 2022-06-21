@@ -47,10 +47,9 @@ class CharactersListFragment : Fragment() {
     ): View {
         binding = FragmentCharactersListBinding.inflate(inflater, container, false)
         setBottomNavigationCheckedItem()
-
-        toolbar = binding.charactersToolbar
-        hostActivity().setSupportActionBar(toolbar)
-
+        initToolbar()
+        initRecyclerView()
+        charactersFiltersHelper = CharactersFiltersHelper(requireContext()) { onFiltersApplied(it) }
 
         repository = CharactersRepositoryImpl(CharactersApiBuilder.apiService)
         getCharactersUseCase = GetCharactersUseCase(repository)
@@ -59,12 +58,12 @@ class CharactersListFragment : Fragment() {
 
         setUpObservers()
 
-        initRecyclerView()
-
-
-        charactersFiltersHelper = CharactersFiltersHelper(requireContext()) { onFiltersApplied(it) }
-
         return binding.root
+    }
+
+    private fun initToolbar() {
+        toolbar = binding.charactersToolbar
+        hostActivity().setSupportActionBar(toolbar)
     }
 
     private fun setUpObservers() {
@@ -74,7 +73,8 @@ class CharactersListFragment : Fragment() {
                     Status.SUCCESS -> {
                         println("SUCCESS")
                         val mapper = CharacterDomainToCharacterPresentationModelMapper()
-                        val result = resource.data?.map { character -> mapper.map(character) } ?: listOf()
+                        val result =
+                            resource.data?.map { character -> mapper.map(character) } ?: listOf()
                         showCharacters(result)
                         binding.charactersProgressBar.visibility = View.GONE
                     }

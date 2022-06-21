@@ -21,7 +21,8 @@ class CharactersRepositoryImpl(
     }
 
     override suspend fun getCharactersByIds(ids: String): List<Character> {
-        TODO("Not yet implemented")
+        val mapperDataToDomain = CharacterDataToCharacterDomainModelMapper()
+        return api.getCharactersByIds(ids).map { mapperDataToDomain.map(it) }
     }
 
     override suspend fun getCharactersByFilter(filter: CharacterFilter): List<Character> {

@@ -4,9 +4,10 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class EpisodePresentation (
+class EpisodePresentation(
     val id: Int,
     val name: String,
     val episode: String,
     val airDate: String,
+    val characters: List<Int?>
 ) : Parcelable

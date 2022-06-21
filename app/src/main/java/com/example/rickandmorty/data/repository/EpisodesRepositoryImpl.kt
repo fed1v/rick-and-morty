@@ -1,6 +1,5 @@
 package com.example.rickandmorty.data.repository
 
-import androidx.lifecycle.LiveData
 import com.example.rickandmorty.data.mapper.EpisodeDataToEpisodeModelMapper
 import com.example.rickandmorty.data.remote.EpisodesApi
 import com.example.rickandmorty.domain.models.episode.Episode
@@ -12,18 +11,18 @@ class EpisodesRepositoryImpl(
 ) : EpisodesRepository {
 
     override suspend fun getEpisodes(): List<Episode> {
-        TODO("Not yet implemented")
+        val mapper = EpisodeDataToEpisodeModelMapper()
+        return api.getEpisodes().results.map { mapper.map(it) }
     }
 
     override suspend fun getEpisodeById(id: Int): Episode {
-        TODO("Not yet implemented")
+        val mapper = EpisodeDataToEpisodeModelMapper()
+        return mapper.map(api.getEpisodeById(id))
     }
 
     override suspend fun getEpisodesByIds(ids: String): List<Episode> {
         val mapper = EpisodeDataToEpisodeModelMapper()
-        val result = api.getEpisodesByIds(ids).map { mapper.map(it) }
-        println("Results Repository: ${result}")
-        return result//api.getEpisodesByIds(ids).results?.map { mapper.map(it) } ?: listOf()
+        return api.getEpisodesByIds(ids).map { mapper.map(it) }
 
     }
 

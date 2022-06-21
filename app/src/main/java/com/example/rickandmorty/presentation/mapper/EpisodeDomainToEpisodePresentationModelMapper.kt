@@ -10,6 +10,7 @@ class EpisodeDomainToEpisodePresentationModelMapper : Mapper<Episode, EpisodePre
         id = data.id,
         name = data.name,
         episode = data.name,
-        airDate = data.air_date
+        airDate = data.air_date,
+        characters = data.characters
     )
 }

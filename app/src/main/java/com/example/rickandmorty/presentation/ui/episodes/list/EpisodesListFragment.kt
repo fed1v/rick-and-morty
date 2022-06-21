@@ -2,20 +2,28 @@ package com.example.rickandmorty.presentation.ui.episodes.list
 
 import android.os.Bundle
 import android.view.*
+import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
-import com.example.rickandmorty.data.local.EpisodesProvider
+import com.example.rickandmorty.data.remote.EpisodesApi
+import com.example.rickandmorty.data.remote.EpisodesApiBuilder
+import com.example.rickandmorty.data.repository.EpisodesRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentEpisodesListBinding
-import com.example.rickandmorty.presentation.ui.hostActivity
+import com.example.rickandmorty.domain.repository.EpisodesRepository
+import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesUseCase
+import com.example.rickandmorty.presentation.mapper.EpisodeDomainToEpisodePresentationModelMapper
 import com.example.rickandmorty.presentation.models.EpisodePresentation
 import com.example.rickandmorty.presentation.ui.episodes.adapters.EpisodesAdapter
 import com.example.rickandmorty.presentation.ui.episodes.details.EpisodeDetailsFragment
+import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.util.filters.EpisodeFilter
 import com.example.rickandmorty.util.filters.EpisodesFiltersHelper
+import com.example.rickandmorty.util.status.Status
 
 
 class EpisodesListFragment : Fragment() {
@@ -24,6 +32,11 @@ class EpisodesListFragment : Fragment() {
     private lateinit var episodesAdapter: EpisodesAdapter
     private lateinit var toolbar: Toolbar
     private var episodesFiltersHelper: EpisodesFiltersHelper? = null
+
+    private lateinit var api: EpisodesApi
+    private lateinit var repository: EpisodesRepository
+    private lateinit var getEpisodesUseCase: GetEpisodesUseCase
+    private lateinit var viewModel: EpisodesViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,16 +49,50 @@ class EpisodesListFragment : Fragment() {
     ): View {
         binding = FragmentEpisodesListBinding.inflate(inflater, container, false)
         setBottomNavigationCheckedItem()
-
-        toolbar = binding.episodesToolbar
-        hostActivity().setSupportActionBar(toolbar)
-
+        initToolbar()
         episodesFiltersHelper = EpisodesFiltersHelper(requireContext()) { onFiltersApplied(it) }
-
         initRecyclerView()
-        showEpisodes(EpisodesProvider.episodesList)
+
+        api = EpisodesApiBuilder.apiService
+        repository = EpisodesRepositoryImpl(api)
+        getEpisodesUseCase = GetEpisodesUseCase(repository)
+        viewModel = ViewModelProvider(
+            this, EpisodesViewModelFactory(
+                getEpisodesUseCase = getEpisodesUseCase
+            )
+        ).get(EpisodesViewModel::class.java)
+
+
+        setUpObservers()
 
         return binding.root
+    }
+
+    private fun setUpObservers() {
+        viewModel.getEpisodes().observe(viewLifecycleOwner) { resource ->
+            when (resource.status) {
+                Status.SUCCESS -> {
+                    println("SUCCESS")
+                    val mapper = EpisodeDomainToEpisodePresentationModelMapper()
+                    showEpisodes(resource.data?.map { mapper.map(it) } ?: listOf())
+                    binding.episodesProgressBar.visibility = View.GONE
+                }
+                Status.ERROR -> {
+                    println("ERROR")
+                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
+                    binding.episodesProgressBar.visibility = View.GONE
+                }
+                Status.LOADING -> {
+                    println("LOADING")
+                    binding.episodesProgressBar.visibility = View.VISIBLE
+                }
+            }
+        }
+    }
+
+    private fun initToolbar() {
+        toolbar = binding.episodesToolbar
+        hostActivity().setSupportActionBar(toolbar)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

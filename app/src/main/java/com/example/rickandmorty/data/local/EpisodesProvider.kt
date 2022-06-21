@@ -15,6 +15,7 @@ class EpisodesProvider {
                         name = "name$it",
                         episode = "episode$it",
                         airDate = "airDate$it",
+                        listOf()
                     )
                 )
             }

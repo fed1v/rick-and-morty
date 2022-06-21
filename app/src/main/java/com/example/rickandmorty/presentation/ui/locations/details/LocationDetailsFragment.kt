@@ -5,18 +5,32 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
-import com.example.rickandmorty.data.local.CharactersProvider
+import com.example.rickandmorty.data.remote.CharactersApi
+import com.example.rickandmorty.data.remote.CharactersApiBuilder
+import com.example.rickandmorty.data.remote.LocationsApi
+import com.example.rickandmorty.data.remote.LocationsApiBuilder
+import com.example.rickandmorty.data.repository.CharactersRepositoryImpl
+import com.example.rickandmorty.data.repository.LocationsRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentLocationDetailsBinding
-import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
-import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAdapter
-import com.example.rickandmorty.presentation.ui.hostActivity
+import com.example.rickandmorty.domain.repository.CharactersRepository
+import com.example.rickandmorty.domain.repository.LocationsRepository
+import com.example.rickandmorty.domain.usecases.characters.GetCharactersByIdsUseCase
+import com.example.rickandmorty.domain.usecases.locations.GetLocationByIdUseCase
+import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationModelMapper
+import com.example.rickandmorty.presentation.mapper.LocationDomainToLocationPresentationMapper
 import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.presentation.models.LocationPresentation
+import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAdapter
+import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
+import com.example.rickandmorty.presentation.ui.hostActivity
+import com.example.rickandmorty.util.status.Status
 
-
+//TODO Earth (5-126)
 class LocationDetailsFragment : Fragment() {
 
     private lateinit var binding: FragmentLocationDetailsBinding
@@ -24,9 +38,21 @@ class LocationDetailsFragment : Fragment() {
     private lateinit var toolbar: Toolbar
     private lateinit var charactersAdapter: CharactersAdapter
 
+    private lateinit var locationsApi: LocationsApi
+    private lateinit var charactersApi: CharactersApi
+
+    private lateinit var locationsRepository: LocationsRepository
+    private lateinit var charactersRepository: CharactersRepository
+
+    private lateinit var getLocationByIdUseCase: GetLocationByIdUseCase
+    private lateinit var getCharactersByIdsUseCase: GetCharactersByIdsUseCase
+
+    private lateinit var viewModel: LocationDetailsViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        location = arguments?.getParcelable("Location") ?: LocationPresentation(-1, "", "", "")
+        location =
+            arguments?.getParcelable("Location") ?: LocationPresentation(-1, "", "", "", listOf())
         setHasOptionsMenu(true)
     }
 
@@ -36,17 +62,91 @@ class LocationDetailsFragment : Fragment() {
     ): View {
         binding = FragmentLocationDetailsBinding.inflate(LayoutInflater.from(requireContext()))
         setBottomNavigationCheckedItem()
-
         initToolbar()
-        showLocation()
         initRecyclerView()
-        showLocationResidents(CharactersProvider.charactersList)
+
+        initDependencies()
+        initViewModel()
+
+        setUpObservers(id = location.id, ids = location.residents)
 
         return binding.root
     }
 
+    private fun initViewModel() {
+        viewModel = ViewModelProvider(
+            owner = this,
+            factory = LocationDetailsViewModelFactory(
+                getLocationByIdUseCase = getLocationByIdUseCase,
+                getCharactersByIdsUseCase = getCharactersByIdsUseCase
+            )
+        ).get(LocationDetailsViewModel::class.java)
+    }
+
+    private fun initDependencies() {
+        locationsApi = LocationsApiBuilder.apiService
+        charactersApi = CharactersApiBuilder.apiService
+
+        locationsRepository = LocationsRepositoryImpl(locationsApi)
+        charactersRepository = CharactersRepositoryImpl(charactersApi)
+
+        getLocationByIdUseCase = GetLocationByIdUseCase(locationsRepository)
+        getCharactersByIdsUseCase = GetCharactersByIdsUseCase(charactersRepository)
+    }
+
+    private fun setUpObservers(id: Int, ids: List<Int?>) {
+        setUpLocationDetailsObserver(id)
+        setUpLocationResidentsObserver(ids)
+    }
+
+    private fun setUpLocationResidentsObserver(ids: List<Int?>) {
+        viewModel.getResidents(ids).observe(viewLifecycleOwner) { resource ->
+            when (resource.status) {
+                Status.SUCCESS -> {
+                    val mapper = CharacterDomainToCharacterPresentationModelMapper()
+                    val result = resource.data?.map { mapper.map(it) } ?: listOf()
+                    location = location.copy(residents = result.map { it.id })
+                    binding.recyclerViewProgressBar.visibility = View.GONE
+                    showLocationResidents(result)
+                }
+                Status.ERROR -> {
+                    binding.recyclerViewProgressBar.visibility = View.GONE
+                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
+                }
+                Status.LOADING -> {
+                    binding.recyclerViewProgressBar.visibility = View.VISIBLE
+                }
+            }
+        }
+    }
+
+    private fun setUpLocationDetailsObserver(id: Int) {
+        viewModel.getLocation(id).observe(viewLifecycleOwner) { resource ->
+            when (resource.status) {
+                Status.SUCCESS -> {
+                    val mapper = LocationDomainToLocationPresentationMapper()
+                    val result = mapper.map(resource.data!!)
+                    binding.locationDetailsProgressBar.visibility = View.GONE
+                    showLocation(result)
+                }
+                Status.ERROR -> {
+                    binding.locationDetailsProgressBar.visibility = View.GONE
+                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
+                }
+                Status.LOADING -> {
+                    binding.locationDetailsProgressBar.visibility = View.VISIBLE
+                }
+            }
+        }
+    }
+
     private fun showLocationResidents(charactersList: List<CharacterPresentation>) {
-        charactersAdapter.charactersList = charactersList
+        if (charactersList.isEmpty()) {
+            binding.tvNoResidents.visibility = View.VISIBLE
+        } else {
+            binding.tvNoResidents.visibility = View.GONE
+            charactersAdapter.charactersList = charactersList
+        }
     }
 
     private fun initRecyclerView() {
@@ -86,11 +186,12 @@ class LocationDetailsFragment : Fragment() {
         hostActivity().setBottomNavItemChecked(MENU_ITEM_NUMBER)
     }
 
-    private fun showLocation() {
+    private fun showLocation(location: LocationPresentation) {
         binding.locationDimension.text = location.dimension
         binding.locationName.text = location.name
         binding.locationType.text = location.type
     }
+
 
     companion object {
 

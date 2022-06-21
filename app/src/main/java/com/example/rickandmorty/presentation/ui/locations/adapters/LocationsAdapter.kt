@@ -13,7 +13,7 @@ class LocationsAdapter(
     var locationsList: List<LocationPresentation> = listOf()
         set(value) {
             field = value
-            //    notifyDataSetChanged()
+            notifyDataSetChanged()
         }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LocationsViewHolder {

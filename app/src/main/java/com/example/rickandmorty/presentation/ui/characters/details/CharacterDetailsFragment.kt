@@ -11,19 +11,22 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
-import com.example.rickandmorty.data.remote.CharactersApi
-import com.example.rickandmorty.data.remote.CharactersApiBuilder
-import com.example.rickandmorty.data.remote.EpisodesApi
-import com.example.rickandmorty.data.remote.EpisodesApiBuilder
+import com.example.rickandmorty.R
+import com.example.rickandmorty.data.remote.*
 import com.example.rickandmorty.data.repository.CharactersRepositoryImpl
 import com.example.rickandmorty.data.repository.EpisodesRepositoryImpl
+import com.example.rickandmorty.data.repository.LocationsRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentCharacterDetailsBinding
 import com.example.rickandmorty.domain.repository.CharactersRepository
 import com.example.rickandmorty.domain.repository.EpisodesRepository
+import com.example.rickandmorty.domain.repository.LocationsRepository
 import com.example.rickandmorty.domain.usecases.characters.GetCharacterByIdUseCase
 import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesByIdsUseCase
+import com.example.rickandmorty.domain.usecases.locations.GetLocationByIdUseCase
+import com.example.rickandmorty.domain.usecases.locations.GetLocationsByIdsUseCase
 import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationModelMapper
 import com.example.rickandmorty.presentation.mapper.EpisodeDomainToEpisodePresentationModelMapper
+import com.example.rickandmorty.presentation.mapper.LocationDomainToLocationPresentationMapper
 import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.presentation.models.EpisodePresentation
 import com.example.rickandmorty.presentation.models.LocationPresentation
@@ -43,10 +46,16 @@ class CharacterDetailsFragment : Fragment() {
 
     private lateinit var episodesApi: EpisodesApi
     private lateinit var charactersApi: CharactersApi
+    private lateinit var locationsApi: LocationsApi
+
     private lateinit var episodesRepository: EpisodesRepository
     private lateinit var charactersRepository: CharactersRepository
+    private lateinit var locationsRepository: LocationsRepository
+
     private lateinit var getEpisodesByIdsUseCase: GetEpisodesByIdsUseCase
     private lateinit var getCharacterByIdUseCase: GetCharacterByIdUseCase
+    private lateinit var getLocationByIdUseCase: GetLocationByIdUseCase
+
     private lateinit var viewModel: CharacterDetailsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,8 +66,8 @@ class CharacterDetailsFragment : Fragment() {
             "",
             "",
             "",
-            LocationPresentation(-1, "", "", ""),
-            LocationPresentation(-1, "", "", ""),
+            LocationPresentation(-1, "", "", "", listOf()),
+            LocationPresentation(-1, "", "", "", listOf()),
             listOf(),
             ""
         )
@@ -74,18 +83,31 @@ class CharacterDetailsFragment : Fragment() {
         initToolbar()
         initRecyclerView()
 
-        episodesApi = EpisodesApiBuilder.apiService
-        charactersApi = CharactersApiBuilder.apiService
-        episodesRepository = EpisodesRepositoryImpl(episodesApi)
-        charactersRepository = CharactersRepositoryImpl(charactersApi)
-        getEpisodesByIdsUseCase = GetEpisodesByIdsUseCase(episodesRepository)
-        getCharacterByIdUseCase = GetCharacterByIdUseCase(charactersRepository)
-
+        initDependencies()
         initViewModel()
 
-        setUpObservers(character.episodes, character.id)
+        setUpObservers(
+            episodesIds = character.episodes,
+            characterId = character.id,
+            location = character.location,
+            origin = character.origin
+        )
 
         return binding.root
+    }
+
+    private fun initDependencies() {
+        episodesApi = EpisodesApiBuilder.apiService
+        charactersApi = CharactersApiBuilder.apiService
+        locationsApi = LocationsApiBuilder.apiService
+
+        episodesRepository = EpisodesRepositoryImpl(episodesApi)
+        charactersRepository = CharactersRepositoryImpl(charactersApi)
+        locationsRepository = LocationsRepositoryImpl(locationsApi)
+
+        getEpisodesByIdsUseCase = GetEpisodesByIdsUseCase(episodesRepository)
+        getCharacterByIdUseCase = GetCharacterByIdUseCase(charactersRepository)
+        getLocationByIdUseCase = GetLocationByIdUseCase(locationsRepository)
     }
 
     private fun initViewModel() {
@@ -93,32 +115,83 @@ class CharacterDetailsFragment : Fragment() {
             owner = this,
             factory = CharacterDetailsViewModelFactory(
                 getEpisodesByIdsUseCase = getEpisodesByIdsUseCase,
-                getCharacterByIdUseCase = getCharacterByIdUseCase
+                getCharacterByIdUseCase = getCharacterByIdUseCase,
+                getLocationByIdUseCase = getLocationByIdUseCase
             )
         ).get(CharacterDetailsViewModel::class.java)
     }
 
-    private fun setUpObservers(ids: List<Int?>, id: Int) {
-        setUpEpisodesObserver(ids = ids)
-        setUpCharacterObserver(id = id)
+    private fun setUpObservers(
+        episodesIds: List<Int?>,
+        characterId: Int,
+        location: LocationPresentation,
+        origin: LocationPresentation
+    ) {
+        setUpLocationsObserver(location = location)
+        setUpOriginsObserver(origin = origin)
+        setUpEpisodesObserver(ids = episodesIds)
+        setUpCharacterObserver(id = characterId)
+    }
+
+    private fun setUpOriginsObserver(origin: LocationPresentation) {
+        viewModel.getOrigin(origin = origin)
+            .observe(viewLifecycleOwner) { resource ->
+                when (resource.status) {
+                    Status.SUCCESS -> {
+                        val mapper = LocationDomainToLocationPresentationMapper()
+                        val result = mapper.map(resource.data!!)
+                        showOrigin(origin = result)
+                        binding.characterDetailsProgressBar.visibility = View.GONE
+                    }
+                    Status.ERROR -> {
+                        Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT)
+                            .show()
+                        binding.characterDetailsProgressBar.visibility = View.GONE
+                    }
+                    Status.LOADING -> {
+                        binding.characterDetailsProgressBar.visibility = View.VISIBLE
+                    }
+                }
+            }
+    }
+
+    private fun setUpLocationsObserver(
+        location: LocationPresentation,
+    ) {
+        viewModel.getLocation(location = location)
+            .observe(viewLifecycleOwner) { resource ->
+                when (resource.status) {
+                    Status.SUCCESS -> {
+                        val mapper = LocationDomainToLocationPresentationMapper()
+                        val result = mapper.map(resource.data!!)
+                        showLocation(location = result)
+                        binding.characterDetailsProgressBar.visibility = View.GONE
+                    }
+                    Status.ERROR -> {
+                        Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT)
+                            .show()
+                        binding.characterDetailsProgressBar.visibility = View.GONE
+                    }
+                    Status.LOADING -> {
+                        binding.characterDetailsProgressBar.visibility = View.VISIBLE
+                    }
+                }
+            }
     }
 
     private fun setUpCharacterObserver(id: Int) {
         viewModel.getCharacterById(id).observe(viewLifecycleOwner) { resource ->
             when (resource.status) {
                 Status.SUCCESS -> {
-                    println("SUCCESS")
                     val mapper = CharacterDomainToCharacterPresentationModelMapper()
                     showCharacter(mapper.map(resource.data!!))
                     binding.characterDetailsProgressBar.visibility = View.GONE
                 }
                 Status.ERROR -> {
-                    println("ERROR")
                     Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
                     binding.characterDetailsProgressBar.visibility = View.GONE
                 }
                 Status.LOADING -> {
-                    println("LOADING")
                     binding.characterDetailsProgressBar.visibility = View.VISIBLE
                 }
             }
@@ -129,23 +202,16 @@ class CharacterDetailsFragment : Fragment() {
         viewModel.getEpisodesByIds(ids).observe(viewLifecycleOwner) { resource ->
             when (resource.status) {
                 Status.SUCCESS -> {
-                    println("SUCCESS")
                     val mapper = EpisodeDomainToEpisodePresentationModelMapper()
                     val result = resource.data?.map { mapper.map(it) } ?: listOf()
-                    println("Result:")
-                    result.forEach {
-                        println(it.name)
-                    }
                     binding.episodesProgressBar.visibility = View.GONE
                     showCharacterEpisodes(result)
                 }
                 Status.ERROR -> {
-                    println("ERROR")
                     binding.episodesProgressBar.visibility = View.GONE
                     Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
                 }
                 Status.LOADING -> {
-                    println("LOADING")
                     binding.episodesProgressBar.visibility = View.VISIBLE
                 }
             }
@@ -192,6 +258,49 @@ class CharacterDetailsFragment : Fragment() {
         hostActivity().setBottomNavItemChecked(MENU_ITEM_NUMBER)
     }
 
+    private fun showOrigin(origin: LocationPresentation) {
+        binding.characterOrigin.apply {
+            if (origin.name == "unknown_origin") {
+                text = requireContext().getString(R.string.unknown)
+                setOnClickListener {
+                    Toast.makeText(requireContext(), "Origin is unknown", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                text = origin.name
+                setOnClickListener {
+                    openFragment(
+                        LocationDetailsFragment.newInstance(origin),
+                        "LocationDetailsFragment"
+                    )
+                }
+            }
+        }
+    }
+
+
+    private fun showLocation(location: LocationPresentation) {
+        println("location: ${location}")
+        binding.characterLocation.apply {
+            if (location.name == "unknown_location") {
+                text = requireContext().getString(R.string.unknown)
+                setOnClickListener {
+                    Toast.makeText(requireContext(), "Location is unknown", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            } else {
+                text = location.name
+                setOnClickListener {
+                    openFragment(
+                        LocationDetailsFragment.newInstance(location),
+                        "LocationDetailsFragment"
+                    )
+                }
+            }
+
+        }
+    }
+
+
     private fun showCharacter(character: CharacterPresentation?) {
         if (character == null) return
 
@@ -203,24 +312,6 @@ class CharacterDetailsFragment : Fragment() {
         binding.characterSpecies.text = character.species
         binding.characterStatus.text = character.status
         binding.characterGender.text = character.gender
-        binding.characterLocation.apply {
-            text = character.location.name
-            setOnClickListener {
-                openFragment(
-                    LocationDetailsFragment.newInstance(character.location),
-                    "LocationDetailsFragment"
-                )
-            }
-        }
-        binding.characterOrigin.apply {
-            text = character.origin.name
-            setOnClickListener {
-                openFragment(
-                    LocationDetailsFragment.newInstance(character.origin),
-                    "LocationDetailsFragment"
-                )
-            }
-        }
     }
 
     private fun openFragment(fragment: Fragment, tag: String) {

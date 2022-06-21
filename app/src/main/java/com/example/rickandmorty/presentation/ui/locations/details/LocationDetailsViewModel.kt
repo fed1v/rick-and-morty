@@ -1,33 +1,39 @@
-package com.example.rickandmorty.presentation.ui.episodes.details
+package com.example.rickandmorty.presentation.ui.locations.details
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import com.example.rickandmorty.domain.usecases.characters.GetCharactersByIdsUseCase
-import com.example.rickandmorty.domain.usecases.episodes.GetEpisodeByIdUseCase
+import com.example.rickandmorty.domain.usecases.locations.GetLocationByIdUseCase
 import com.example.rickandmorty.util.status.Resource
 
-class EpisodeDetailsViewModel(
-    private val getEpisodeByIdUseCase: GetEpisodeByIdUseCase,
+class LocationDetailsViewModel(
+    private val getLocationByIdUseCase: GetLocationByIdUseCase,
     private val getCharactersByIdsUseCase: GetCharactersByIdsUseCase
 ) : ViewModel() {
 
-    fun getEpisode(id: Int) = liveData {
+    fun getLocation(id: Int) = liveData {
         emit(Resource.loading(data = null))
         try {
-            emit(Resource.success(data = getEpisodeByIdUseCase.execute(id)))
+            emit(Resource.success(data = getLocationByIdUseCase.execute(id)))
         } catch (e: Exception) {
             emit(Resource.error(data = null, message = e.message ?: "Error"))
         }
     }
 
-    fun getEpisodeCharactersByIds(ids: List<Int?>) = liveData {
+    fun getResidents(ids: List<Int?>) = liveData {
         if(ids.isEmpty()) {
             emit(Resource.loading(data = null))
             emit(Resource.success(listOf()))
             return@liveData
         }
 
-        val idsString = ids.joinToString(",")
+        var idsString = ""
+        if (ids.size == 1) {
+            idsString = "${ids[0]},${ids[0]}"
+        } else {
+            idsString = ids.joinToString(",")
+        }
+
         emit(Resource.loading(data = null))
         try {
             emit(Resource.success(data = getCharactersByIdsUseCase.execute(idsString)))
@@ -35,4 +41,5 @@ class EpisodeDetailsViewModel(
             emit(Resource.error(data = null, message = e.message ?: "Error"))
         }
     }
+
 }

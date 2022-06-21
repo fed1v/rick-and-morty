@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
+import com.example.rickandmorty.data.remote.CharactersApi
 import com.example.rickandmorty.data.repository.CharactersRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentCharactersListBinding
 import com.example.rickandmorty.domain.repository.CharactersRepository
@@ -32,8 +33,10 @@ class CharactersListFragment : Fragment() {
     private lateinit var toolbar: Toolbar
     private var charactersFiltersHelper: CharactersFiltersHelper? = null
 
+    private lateinit var api: CharactersApi
     private lateinit var repository: CharactersRepository
     private lateinit var getCharactersUseCase: GetCharactersUseCase
+
     private lateinit var viewModel: CharactersViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,14 +54,23 @@ class CharactersListFragment : Fragment() {
         initRecyclerView()
         charactersFiltersHelper = CharactersFiltersHelper(requireContext()) { onFiltersApplied(it) }
 
-        repository = CharactersRepositoryImpl(CharactersApiBuilder.apiService)
-        getCharactersUseCase = GetCharactersUseCase(repository)
-        viewModel = ViewModelProvider(this, CharactersViewModelFactory(getCharactersUseCase))
-            .get(CharactersViewModel::class.java)
+        initDependencies()
+        initViewModel()
 
         setUpObservers()
 
         return binding.root
+    }
+
+    private fun initViewModel() {
+        viewModel = ViewModelProvider(this, CharactersViewModelFactory(getCharactersUseCase))
+            .get(CharactersViewModel::class.java)
+    }
+
+    private fun initDependencies() {
+        api = CharactersApiBuilder.apiService
+        repository = CharactersRepositoryImpl(CharactersApiBuilder.apiService)
+        getCharactersUseCase = GetCharactersUseCase(repository)
     }
 
     private fun initToolbar() {
@@ -71,7 +83,6 @@ class CharactersListFragment : Fragment() {
             it?.let { resource ->
                 when (resource.status) {
                     Status.SUCCESS -> {
-                        println("SUCCESS")
                         val mapper = CharacterDomainToCharacterPresentationModelMapper()
                         val result =
                             resource.data?.map { character -> mapper.map(character) } ?: listOf()
@@ -79,12 +90,10 @@ class CharactersListFragment : Fragment() {
                         binding.charactersProgressBar.visibility = View.GONE
                     }
                     Status.ERROR -> {
-                        println("ERROR")
                         Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
                         binding.charactersProgressBar.visibility = View.GONE
                     }
                     Status.LOADING -> {
-                        println("LOADING")
                         binding.charactersProgressBar.visibility = View.VISIBLE
                     }
                 }
@@ -107,7 +116,6 @@ class CharactersListFragment : Fragment() {
     }
 
     private fun onCharacterClicked(character: CharacterPresentation) {
-        println("Character: ${character.name}")
         hostActivity().openFragment(
             fragment = CharacterDetailsFragment.newInstance(character),
             tag = "CharacterDetailsFragment"

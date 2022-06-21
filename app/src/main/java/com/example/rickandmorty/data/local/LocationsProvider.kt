@@ -14,7 +14,8 @@ class LocationsProvider {
                         id = it,
                         name = "name$it",
                         type = "type$it",
-                        dimension = "dimension$it"
+                        dimension = "dimension$it",
+                        residents = listOf()
                     )
                 )
             }

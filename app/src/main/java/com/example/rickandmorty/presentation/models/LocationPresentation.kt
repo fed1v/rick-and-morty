@@ -4,9 +4,10 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
-class LocationPresentation(
+data class LocationPresentation(
     val id: Int,
     val name: String,
     val type: String,
-    val dimension: String
+    val dimension: String,
+    val residents: List<Int?>
 ) : Parcelable

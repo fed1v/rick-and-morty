@@ -17,8 +17,20 @@ class CharactersProvider {
                         status = "status$it",
                         species = "species$it",
                         gender = "gender$it",
-                        location = LocationPresentation(it, "locationName$it", "locationType$it", "locationDimension$it"),
-                        origin = LocationPresentation(it, "originName$it", "originType$it", "originDimension$it"),
+                        location = LocationPresentation(
+                            it,
+                            "locationName$it",
+                            "locationType$it",
+                            "locationDimension$it",
+                            listOf()
+                        ),
+                        origin = LocationPresentation(
+                            it,
+                            "originName$it",
+                            "originType$it",
+                            "originDimension$it",
+                            listOf()
+                        ),
                         episodes = (1..10).toList(),
                         image = ""
                     )

@@ -36,6 +36,7 @@ class EpisodesListFragment : Fragment() {
     private lateinit var api: EpisodesApi
     private lateinit var repository: EpisodesRepository
     private lateinit var getEpisodesUseCase: GetEpisodesUseCase
+
     private lateinit var viewModel: EpisodesViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,37 +54,41 @@ class EpisodesListFragment : Fragment() {
         episodesFiltersHelper = EpisodesFiltersHelper(requireContext()) { onFiltersApplied(it) }
         initRecyclerView()
 
-        api = EpisodesApiBuilder.apiService
-        repository = EpisodesRepositoryImpl(api)
-        getEpisodesUseCase = GetEpisodesUseCase(repository)
-        viewModel = ViewModelProvider(
-            this, EpisodesViewModelFactory(
-                getEpisodesUseCase = getEpisodesUseCase
-            )
-        ).get(EpisodesViewModel::class.java)
-
+        initDependencies()
+        initViewModel()
 
         setUpObservers()
 
         return binding.root
     }
 
+    private fun initViewModel() {
+        viewModel = ViewModelProvider(
+            this, EpisodesViewModelFactory(
+                getEpisodesUseCase = getEpisodesUseCase
+            )
+        ).get(EpisodesViewModel::class.java)
+    }
+
+    private fun initDependencies() {
+        api = EpisodesApiBuilder.apiService
+        repository = EpisodesRepositoryImpl(api)
+        getEpisodesUseCase = GetEpisodesUseCase(repository)
+    }
+
     private fun setUpObservers() {
         viewModel.getEpisodes().observe(viewLifecycleOwner) { resource ->
             when (resource.status) {
                 Status.SUCCESS -> {
-                    println("SUCCESS")
                     val mapper = EpisodeDomainToEpisodePresentationModelMapper()
                     showEpisodes(resource.data?.map { mapper.map(it) } ?: listOf())
                     binding.episodesProgressBar.visibility = View.GONE
                 }
                 Status.ERROR -> {
-                    println("ERROR")
                     Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
                     binding.episodesProgressBar.visibility = View.GONE
                 }
                 Status.LOADING -> {
-                    println("LOADING")
                     binding.episodesProgressBar.visibility = View.VISIBLE
                 }
             }

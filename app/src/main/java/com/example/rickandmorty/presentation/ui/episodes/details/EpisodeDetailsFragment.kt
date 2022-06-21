@@ -39,10 +39,13 @@ class EpisodeDetailsFragment : Fragment() {
 
     private lateinit var episodesApi: EpisodesApi
     private lateinit var charactersApi: CharactersApi
+
     private lateinit var episodesRepository: EpisodesRepository
     private lateinit var charactersRepository: CharactersRepository
+
     private lateinit var getEpisodeByIdUseCase: GetEpisodeByIdUseCase
     private lateinit var getCharactersByIdsUseCase: GetCharactersByIdsUseCase
+
     private lateinit var viewModel: EpisodeDetailsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,22 +65,32 @@ class EpisodeDetailsFragment : Fragment() {
         initToolbar()
         initRecyclerView()
 
-        episodesApi = EpisodesApiBuilder.apiService
-        charactersApi = CharactersApiBuilder.apiService
-        episodesRepository = EpisodesRepositoryImpl(episodesApi)
-        charactersRepository = CharactersRepositoryImpl(charactersApi)
-        getEpisodeByIdUseCase = GetEpisodeByIdUseCase(episodesRepository)
-        getCharactersByIdsUseCase = GetCharactersByIdsUseCase(charactersRepository)
+        initDependencies()
+        initViewModel()
+
+        setUpObservers(id = episode.id, episode.characters)
+
+        return binding.root
+    }
+
+    private fun initViewModel() {
         viewModel = ViewModelProvider(
             this, EpisodeDetailsViewModelFactory(
                 getEpisodeByIdUseCase = getEpisodeByIdUseCase,
                 getCharactersByIdsUseCase = getCharactersByIdsUseCase
             )
         ).get(EpisodeDetailsViewModel::class.java)
+    }
 
-        setUpObservers(id = episode.id, episode.characters)
+    private fun initDependencies() {
+        episodesApi = EpisodesApiBuilder.apiService
+        charactersApi = CharactersApiBuilder.apiService
 
-        return binding.root
+        episodesRepository = EpisodesRepositoryImpl(episodesApi)
+        charactersRepository = CharactersRepositoryImpl(charactersApi)
+
+        getEpisodeByIdUseCase = GetEpisodeByIdUseCase(episodesRepository)
+        getCharactersByIdsUseCase = GetCharactersByIdsUseCase(charactersRepository)
     }
 
     private fun setUpObservers(id: Int, ids: List<Int?>) {
@@ -89,18 +102,15 @@ class EpisodeDetailsFragment : Fragment() {
         viewModel.getEpisodeCharactersByIds(ids).observe(viewLifecycleOwner) { resource ->
             when (resource.status) {
                 Status.SUCCESS -> {
-                    println("SUCCESS")
                     val mapper = CharacterDomainToCharacterPresentationModelMapper()
                     showEpisodeCharacters(resource.data?.map { mapper.map(it) } ?: listOf())
                     binding.recyclerViewProgressBar.visibility = View.GONE
                 }
                 Status.ERROR -> {
-                    println("ERROR")
                     Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
                     binding.recyclerViewProgressBar.visibility = View.GONE
                 }
                 Status.LOADING -> {
-                    println("LOADING")
                     binding.episodeDetailsProgressBar.visibility = View.VISIBLE
                 }
             }
@@ -111,18 +121,15 @@ class EpisodeDetailsFragment : Fragment() {
         viewModel.getEpisode(id).observe(viewLifecycleOwner) { resource ->
             when (resource.status) {
                 Status.SUCCESS -> {
-                    println("SUCCESS")
                     val mapper = EpisodeDomainToEpisodePresentationModelMapper()
                     showEpisode(mapper.map(resource.data!!))
                     binding.episodeDetailsProgressBar.visibility = View.GONE
                 }
                 Status.ERROR -> {
-                    println("ERROR")
                     Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
                     binding.episodeDetailsProgressBar.visibility = View.GONE
                 }
                 Status.LOADING -> {
-                    println("LOADING")
                     binding.episodeDetailsProgressBar.visibility = View.VISIBLE
                 }
             }

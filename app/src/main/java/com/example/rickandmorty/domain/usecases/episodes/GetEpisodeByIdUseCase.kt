@@ -8,7 +8,7 @@ class GetEpisodeByIdUseCase (
     private val repository: EpisodesRepository
 ) {
 
-    suspend fun execute(id: Int): LiveData<Episode> {
+    suspend fun execute(id: Int): Episode {
         return repository.getEpisodeById(id)
     }
 }

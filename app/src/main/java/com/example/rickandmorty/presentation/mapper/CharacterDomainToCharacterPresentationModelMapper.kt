@@ -15,6 +15,7 @@ class CharacterDomainToCharacterPresentationModelMapper : Mapper<Character, Char
         gender = data.gender,
         location = LocationPresentation(-1, data.location, "unknown", "unknown"), // TODO
         origin = LocationPresentation(-1, data.origin, "unknown", "unknown"),
-        episodes = data.episodes
+        episodes = data.episodes,
+        image = data.image
     )
 }

@@ -1,4 +1,4 @@
-package com.example.rickandmorty.presentation.ui.locations
+package com.example.rickandmorty.presentation.ui.locations.details
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.data.local.CharactersProvider
 import com.example.rickandmorty.databinding.FragmentLocationDetailsBinding
 import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
-import com.example.rickandmorty.presentation.ui.characters.CharactersAdapter
+import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAdapter
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.presentation.models.LocationPresentation

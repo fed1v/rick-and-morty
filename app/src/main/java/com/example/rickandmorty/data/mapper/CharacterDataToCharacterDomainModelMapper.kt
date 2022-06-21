@@ -19,6 +19,7 @@ class CharacterDataToCharacterDomainModelMapper : Mapper<CharacterDto, Character
         gender = data.gender,
         origin = data.origin.name,
         location = data.location.name,
-        episodes = data.episode.map { extractEpisodeIdFromUrl(it) }
+        episodes = data.episode.map { extractEpisodeIdFromUrl(it) },
+        image = data.image
     )
 }

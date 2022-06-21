@@ -1,8 +1,10 @@
-package com.example.rickandmorty.presentation.ui.characters
+package com.example.rickandmorty.presentation.ui.characters.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.example.rickandmorty.R
 import com.example.rickandmorty.databinding.ItemCharacterBinding
 import com.example.rickandmorty.presentation.models.CharacterPresentation
 
@@ -35,6 +37,13 @@ class CharactersAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(character: CharacterPresentation) {
+            Glide.with(binding.root.context)
+                .load(character.image)
+                .placeholder(R.drawable.ic_image)
+                .error(R.drawable.ic_image)
+                .into(binding.characterImage)
+
+
             binding.characterGender.text = character.gender
             binding.characterName.text = character.name
             binding.characterStatus.text = character.status

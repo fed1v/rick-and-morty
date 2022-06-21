@@ -6,26 +6,31 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
-import com.example.rickandmorty.R
+import com.bumptech.glide.Glide
+import com.example.rickandmorty.data.remote.CharactersApi
+import com.example.rickandmorty.data.remote.CharactersApiBuilder
 import com.example.rickandmorty.data.remote.EpisodesApi
 import com.example.rickandmorty.data.remote.EpisodesApiBuilder
+import com.example.rickandmorty.data.repository.CharactersRepositoryImpl
 import com.example.rickandmorty.data.repository.EpisodesRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentCharacterDetailsBinding
+import com.example.rickandmorty.domain.repository.CharactersRepository
 import com.example.rickandmorty.domain.repository.EpisodesRepository
+import com.example.rickandmorty.domain.usecases.characters.GetCharacterByIdUseCase
 import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesByIdsUseCase
+import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationModelMapper
 import com.example.rickandmorty.presentation.mapper.EpisodeDomainToEpisodePresentationModelMapper
 import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.presentation.models.EpisodePresentation
 import com.example.rickandmorty.presentation.models.LocationPresentation
-import com.example.rickandmorty.presentation.ui.episodes.EpisodeDetailsFragment
-import com.example.rickandmorty.presentation.ui.episodes.EpisodesAdapter
+import com.example.rickandmorty.presentation.ui.episodes.details.EpisodeDetailsFragment
+import com.example.rickandmorty.presentation.ui.episodes.adapters.EpisodesAdapter
 import com.example.rickandmorty.presentation.ui.hostActivity
-import com.example.rickandmorty.presentation.ui.locations.LocationDetailsFragment
+import com.example.rickandmorty.presentation.ui.locations.details.LocationDetailsFragment
 import com.example.rickandmorty.util.status.Status
 
 
@@ -36,9 +41,12 @@ class CharacterDetailsFragment : Fragment() {
     private lateinit var toolbar: Toolbar
     private lateinit var episodesAdapter: EpisodesAdapter
 
-    private lateinit var api: EpisodesApi
-    private lateinit var repository: EpisodesRepository
+    private lateinit var episodesApi: EpisodesApi
+    private lateinit var charactersApi: CharactersApi
+    private lateinit var episodesRepository: EpisodesRepository
+    private lateinit var charactersRepository: CharactersRepository
     private lateinit var getEpisodesByIdsUseCase: GetEpisodesByIdsUseCase
+    private lateinit var getCharacterByIdUseCase: GetCharacterByIdUseCase
     private lateinit var viewModel: CharacterDetailsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,7 +59,8 @@ class CharacterDetailsFragment : Fragment() {
             "",
             LocationPresentation(-1, "", "", ""),
             LocationPresentation(-1, "", "", ""),
-            listOf()
+            listOf(),
+            ""
         )
         setHasOptionsMenu(true)
     }
@@ -65,23 +74,58 @@ class CharacterDetailsFragment : Fragment() {
         initToolbar()
         initRecyclerView()
 
-        api = EpisodesApiBuilder.apiService
-        repository = EpisodesRepositoryImpl(api)
-        getEpisodesByIdsUseCase = GetEpisodesByIdsUseCase(repository)
+        episodesApi = EpisodesApiBuilder.apiService
+        charactersApi = CharactersApiBuilder.apiService
+        episodesRepository = EpisodesRepositoryImpl(episodesApi)
+        charactersRepository = CharactersRepositoryImpl(charactersApi)
+        getEpisodesByIdsUseCase = GetEpisodesByIdsUseCase(episodesRepository)
+        getCharacterByIdUseCase = GetCharacterByIdUseCase(charactersRepository)
 
-        viewModel =
-            ViewModelProvider(this, CharacterDetailsViewModelFactory(getEpisodesByIdsUseCase))
-                .get(CharacterDetailsViewModel::class.java)
+        initViewModel()
 
-        setUpObservers(character.episodes)
-
-        showCharacter()
-
+        setUpObservers(character.episodes, character.id)
 
         return binding.root
     }
 
-    private fun setUpObservers(ids: List<Int?>) {
+    private fun initViewModel() {
+        viewModel = ViewModelProvider(
+            owner = this,
+            factory = CharacterDetailsViewModelFactory(
+                getEpisodesByIdsUseCase = getEpisodesByIdsUseCase,
+                getCharacterByIdUseCase = getCharacterByIdUseCase
+            )
+        ).get(CharacterDetailsViewModel::class.java)
+    }
+
+    private fun setUpObservers(ids: List<Int?>, id: Int) {
+        setUpEpisodesObserver(ids = ids)
+        setUpCharacterObserver(id = id)
+    }
+
+    private fun setUpCharacterObserver(id: Int) {
+        viewModel.getCharacterById(id).observe(viewLifecycleOwner) { resource ->
+            when (resource.status) {
+                Status.SUCCESS -> {
+                    println("SUCCESS")
+                    val mapper = CharacterDomainToCharacterPresentationModelMapper()
+                    showCharacter(mapper.map(resource.data!!))
+                    binding.characterDetailsProgressBar.visibility = View.GONE
+                }
+                Status.ERROR -> {
+                    println("ERROR")
+                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
+                    binding.characterDetailsProgressBar.visibility = View.GONE
+                }
+                Status.LOADING -> {
+                    println("LOADING")
+                    binding.characterDetailsProgressBar.visibility = View.VISIBLE
+                }
+            }
+        }
+    }
+
+    private fun setUpEpisodesObserver(ids: List<Int?>) {
         viewModel.getEpisodesByIds(ids).observe(viewLifecycleOwner) { resource ->
             when (resource.status) {
                 Status.SUCCESS -> {
@@ -148,13 +192,13 @@ class CharacterDetailsFragment : Fragment() {
         hostActivity().setBottomNavItemChecked(MENU_ITEM_NUMBER)
     }
 
-    private fun showCharacter() {
-        binding.characterImage.setImageDrawable(
-            AppCompatResources.getDrawable(
-                requireContext(),
-                R.drawable.rick_image
-            )
-        )
+    private fun showCharacter(character: CharacterPresentation?) {
+        if (character == null) return
+
+        Glide.with(requireContext())
+            .load(character.image)
+            .into(binding.characterImage)
+
         binding.characterName.text = character.name
         binding.characterSpecies.text = character.species
         binding.characterStatus.text = character.status

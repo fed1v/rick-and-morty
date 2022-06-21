@@ -1,4 +1,4 @@
-package com.example.rickandmorty.util
+package com.example.rickandmorty.util.filters
 
 import android.content.Context
 import android.content.DialogInterface

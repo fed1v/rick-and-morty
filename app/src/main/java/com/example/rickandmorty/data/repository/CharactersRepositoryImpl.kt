@@ -1,6 +1,5 @@
 package com.example.rickandmorty.data.repository
 
-import androidx.lifecycle.LiveData
 import com.example.rickandmorty.data.mapper.CharacterDataToCharacterDomainModelMapper
 import com.example.rickandmorty.data.remote.CharactersApi
 import com.example.rickandmorty.domain.models.character.Character
@@ -16,11 +15,16 @@ class CharactersRepositoryImpl(
         return api.getCharacters().results.map { mapperDataToDomain.map(it) }
     }
 
-    override suspend fun getCharacterById(id: Int): LiveData<Character> {
+    override suspend fun getCharacterById(id: Int): Character {
+        val mapperDataToDomain = CharacterDataToCharacterDomainModelMapper()
+        return mapperDataToDomain.map(api.getCharacterById(id))
+    }
+
+    override suspend fun getCharactersByIds(ids: String): List<Character> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getCharactersByFilter(filter: CharacterFilter): LiveData<List<Character>> {
+    override suspend fun getCharactersByFilter(filter: CharacterFilter): List<Character> {
         TODO("Not yet implemented")
     }
 }

@@ -1,4 +1,4 @@
-package com.example.rickandmorty.presentation.ui.episodes
+package com.example.rickandmorty.presentation.ui.episodes.list
 
 import android.os.Bundle
 import android.view.*
@@ -12,8 +12,10 @@ import com.example.rickandmorty.data.local.EpisodesProvider
 import com.example.rickandmorty.databinding.FragmentEpisodesListBinding
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.presentation.models.EpisodePresentation
-import com.example.rickandmorty.util.EpisodeFilter
-import com.example.rickandmorty.util.EpisodesFiltersHelper
+import com.example.rickandmorty.presentation.ui.episodes.adapters.EpisodesAdapter
+import com.example.rickandmorty.presentation.ui.episodes.details.EpisodeDetailsFragment
+import com.example.rickandmorty.util.filters.EpisodeFilter
+import com.example.rickandmorty.util.filters.EpisodesFiltersHelper
 
 
 class EpisodesListFragment : Fragment() {

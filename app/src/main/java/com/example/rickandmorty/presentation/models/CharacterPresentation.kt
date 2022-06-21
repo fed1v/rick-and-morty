@@ -12,5 +12,6 @@ class CharacterPresentation(
     val gender: String,
     val location: LocationPresentation,
     val origin: LocationPresentation,
-    val episodes: List<Int?>
+    val episodes: List<Int?>,
+    val image: String
 ) : Parcelable

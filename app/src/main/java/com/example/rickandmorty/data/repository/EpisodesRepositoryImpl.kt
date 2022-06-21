@@ -11,11 +11,11 @@ class EpisodesRepositoryImpl(
     private val api: EpisodesApi
 ) : EpisodesRepository {
 
-    override suspend fun getEpisodes(): LiveData<List<Episode>> {
+    override suspend fun getEpisodes(): List<Episode> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getEpisodeById(id: Int): LiveData<Episode> {
+    override suspend fun getEpisodeById(id: Int): Episode {
         TODO("Not yet implemented")
     }
 
@@ -27,7 +27,7 @@ class EpisodesRepositoryImpl(
 
     }
 
-    override suspend fun getEpisodesByFilter(filter: EpisodeFilter): LiveData<List<Episode>> {
+    override suspend fun getEpisodesByFilter(filter: EpisodeFilter): List<Episode> {
         TODO("Not yet implemented")
     }
 }

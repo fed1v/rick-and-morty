@@ -1,4 +1,4 @@
-package com.example.rickandmorty.presentation.ui.locations
+package com.example.rickandmorty.presentation.ui.locations.list
 
 import android.os.Bundle
 import android.view.*
@@ -12,8 +12,10 @@ import com.example.rickandmorty.data.local.LocationsProvider
 import com.example.rickandmorty.databinding.FragmentLocationsListBinding
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.presentation.models.LocationPresentation
-import com.example.rickandmorty.util.LocationFilter
-import com.example.rickandmorty.util.LocationsFiltersHelper
+import com.example.rickandmorty.presentation.ui.locations.adapters.LocationsAdapter
+import com.example.rickandmorty.presentation.ui.locations.details.LocationDetailsFragment
+import com.example.rickandmorty.util.filters.LocationFilter
+import com.example.rickandmorty.util.filters.LocationsFiltersHelper
 
 class LocationsListFragment : Fragment() {
 

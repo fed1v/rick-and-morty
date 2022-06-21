@@ -18,9 +18,9 @@ import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPr
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
-import com.example.rickandmorty.presentation.ui.characters.CharactersAdapter
-import com.example.rickandmorty.util.CharacterFilter
-import com.example.rickandmorty.util.CharactersFiltersHelper
+import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAdapter
+import com.example.rickandmorty.util.filters.CharacterFilter
+import com.example.rickandmorty.util.filters.CharactersFiltersHelper
 import com.example.rickandmorty.data.remote.CharactersApiBuilder
 import com.example.rickandmorty.util.status.Status
 

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_margin="5dp"
-    tools:context=".presentation.ui.characters.CharacterDetailsFragment">
+    tools:context=".presentation.ui.characters.details.CharacterDetailsFragment">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/location_toolbar"

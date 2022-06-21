@@ -1,6 +1,6 @@
 package com.example.rickandmorty.data.local
 
-import com.example.rickandmorty.presentation.ui.models.EpisodePresentation
+import com.example.rickandmorty.presentation.models.EpisodePresentation
 
 class EpisodesProvider {
     companion object {

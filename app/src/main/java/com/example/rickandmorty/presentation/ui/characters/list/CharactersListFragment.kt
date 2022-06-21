@@ -1,19 +1,28 @@
-package com.example.rickandmorty.presentation.ui.characters
+package com.example.rickandmorty.presentation.ui.characters.list
 
 import android.os.Bundle
 import android.view.*
+import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
-import com.example.rickandmorty.data.local.CharactersProvider
+import com.example.rickandmorty.data.repository.CharactersRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentCharactersListBinding
+import com.example.rickandmorty.domain.repository.CharactersRepository
+import com.example.rickandmorty.domain.usecases.characters.GetCharactersUseCase
+import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationModelMapper
 import com.example.rickandmorty.presentation.ui.hostActivity
-import com.example.rickandmorty.presentation.ui.models.CharacterPresentation
+import com.example.rickandmorty.presentation.models.CharacterPresentation
+import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
+import com.example.rickandmorty.presentation.ui.characters.CharactersAdapter
 import com.example.rickandmorty.util.CharacterFilter
 import com.example.rickandmorty.util.CharactersFiltersHelper
+import com.example.rickandmorty.data.remote.CharactersApiBuilder
+import com.example.rickandmorty.util.status.Status
 
 
 class CharactersListFragment : Fragment() {
@@ -22,6 +31,10 @@ class CharactersListFragment : Fragment() {
     private lateinit var charactersAdapter: CharactersAdapter
     private lateinit var toolbar: Toolbar
     private var charactersFiltersHelper: CharactersFiltersHelper? = null
+
+    private lateinit var repository: CharactersRepository
+    private lateinit var getCharactersUseCase: GetCharactersUseCase
+    private lateinit var viewModel: CharactersViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,13 +51,45 @@ class CharactersListFragment : Fragment() {
         toolbar = binding.charactersToolbar
         hostActivity().setSupportActionBar(toolbar)
 
+
+        repository = CharactersRepositoryImpl(CharactersApiBuilder.apiService)
+        getCharactersUseCase = GetCharactersUseCase(repository)
+        viewModel = ViewModelProvider(this, CharactersViewModelFactory(getCharactersUseCase))
+            .get(CharactersViewModel::class.java)
+
+        setUpObservers()
+
         initRecyclerView()
 
-        showCharacters(CharactersProvider.charactersList)
 
         charactersFiltersHelper = CharactersFiltersHelper(requireContext()) { onFiltersApplied(it) }
 
         return binding.root
+    }
+
+    private fun setUpObservers() {
+        viewModel.getCharacters().observe(viewLifecycleOwner) {
+            it?.let { resource ->
+                when (resource.status) {
+                    Status.SUCCESS -> {
+                        println("SUCCESS")
+                        val mapper = CharacterDomainToCharacterPresentationModelMapper()
+                        val result = resource.data?.map { character -> mapper.map(character) } ?: listOf()
+                        showCharacters(result)
+                        binding.charactersProgressBar.visibility = View.GONE
+                    }
+                    Status.ERROR -> {
+                        println("ERROR")
+                        Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
+                        binding.charactersProgressBar.visibility = View.GONE
+                    }
+                    Status.LOADING -> {
+                        println("LOADING")
+                        binding.charactersProgressBar.visibility = View.VISIBLE
+                    }
+                }
+            }
+        }
     }
 
     private fun initRecyclerView() {

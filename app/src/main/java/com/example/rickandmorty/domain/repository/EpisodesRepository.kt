@@ -10,5 +10,7 @@ interface EpisodesRepository {
 
     suspend fun getEpisodeById(id: Int): LiveData<Episode>
 
+    suspend fun getEpisodesByIds(ids: String): List<Episode>
+
     suspend fun getEpisodesByFilter(filter: EpisodeFilter): LiveData<List<Episode>>
 }

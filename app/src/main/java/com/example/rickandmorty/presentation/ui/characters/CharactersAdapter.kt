@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rickandmorty.databinding.ItemCharacterBinding
-import com.example.rickandmorty.presentation.ui.models.CharacterPresentation
+import com.example.rickandmorty.presentation.models.CharacterPresentation
 
 class CharactersAdapter(
     private val onCharacterClicked: (CharacterPresentation) -> Unit
@@ -13,7 +13,7 @@ class CharactersAdapter(
     var charactersList: List<CharacterPresentation> = listOf()
         set(value) {
             field = value
-        //    notifyDataSetChanged()
+            notifyDataSetChanged()
         }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CharacterViewHolder {

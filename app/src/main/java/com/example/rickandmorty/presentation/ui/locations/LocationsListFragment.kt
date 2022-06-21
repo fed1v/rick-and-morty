@@ -11,7 +11,7 @@ import com.example.rickandmorty.R
 import com.example.rickandmorty.data.local.LocationsProvider
 import com.example.rickandmorty.databinding.FragmentLocationsListBinding
 import com.example.rickandmorty.presentation.ui.hostActivity
-import com.example.rickandmorty.presentation.ui.models.LocationPresentation
+import com.example.rickandmorty.presentation.models.LocationPresentation
 import com.example.rickandmorty.util.LocationFilter
 import com.example.rickandmorty.util.LocationsFiltersHelper
 

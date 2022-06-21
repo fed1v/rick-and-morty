@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rickandmorty.databinding.ItemEpisodeBinding
-import com.example.rickandmorty.presentation.ui.models.EpisodePresentation
+import com.example.rickandmorty.presentation.models.EpisodePresentation
 
 class EpisodesAdapter(
     private val onEpisodeClicked: (EpisodePresentation) -> Unit
@@ -13,7 +13,7 @@ class EpisodesAdapter(
     var episodesList: List<EpisodePresentation> = listOf()
         set(value) {
             field = value
-            //    notifyDataSetChanged()
+            notifyDataSetChanged()
         }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EpisodesViewHolder {

@@ -11,7 +11,7 @@ import com.example.rickandmorty.R
 import com.example.rickandmorty.data.local.EpisodesProvider
 import com.example.rickandmorty.databinding.FragmentEpisodesListBinding
 import com.example.rickandmorty.presentation.ui.hostActivity
-import com.example.rickandmorty.presentation.ui.models.EpisodePresentation
+import com.example.rickandmorty.presentation.models.EpisodePresentation
 import com.example.rickandmorty.util.EpisodeFilter
 import com.example.rickandmorty.util.EpisodesFiltersHelper
 

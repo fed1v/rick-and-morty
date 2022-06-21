@@ -6,7 +6,7 @@ import com.example.rickandmorty.domain.models.character.CharacterFilter
 
 interface CharactersRepository {
 
-    suspend fun getCharacters(): LiveData<List<Character>>
+    suspend fun getCharacters(): List<Character>
 
     suspend fun getCharacterById(id: Int): LiveData<Character>
 

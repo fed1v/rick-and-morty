@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.rickandmorty.databinding.ItemLocationBinding
-import com.example.rickandmorty.presentation.ui.models.LocationPresentation
+import com.example.rickandmorty.presentation.models.LocationPresentation
 
 class LocationsAdapter(
     private val onLocationClicked: (LocationPresentation) -> Unit

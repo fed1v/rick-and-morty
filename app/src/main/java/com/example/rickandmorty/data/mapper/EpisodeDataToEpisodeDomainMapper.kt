@@ -12,7 +12,6 @@ class EpisodeDataToEpisodeDomainMapper : Mapper<EpisodeDto, Episode> {
         name = data.name,
         air_date = data.air_date,
         episode = data.episode,
-        created = data.created,
         characters = data.characters.map { ExtractIdFromUrlUtil().extract(it) }
     )
 }

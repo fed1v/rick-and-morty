@@ -11,5 +11,5 @@ interface CharactersRepository {
 
     suspend fun getCharactersByIds(ids: String): List<Character>
 
-    suspend fun getCharactersByFilter(filter: CharacterFilter): List<Character>
+    suspend fun getCharactersByFilters(filters: CharacterFilter): List<Character>
 }

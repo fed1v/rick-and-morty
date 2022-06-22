@@ -10,10 +10,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
-import com.example.rickandmorty.data.remote.EpisodesApi
-import com.example.rickandmorty.data.remote.EpisodesApiBuilder
+import com.example.rickandmorty.data.remote.episodes.EpisodesApi
+import com.example.rickandmorty.data.remote.episodes.EpisodesApiBuilder
 import com.example.rickandmorty.data.repository.EpisodesRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentEpisodesListBinding
+import com.example.rickandmorty.domain.models.episode.EpisodeFilter
 import com.example.rickandmorty.domain.repository.EpisodesRepository
 import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesUseCase
 import com.example.rickandmorty.presentation.mapper.EpisodeDomainToEpisodePresentationModelMapper
@@ -21,7 +22,6 @@ import com.example.rickandmorty.presentation.models.EpisodePresentation
 import com.example.rickandmorty.presentation.ui.episodes.adapters.EpisodesAdapter
 import com.example.rickandmorty.presentation.ui.episodes.details.EpisodeDetailsFragment
 import com.example.rickandmorty.presentation.ui.hostActivity
-import com.example.rickandmorty.util.filters.EpisodeFilter
 import com.example.rickandmorty.util.filters.EpisodesFiltersHelper
 import com.example.rickandmorty.util.status.Status
 

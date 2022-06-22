@@ -10,10 +10,10 @@ import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
-import com.example.rickandmorty.data.remote.CharactersApi
-import com.example.rickandmorty.data.remote.CharactersApiBuilder
-import com.example.rickandmorty.data.remote.EpisodesApi
-import com.example.rickandmorty.data.remote.EpisodesApiBuilder
+import com.example.rickandmorty.data.remote.characters.CharactersApi
+import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
+import com.example.rickandmorty.data.remote.episodes.EpisodesApi
+import com.example.rickandmorty.data.remote.episodes.EpisodesApiBuilder
 import com.example.rickandmorty.data.repository.CharactersRepositoryImpl
 import com.example.rickandmorty.data.repository.EpisodesRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentEpisodeDetailsBinding

@@ -10,10 +10,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
-import com.example.rickandmorty.data.remote.LocationsApi
-import com.example.rickandmorty.data.remote.LocationsApiBuilder
+import com.example.rickandmorty.data.remote.locations.LocationsApi
+import com.example.rickandmorty.data.remote.locations.LocationsApiBuilder
 import com.example.rickandmorty.data.repository.LocationsRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentLocationsListBinding
+import com.example.rickandmorty.domain.models.location.LocationFilter
 import com.example.rickandmorty.domain.repository.LocationsRepository
 import com.example.rickandmorty.domain.usecases.locations.GetLocationsUseCase
 import com.example.rickandmorty.presentation.mapper.LocationDomainToLocationPresentationMapper
@@ -21,7 +22,6 @@ import com.example.rickandmorty.presentation.models.LocationPresentation
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.presentation.ui.locations.adapters.LocationsAdapter
 import com.example.rickandmorty.presentation.ui.locations.details.LocationDetailsFragment
-import com.example.rickandmorty.util.filters.LocationFilter
 import com.example.rickandmorty.util.filters.LocationsFiltersHelper
 import com.example.rickandmorty.util.status.Status
 

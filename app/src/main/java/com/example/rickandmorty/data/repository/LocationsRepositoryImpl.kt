@@ -1,7 +1,7 @@
 package com.example.rickandmorty.data.repository
 
 import com.example.rickandmorty.data.mapper.LocationDataToLocationDomainMapper
-import com.example.rickandmorty.data.remote.LocationsApi
+import com.example.rickandmorty.data.remote.locations.LocationsApi
 import com.example.rickandmorty.domain.models.location.Location
 import com.example.rickandmorty.domain.models.location.LocationFilter
 import com.example.rickandmorty.domain.repository.LocationsRepository

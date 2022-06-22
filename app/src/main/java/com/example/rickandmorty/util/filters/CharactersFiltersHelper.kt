@@ -3,11 +3,13 @@ package com.example.rickandmorty.util.filters
 import android.content.Context
 import android.content.DialogInterface
 import com.example.rickandmorty.R
+import com.example.rickandmorty.domain.models.character.CharacterFilter
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class CharactersFiltersHelper(
     private val context: Context,
-    private val applyCallback: (CharacterFilter) -> Unit
+    private val applyCallback: (CharacterFilter) -> Unit,
+    private val resetCallback: () -> Unit
 ) {
 
     private var appliedFilter = CharacterFilter()
@@ -38,7 +40,7 @@ class CharactersFiltersHelper(
 
 
     fun openFilters() {
-        val name = if (appliedFilter.name == null) "Name" else "Name: ${appliedFilter.name}"
+        //    val name = if (appliedFilter.name == null) "Name" else "Name: ${appliedFilter.name}"
         val status =
             if (appliedFilter.status == null) "Status" else "Status: ${appliedFilter.status}"
         val species =
@@ -47,7 +49,7 @@ class CharactersFiltersHelper(
         val gender =
             if (appliedFilter.gender == null) "Gender" else "Gender: ${appliedFilter.gender}"
 
-        val filtersArray = arrayOf(name, status, species, type, gender)
+        val filtersArray = arrayOf(/*name,*/ status, species, type, gender)
 
         MaterialAlertDialogBuilder(context)
             .setTitle(R.string.filter)
@@ -63,7 +65,8 @@ class CharactersFiltersHelper(
                 dialog.dismiss()
             }
             .setNeutralButton("Reset") { dialog, _ ->
-                appliedFilter = CharacterFilter()
+
+                resetFilters()
                 dialog.dismiss()
             }
             .show()
@@ -71,11 +74,10 @@ class CharactersFiltersHelper(
 
     private fun openFilter(id: Int) {
         when (id) {
-            0 -> openFilterName()
-            1 -> openFilterStatus()
-            2 -> openFilterSpecies()
-            3 -> openFilterType()
-            4 -> openFilterGender()
+            0 -> openFilterStatus()
+            1 -> openFilterSpecies()
+            2 -> openFilterType()
+            3 -> openFilterGender()
         }
     }
 
@@ -183,7 +185,7 @@ class CharactersFiltersHelper(
     }
 
     //TODO
-    private fun openFilterName() {
+    /*private fun openFilterName() {
         MaterialAlertDialogBuilder(context)
             .setTitle("Name")
             .setSingleChoiceItems(
@@ -206,7 +208,7 @@ class CharactersFiltersHelper(
                 returnToPreviousDialog(dialog)
             }
             .show()
-    }
+    }*/
 
     private fun returnToPreviousDialog(dialog: DialogInterface) {
         openFilters()
@@ -215,6 +217,11 @@ class CharactersFiltersHelper(
 
     private fun applyFilters() {
         applyCallback(appliedFilter)
+    }
+
+    private fun resetFilters() {
+        appliedFilter = CharacterFilter()
+        resetCallback()
     }
 
 }

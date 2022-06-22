@@ -3,9 +3,10 @@ package com.example.rickandmorty.util.filters
 import android.content.Context
 import android.content.DialogInterface
 import com.example.rickandmorty.R
+import com.example.rickandmorty.domain.models.episode.EpisodeFilter
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-class EpisodesFiltersHelper (
+class EpisodesFiltersHelper(
     private val context: Context,
     private val applyCallback: (EpisodeFilter) -> Unit
 ) {
@@ -21,7 +22,8 @@ class EpisodesFiltersHelper (
 
     fun openFilters() {
         val name = if (appliedFilter.name == null) "Name" else "Name: ${appliedFilter.name}"
-        val episode = if (appliedFilter.episode == null) "Episode" else "Episode: ${appliedFilter.episode}"
+        val episode =
+            if (appliedFilter.episode == null) "Episode" else "Episode: ${appliedFilter.episode}"
 
         val filtersArray = arrayOf(name, episode)
 
@@ -39,7 +41,7 @@ class EpisodesFiltersHelper (
             .setNegativeButton("Cancel") { dialog, _ ->
                 dialog.dismiss()
             }
-            .setNeutralButton("Reset"){ dialog, _ ->
+            .setNeutralButton("Reset") { dialog, _ ->
                 appliedFilter = EpisodeFilter()
                 dialog.dismiss()
             }
@@ -57,7 +59,10 @@ class EpisodesFiltersHelper (
     private fun openFilterEpisode() {
         MaterialAlertDialogBuilder(context)
             .setTitle("Type")
-            .setSingleChoiceItems(episodesArray, episodesArray.indexOf(appliedFilter.episode)){ dialog, which ->
+            .setSingleChoiceItems(
+                episodesArray,
+                episodesArray.indexOf(appliedFilter.episode)
+            ) { dialog, which ->
                 currentEpisode = episodesArray[which]
             }
             .setPositiveButton("Ok") { dialog, _ ->
@@ -69,7 +74,7 @@ class EpisodesFiltersHelper (
                 currentEpisode = null
                 returnToPreviousDialog(dialog)
             }
-            .setNeutralButton("Reset"){ dialog, _ ->
+            .setNeutralButton("Reset") { dialog, _ ->
                 appliedFilter.episode = null
                 returnToPreviousDialog(dialog)
             }
@@ -80,7 +85,10 @@ class EpisodesFiltersHelper (
     private fun openFilterName() {
         MaterialAlertDialogBuilder(context)
             .setTitle("Name")
-            .setSingleChoiceItems(namesArray, namesArray.indexOf(appliedFilter.name)){ dialog, which ->
+            .setSingleChoiceItems(
+                namesArray,
+                namesArray.indexOf(appliedFilter.name)
+            ) { dialog, which ->
                 currentName = namesArray[which]
             }
             .setPositiveButton("Ok") { dialog, _ ->
@@ -92,7 +100,7 @@ class EpisodesFiltersHelper (
                 currentName = null
                 returnToPreviousDialog(dialog)
             }
-            .setNeutralButton("Reset"){ dialog, _ ->
+            .setNeutralButton("Reset") { dialog, _ ->
                 appliedFilter.name = null
                 returnToPreviousDialog(dialog)
             }

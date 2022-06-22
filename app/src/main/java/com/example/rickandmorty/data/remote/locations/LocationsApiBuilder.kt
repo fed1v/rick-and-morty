@@ -1,5 +1,6 @@
-package com.example.rickandmorty.data.remote
+package com.example.rickandmorty.data.remote.locations
 
+import com.example.rickandmorty.data.remote.episodes.EpisodesApi
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 

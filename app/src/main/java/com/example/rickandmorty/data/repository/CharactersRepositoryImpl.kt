@@ -1,7 +1,7 @@
 package com.example.rickandmorty.data.repository
 
 import com.example.rickandmorty.data.mapper.CharacterDataToCharacterDomainMapper
-import com.example.rickandmorty.data.remote.CharactersApi
+import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.domain.models.character.Character
 import com.example.rickandmorty.domain.models.character.CharacterFilter
 import com.example.rickandmorty.domain.repository.CharactersRepository
@@ -24,7 +24,18 @@ class CharactersRepositoryImpl(
         return api.getCharactersByIds(ids).map { mapper.map(it) }
     }
 
-    override suspend fun getCharactersByFilter(filter: CharacterFilter): List<Character> {
-        TODO("Not yet implemented")
+    override suspend fun getCharactersByFilters(filters: CharacterFilter): List<Character> {
+        val filtersToApply = mapOf(
+            "name" to filters.name,
+            "status" to filters.status,
+            "species" to filters.species,
+            "type" to filters.type,
+            "gender" to filters.gender,
+        ).filter { it.value != null }
+
+        println("Filters: ${filtersToApply}")
+
+        return api.getCharactersByFilters(filtersToApply).results.map { mapper.map(it) }
     }
+
 }

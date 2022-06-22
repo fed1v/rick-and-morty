@@ -3,6 +3,7 @@ package com.example.rickandmorty.util.filters
 import android.content.Context
 import android.content.DialogInterface
 import com.example.rickandmorty.R
+import com.example.rickandmorty.domain.models.location.LocationFilter
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class LocationsFiltersHelper(

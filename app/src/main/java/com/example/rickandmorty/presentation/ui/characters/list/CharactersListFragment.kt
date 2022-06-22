@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
-import com.example.rickandmorty.data.remote.CharactersApi
+import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.data.repository.CharactersRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentCharactersListBinding
 import com.example.rickandmorty.domain.repository.CharactersRepository
@@ -20,9 +20,10 @@ import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
 import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAdapter
-import com.example.rickandmorty.util.filters.CharacterFilter
 import com.example.rickandmorty.util.filters.CharactersFiltersHelper
-import com.example.rickandmorty.data.remote.CharactersApiBuilder
+import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
+import com.example.rickandmorty.domain.models.character.CharacterFilter
+import com.example.rickandmorty.domain.usecases.characters.GetCharactersByFiltersUseCase
 import com.example.rickandmorty.util.status.Status
 
 
@@ -33,9 +34,13 @@ class CharactersListFragment : Fragment() {
     private lateinit var toolbar: Toolbar
     private var charactersFiltersHelper: CharactersFiltersHelper? = null
 
+    private var appliedFilters: CharacterFilter = CharacterFilter()
+
     private lateinit var api: CharactersApi
     private lateinit var repository: CharactersRepository
+
     private lateinit var getCharactersUseCase: GetCharactersUseCase
+    private lateinit var getCharactersByFiltersUseCase: GetCharactersByFiltersUseCase
 
     private lateinit var viewModel: CharactersViewModel
 
@@ -52,7 +57,11 @@ class CharactersListFragment : Fragment() {
         setBottomNavigationCheckedItem()
         initToolbar()
         initRecyclerView()
-        charactersFiltersHelper = CharactersFiltersHelper(requireContext()) { onFiltersApplied(it) }
+        charactersFiltersHelper = CharactersFiltersHelper(
+            context = requireContext(),
+            applyCallback = { onFiltersApplied(it) },
+            resetCallback = { onResetClicked() }
+        )
 
         initDependencies()
         initViewModel()
@@ -63,14 +72,20 @@ class CharactersListFragment : Fragment() {
     }
 
     private fun initViewModel() {
-        viewModel = ViewModelProvider(this, CharactersViewModelFactory(getCharactersUseCase))
-            .get(CharactersViewModel::class.java)
+        viewModel = ViewModelProvider(
+            owner = this,
+            factory = CharactersViewModelFactory(
+                getCharactersUseCase = getCharactersUseCase,
+                getCharactersByFiltersUseCase = getCharactersByFiltersUseCase
+            )
+        ).get(CharactersViewModel::class.java)
     }
 
     private fun initDependencies() {
         api = CharactersApiBuilder.apiService
         repository = CharactersRepositoryImpl(CharactersApiBuilder.apiService)
         getCharactersUseCase = GetCharactersUseCase(repository)
+        getCharactersByFiltersUseCase = GetCharactersByFiltersUseCase(repository)
     }
 
     private fun initToolbar() {
@@ -79,6 +94,32 @@ class CharactersListFragment : Fragment() {
     }
 
     private fun setUpObservers() {
+        setUpCharactersObserver()
+        //    setUpCharactersByFiltersObserver()
+    }
+
+    private fun setUpCharactersByFiltersObserver(filters: CharacterFilter) {
+        viewModel.getCharactersByFilters(filters).observe(viewLifecycleOwner) { resource ->
+            when (resource.status) {
+                Status.SUCCESS -> {
+                    val mapper = CharacterDomainToCharacterPresentationModelMapper()
+                    val result =
+                        resource.data?.map { character -> mapper.map(character) } ?: listOf()
+                    showCharacters(result)
+                    binding.charactersProgressBar.visibility = View.GONE
+                }
+                Status.ERROR -> {
+                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
+                    binding.charactersProgressBar.visibility = View.GONE
+                }
+                Status.LOADING -> {
+                    binding.charactersProgressBar.visibility = View.VISIBLE
+                }
+            }
+        }
+    }
+
+    private fun setUpCharactersObserver() {
         viewModel.getCharacters().observe(viewLifecycleOwner) {
             it?.let { resource ->
                 when (resource.status) {
@@ -164,12 +205,22 @@ class CharactersListFragment : Fragment() {
 
     private fun onFiltersApplied(filters: CharacterFilter) {
         println("Filters applied: ${filters}")
+        val name = filters.name ?: appliedFilters.name
+        appliedFilters = filters.copy(name = name)
+        setUpCharactersByFiltersObserver(appliedFilters)
+    }
+
+    private fun onResetClicked() {
+
+        appliedFilters = CharacterFilter()
+        setUpCharactersByFiltersObserver(appliedFilters)
     }
 
 
     private fun searchByQuery(query: String?) {
         println("Query: $query")
-        //TODO
+        appliedFilters.name = query
+        setUpCharactersByFiltersObserver(appliedFilters)
     }
 
     override fun onDestroy() {

@@ -12,7 +12,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.example.rickandmorty.R
-import com.example.rickandmorty.data.remote.*
+import com.example.rickandmorty.data.remote.characters.CharactersApi
+import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
+import com.example.rickandmorty.data.remote.episodes.EpisodesApi
+import com.example.rickandmorty.data.remote.episodes.EpisodesApiBuilder
+import com.example.rickandmorty.data.remote.locations.LocationsApi
+import com.example.rickandmorty.data.remote.locations.LocationsApiBuilder
 import com.example.rickandmorty.data.repository.CharactersRepositoryImpl
 import com.example.rickandmorty.data.repository.EpisodesRepositoryImpl
 import com.example.rickandmorty.data.repository.LocationsRepositoryImpl
@@ -23,7 +28,6 @@ import com.example.rickandmorty.domain.repository.LocationsRepository
 import com.example.rickandmorty.domain.usecases.characters.GetCharacterByIdUseCase
 import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesByIdsUseCase
 import com.example.rickandmorty.domain.usecases.locations.GetLocationByIdUseCase
-import com.example.rickandmorty.domain.usecases.locations.GetLocationsByIdsUseCase
 import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationModelMapper
 import com.example.rickandmorty.presentation.mapper.EpisodeDomainToEpisodePresentationModelMapper
 import com.example.rickandmorty.presentation.mapper.LocationDomainToLocationPresentationMapper

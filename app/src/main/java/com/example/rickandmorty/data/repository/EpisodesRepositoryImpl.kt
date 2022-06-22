@@ -1,7 +1,7 @@
 package com.example.rickandmorty.data.repository
 
 import com.example.rickandmorty.data.mapper.EpisodeDataToEpisodeDomainMapper
-import com.example.rickandmorty.data.remote.EpisodesApi
+import com.example.rickandmorty.data.remote.episodes.EpisodesApi
 import com.example.rickandmorty.domain.models.episode.Episode
 import com.example.rickandmorty.domain.models.episode.EpisodeFilter
 import com.example.rickandmorty.domain.repository.EpisodesRepository

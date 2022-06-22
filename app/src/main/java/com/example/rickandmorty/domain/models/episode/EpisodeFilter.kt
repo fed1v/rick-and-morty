@@ -1,6 +1,6 @@
 package com.example.rickandmorty.domain.models.episode
 
 data class EpisodeFilter(
-    val name: String,
-    val episode: String
+    var name: String? = null,
+    var episode: String? = null
 )

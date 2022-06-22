@@ -10,6 +10,8 @@ import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
+import com.example.rickandmorty.data.local.database.characters.CharactersDao
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
 import com.example.rickandmorty.data.remote.locations.LocationsApi
@@ -40,6 +42,8 @@ class LocationDetailsFragment : Fragment() {
 
     private lateinit var locationsApi: LocationsApi
     private lateinit var charactersApi: CharactersApi
+
+    private lateinit var charactersDao: CharactersDao
 
     private lateinit var locationsRepository: LocationsRepository
     private lateinit var charactersRepository: CharactersRepository
@@ -87,8 +91,14 @@ class LocationDetailsFragment : Fragment() {
         locationsApi = LocationsApiBuilder.apiService
         charactersApi = CharactersApiBuilder.apiService
 
+        charactersDao =
+            RickAndMortyDatabase.getInstance(requireContext().applicationContext).charactersDao
+
         locationsRepository = LocationsRepositoryImpl(locationsApi)
-        charactersRepository = CharactersRepositoryImpl(charactersApi)
+        charactersRepository = CharactersRepositoryImpl(
+            api = charactersApi,
+            dao = charactersDao
+        )
 
         getLocationByIdUseCase = GetLocationByIdUseCase(locationsRepository)
         getCharactersByIdsUseCase = GetCharactersByIdsUseCase(charactersRepository)

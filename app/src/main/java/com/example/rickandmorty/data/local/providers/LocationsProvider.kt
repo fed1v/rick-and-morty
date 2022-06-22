@@ -1,4 +1,4 @@
-package com.example.rickandmorty.data.local
+package com.example.rickandmorty.data.local.providers
 
 import com.example.rickandmorty.presentation.models.LocationPresentation
 

@@ -1,19 +1,28 @@
 package com.example.rickandmorty.data.repository
 
+import com.example.rickandmorty.data.local.database.characters.CharactersDao
 import com.example.rickandmorty.data.mapper.CharacterDataToCharacterDomainMapper
+import com.example.rickandmorty.data.mapper.CharacterDtoToCharacterEntityMapper
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.domain.models.character.Character
 import com.example.rickandmorty.domain.models.character.CharacterFilter
 import com.example.rickandmorty.domain.repository.CharactersRepository
 
 class CharactersRepositoryImpl(
-    private val api: CharactersApi
+    private val api: CharactersApi,
+    private val dao: CharactersDao
 ) : CharactersRepository {
 
     private val mapper = CharacterDataToCharacterDomainMapper()
+    private val mapperDtoToEntity = CharacterDtoToCharacterEntityMapper()
 
     override suspend fun getCharacters(): List<Character> {
-        return api.getCharacters().results.map { mapper.map(it) }
+        val charactersFromApi = api.getCharacters().results
+
+        val charactersEntities = charactersFromApi.map { mapperDtoToEntity.map(it) }
+        dao.insertCharacters(charactersEntities)
+
+        return charactersFromApi.map { mapper.map(it) }
     }
 
     override suspend fun getCharacterById(id: Int): Character {

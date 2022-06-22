@@ -8,8 +8,12 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
+import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
+import com.example.rickandmorty.data.local.database.characters.CharactersDao
+import com.example.rickandmorty.data.local.database.characters.CharacterEntity
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.data.repository.CharactersRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentCharactersListBinding
@@ -25,6 +29,8 @@ import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
 import com.example.rickandmorty.domain.models.character.CharacterFilter
 import com.example.rickandmorty.domain.usecases.characters.GetCharactersByFiltersUseCase
 import com.example.rickandmorty.util.status.Status
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 class CharactersListFragment : Fragment() {
@@ -38,6 +44,8 @@ class CharactersListFragment : Fragment() {
 
     private lateinit var api: CharactersApi
     private lateinit var repository: CharactersRepository
+
+    private lateinit var charactersDao: CharactersDao
 
     private lateinit var getCharactersUseCase: GetCharactersUseCase
     private lateinit var getCharactersByFiltersUseCase: GetCharactersByFiltersUseCase
@@ -66,6 +74,28 @@ class CharactersListFragment : Fragment() {
         initDependencies()
         initViewModel()
 
+
+        val listCharacters = (1..15).map {
+            CharacterEntity(
+                id = it,
+                name = "name$it",
+                status = "status$it",
+                species = "species$it",
+                type = "type$it",
+                gender = "gender$it",
+                originString = "origin$it",
+                locationString = "location$it",
+                episodesIds = "episodes$it",
+                image = "image$it"
+            )
+        }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            //    dao.insertCharacters(listCharacters)
+            //    println("Inserted")
+        }
+
+
         setUpObservers()
 
         return binding.root
@@ -83,9 +113,16 @@ class CharactersListFragment : Fragment() {
 
     private fun initDependencies() {
         api = CharactersApiBuilder.apiService
-        repository = CharactersRepositoryImpl(CharactersApiBuilder.apiService)
+        charactersDao =
+            RickAndMortyDatabase.getInstance(requireContext().applicationContext).charactersDao
+
+        repository = CharactersRepositoryImpl(
+            api = api,
+            dao = charactersDao
+        )
         getCharactersUseCase = GetCharactersUseCase(repository)
         getCharactersByFiltersUseCase = GetCharactersByFiltersUseCase(repository)
+
     }
 
     private fun initToolbar() {

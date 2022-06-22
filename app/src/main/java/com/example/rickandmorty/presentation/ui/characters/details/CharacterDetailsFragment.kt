@@ -12,6 +12,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.example.rickandmorty.R
+import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
+import com.example.rickandmorty.data.local.database.characters.CharactersDao
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
 import com.example.rickandmorty.data.remote.episodes.EpisodesApi
@@ -51,6 +53,8 @@ class CharacterDetailsFragment : Fragment() {
     private lateinit var episodesApi: EpisodesApi
     private lateinit var charactersApi: CharactersApi
     private lateinit var locationsApi: LocationsApi
+
+    private lateinit var charactersDao: CharactersDao
 
     private lateinit var episodesRepository: EpisodesRepository
     private lateinit var charactersRepository: CharactersRepository
@@ -105,8 +109,13 @@ class CharacterDetailsFragment : Fragment() {
         charactersApi = CharactersApiBuilder.apiService
         locationsApi = LocationsApiBuilder.apiService
 
+        charactersDao = RickAndMortyDatabase.getInstance(requireContext()).charactersDao
+
         episodesRepository = EpisodesRepositoryImpl(episodesApi)
-        charactersRepository = CharactersRepositoryImpl(charactersApi)
+        charactersRepository = CharactersRepositoryImpl(
+            api = charactersApi,
+            dao = charactersDao
+        )
         locationsRepository = LocationsRepositoryImpl(locationsApi)
 
         getEpisodesByIdsUseCase = GetEpisodesByIdsUseCase(episodesRepository)

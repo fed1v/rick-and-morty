@@ -16,6 +16,7 @@ import com.example.rickandmorty.data.repository.LocationsRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentLocationsListBinding
 import com.example.rickandmorty.domain.models.location.LocationFilter
 import com.example.rickandmorty.domain.repository.LocationsRepository
+import com.example.rickandmorty.domain.usecases.locations.GetLocationsByFiltersUseCase
 import com.example.rickandmorty.domain.usecases.locations.GetLocationsUseCase
 import com.example.rickandmorty.presentation.mapper.LocationDomainToLocationPresentationMapper
 import com.example.rickandmorty.presentation.models.LocationPresentation
@@ -32,9 +33,13 @@ class LocationsListFragment : Fragment() {
     private lateinit var toolbar: Toolbar
     private var locationsFiltersHelper: LocationsFiltersHelper? = null
 
+    private var appliedFilters = LocationFilter()
+
     private lateinit var api: LocationsApi
     private lateinit var repository: LocationsRepository
-    private lateinit var getEpisodesUseCase: GetLocationsUseCase
+
+    private lateinit var getLocationsUseCase: GetLocationsUseCase
+    private lateinit var getLocationsByFiltersUseCase: GetLocationsByFiltersUseCase
 
     private lateinit var viewModel: LocationsViewModel
 
@@ -51,7 +56,11 @@ class LocationsListFragment : Fragment() {
         setBottomNavigationCheckedItem()
         initToolbar()
         initRecyclerView()
-        locationsFiltersHelper = LocationsFiltersHelper(requireContext()) { onFiltersApplied(it) }
+        locationsFiltersHelper = LocationsFiltersHelper(
+            context = requireContext(),
+            applyCallback = { onFiltersApplied(it) },
+            resetCallback = { onResetClicked() }
+        )
 
         initDependencies()
         initViewModel()
@@ -62,18 +71,49 @@ class LocationsListFragment : Fragment() {
     }
 
     private fun initViewModel() {
-        viewModel = ViewModelProvider(this, LocationsViewModelFactory(getEpisodesUseCase))
-            .get(LocationsViewModel::class.java)
+        viewModel = ViewModelProvider(
+            owner = this,
+            factory = LocationsViewModelFactory(
+                getLocationsUseCase = getLocationsUseCase,
+                getLocationsByFiltersUseCase = getLocationsByFiltersUseCase
+            )
+        ).get(LocationsViewModel::class.java)
     }
 
     private fun initDependencies() {
         api = LocationsApiBuilder.apiService
         repository = LocationsRepositoryImpl(api)
-        getEpisodesUseCase = GetLocationsUseCase(repository)
+
+        getLocationsUseCase = GetLocationsUseCase(repository)
+        getLocationsByFiltersUseCase = GetLocationsByFiltersUseCase(repository)
     }
 
     private fun setUpObservers() {
+        setUpLocationsObserver()
+    }
+
+    private fun setUpLocationsObserver() {
         viewModel.getLocations().observe(viewLifecycleOwner) { resource ->
+            when (resource.status) {
+                Status.SUCCESS -> {
+                    val mapper = LocationDomainToLocationPresentationMapper()
+                    val result = resource.data?.map { mapper.map(it) } ?: listOf()
+                    binding.locationsProgressBar.visibility = View.GONE
+                    showLocations(result)
+                }
+                Status.ERROR -> {
+                    binding.locationsProgressBar.visibility = View.GONE
+                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
+                }
+                Status.LOADING -> {
+                    binding.locationsProgressBar.visibility = View.VISIBLE
+                }
+            }
+        }
+    }
+
+    private fun setUpLocationsByFiltersObservers(filters: LocationFilter) {
+        viewModel.getLocationsByFilters(filters).observe(viewLifecycleOwner) { resource ->
             when (resource.status) {
                 Status.SUCCESS -> {
                     val mapper = LocationDomainToLocationPresentationMapper()
@@ -138,7 +178,8 @@ class LocationsListFragment : Fragment() {
 
     private fun searchByQuery(query: String?) {
         println("Query: $query")
-        //TODO
+        appliedFilters.name = query
+        setUpLocationsByFiltersObservers(appliedFilters)
     }
 
     private fun showLocations(locations: List<LocationPresentation>) {
@@ -164,6 +205,15 @@ class LocationsListFragment : Fragment() {
 
     private fun onFiltersApplied(filters: LocationFilter) {
         println("Filters applied: ${filters}")
+        val name = filters.name ?: appliedFilters.name
+        appliedFilters = filters.copy(name = name)
+        println("Filters: ${appliedFilters}")
+        setUpLocationsByFiltersObservers(appliedFilters)
+    }
+
+    private fun onResetClicked() {
+        appliedFilters = LocationFilter()
+        setUpLocationsByFiltersObservers(appliedFilters)
     }
 
     override fun onDestroy() {

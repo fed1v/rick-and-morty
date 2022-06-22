@@ -16,6 +16,7 @@ import com.example.rickandmorty.data.repository.EpisodesRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentEpisodesListBinding
 import com.example.rickandmorty.domain.models.episode.EpisodeFilter
 import com.example.rickandmorty.domain.repository.EpisodesRepository
+import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesByFiltersUseCase
 import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesUseCase
 import com.example.rickandmorty.presentation.mapper.EpisodeDomainToEpisodePresentationModelMapper
 import com.example.rickandmorty.presentation.models.EpisodePresentation
@@ -33,9 +34,13 @@ class EpisodesListFragment : Fragment() {
     private lateinit var toolbar: Toolbar
     private var episodesFiltersHelper: EpisodesFiltersHelper? = null
 
+    private var appliedFilters = EpisodeFilter()
+
     private lateinit var api: EpisodesApi
     private lateinit var repository: EpisodesRepository
+
     private lateinit var getEpisodesUseCase: GetEpisodesUseCase
+    private lateinit var getEpisodesByFiltersUseCase: GetEpisodesByFiltersUseCase
 
     private lateinit var viewModel: EpisodesViewModel
 
@@ -51,7 +56,12 @@ class EpisodesListFragment : Fragment() {
         binding = FragmentEpisodesListBinding.inflate(inflater, container, false)
         setBottomNavigationCheckedItem()
         initToolbar()
-        episodesFiltersHelper = EpisodesFiltersHelper(requireContext()) { onFiltersApplied(it) }
+        episodesFiltersHelper = EpisodesFiltersHelper(
+            context = requireContext(),
+            applyCallback = { onFiltersApplied(it) },
+            resetCallback = { onResetClicked() }
+        )
+
         initRecyclerView()
 
         initDependencies()
@@ -64,8 +74,10 @@ class EpisodesListFragment : Fragment() {
 
     private fun initViewModel() {
         viewModel = ViewModelProvider(
-            this, EpisodesViewModelFactory(
-                getEpisodesUseCase = getEpisodesUseCase
+            owner = this,
+            factory = EpisodesViewModelFactory(
+                getEpisodesUseCase = getEpisodesUseCase,
+                getEpisodesByFiltersUseCase = getEpisodesByFiltersUseCase
             )
         ).get(EpisodesViewModel::class.java)
     }
@@ -73,11 +85,36 @@ class EpisodesListFragment : Fragment() {
     private fun initDependencies() {
         api = EpisodesApiBuilder.apiService
         repository = EpisodesRepositoryImpl(api)
+
         getEpisodesUseCase = GetEpisodesUseCase(repository)
+        getEpisodesByFiltersUseCase = GetEpisodesByFiltersUseCase(repository)
     }
 
     private fun setUpObservers() {
+        setUpEpisodesObserver()
+    }
+
+    private fun setUpEpisodesObserver() {
         viewModel.getEpisodes().observe(viewLifecycleOwner) { resource ->
+            when (resource.status) {
+                Status.SUCCESS -> {
+                    val mapper = EpisodeDomainToEpisodePresentationModelMapper()
+                    showEpisodes(resource.data?.map { mapper.map(it) } ?: listOf())
+                    binding.episodesProgressBar.visibility = View.GONE
+                }
+                Status.ERROR -> {
+                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
+                    binding.episodesProgressBar.visibility = View.GONE
+                }
+                Status.LOADING -> {
+                    binding.episodesProgressBar.visibility = View.VISIBLE
+                }
+            }
+        }
+    }
+
+    fun setUpEpisodesByFiltersObserver(filters: EpisodeFilter) {
+        viewModel.getEpisodesByFilters(filters).observe(viewLifecycleOwner) { resource ->
             when (resource.status) {
                 Status.SUCCESS -> {
                     val mapper = EpisodeDomainToEpisodePresentationModelMapper()
@@ -142,7 +179,8 @@ class EpisodesListFragment : Fragment() {
 
     private fun searchByQuery(query: String?) {
         println("Query: $query")
-        //TODO
+        appliedFilters.name = query
+        setUpEpisodesByFiltersObserver(appliedFilters)
     }
 
     private fun showEpisodes(episodes: List<EpisodePresentation>) {
@@ -169,6 +207,15 @@ class EpisodesListFragment : Fragment() {
 
     private fun onFiltersApplied(filters: EpisodeFilter) {
         println("Filters applied: ${filters}")
+        val name = filters.name ?: appliedFilters.name
+        appliedFilters = filters.copy(name = name)
+        println("Filters: ${appliedFilters}")
+        setUpEpisodesByFiltersObserver(appliedFilters)
+    }
+
+    private fun onResetClicked() {
+        appliedFilters = EpisodeFilter()
+        setUpEpisodesByFiltersObserver(appliedFilters)
     }
 
     override fun onDestroy() {

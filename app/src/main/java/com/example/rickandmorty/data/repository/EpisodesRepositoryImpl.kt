@@ -24,7 +24,12 @@ class EpisodesRepositoryImpl(
         return api.getEpisodesByIds(ids).map { mapper.map(it) }
     }
 
-    override suspend fun getEpisodesByFilter(filter: EpisodeFilter): List<Episode> {
-        TODO("Not yet implemented")
+    override suspend fun getEpisodesByFilters(filters: EpisodeFilter): List<Episode> {
+        val filtersToApply = mapOf<String, String?>(
+            "name" to filters.name,
+            "episode" to filters.episode
+        ).filter { it.value != null }
+
+        return api.getEpisodesByFilters(filtersToApply).results.map { mapper.map(it) }
     }
 }

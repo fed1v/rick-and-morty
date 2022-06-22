@@ -8,24 +8,28 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class EpisodesFiltersHelper(
     private val context: Context,
-    private val applyCallback: (EpisodeFilter) -> Unit
+    private val applyCallback: (EpisodeFilter) -> Unit,
+    private val resetCallback: () -> Unit
 ) {
 
     private var appliedFilter = EpisodeFilter()
 
-    private var namesArray = (1..10).map { "name$it" }.toTypedArray()
-    private var currentName: String? = null
-
-    private var episodesArray = (1..10).map { "episode$it" }.toTypedArray()
+    // TODO
+    private var episodesArray = arrayOf(
+        "S01E03",
+        "S01",
+        "S02",
+        "E04",
+        "S03E03"
+    )
     private var currentEpisode: String? = null
 
 
     fun openFilters() {
-        val name = if (appliedFilter.name == null) "Name" else "Name: ${appliedFilter.name}"
         val episode =
             if (appliedFilter.episode == null) "Episode" else "Episode: ${appliedFilter.episode}"
 
-        val filtersArray = arrayOf(name, episode)
+        val filtersArray = arrayOf(/*name,*/ episode)
 
         MaterialAlertDialogBuilder(context)
             .setTitle(R.string.filter)
@@ -42,7 +46,7 @@ class EpisodesFiltersHelper(
                 dialog.dismiss()
             }
             .setNeutralButton("Reset") { dialog, _ ->
-                appliedFilter = EpisodeFilter()
+                resetFilters()
                 dialog.dismiss()
             }
             .show()
@@ -50,8 +54,7 @@ class EpisodesFiltersHelper(
 
     private fun openFilter(id: Int) {
         when (id) {
-            0 -> openFilterName()
-            1 -> openFilterEpisode()
+            0 -> openFilterEpisode()
         }
     }
 
@@ -81,32 +84,6 @@ class EpisodesFiltersHelper(
             .show()
     }
 
-
-    private fun openFilterName() {
-        MaterialAlertDialogBuilder(context)
-            .setTitle("Name")
-            .setSingleChoiceItems(
-                namesArray,
-                namesArray.indexOf(appliedFilter.name)
-            ) { dialog, which ->
-                currentName = namesArray[which]
-            }
-            .setPositiveButton("Ok") { dialog, _ ->
-                appliedFilter.name = currentName
-                currentName = null
-                returnToPreviousDialog(dialog)
-            }
-            .setNegativeButton("Cancel") { dialog, _ ->
-                currentName = null
-                returnToPreviousDialog(dialog)
-            }
-            .setNeutralButton("Reset") { dialog, _ ->
-                appliedFilter.name = null
-                returnToPreviousDialog(dialog)
-            }
-            .show()
-    }
-
     private fun returnToPreviousDialog(dialog: DialogInterface) {
         openFilters()
         dialog.dismiss()
@@ -114,6 +91,11 @@ class EpisodesFiltersHelper(
 
     private fun applyFilters() {
         applyCallback(appliedFilter)
+    }
+
+    private fun resetFilters() {
+        appliedFilter = EpisodeFilter()
+        resetCallback()
     }
 
 }

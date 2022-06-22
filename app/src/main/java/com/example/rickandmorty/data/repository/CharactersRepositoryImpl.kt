@@ -33,9 +33,6 @@ class CharactersRepositoryImpl(
             "gender" to filters.gender,
         ).filter { it.value != null }
 
-        println("Filters: ${filtersToApply}")
-
         return api.getCharactersByFilters(filtersToApply).results.map { mapper.map(it) }
     }
-
 }

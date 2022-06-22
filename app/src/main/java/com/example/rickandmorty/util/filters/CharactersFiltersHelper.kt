@@ -14,9 +14,6 @@ class CharactersFiltersHelper(
 
     private var appliedFilter = CharacterFilter()
 
-    private var namesArray = (1..10).map { "name$it" }.toTypedArray()
-    private var currentName: String? = null
-
     private val statusArray = arrayOf(
         "alive",
         "dead",
@@ -40,7 +37,6 @@ class CharactersFiltersHelper(
 
 
     fun openFilters() {
-        //    val name = if (appliedFilter.name == null) "Name" else "Name: ${appliedFilter.name}"
         val status =
             if (appliedFilter.status == null) "Status" else "Status: ${appliedFilter.status}"
         val species =
@@ -183,32 +179,6 @@ class CharactersFiltersHelper(
             }
             .show()
     }
-
-    //TODO
-    /*private fun openFilterName() {
-        MaterialAlertDialogBuilder(context)
-            .setTitle("Name")
-            .setSingleChoiceItems(
-                namesArray,
-                namesArray.indexOf(appliedFilter.name)
-            ) { dialog, which ->
-                currentName = namesArray[which]
-            }
-            .setPositiveButton("Ok") { dialog, _ ->
-                appliedFilter.name = currentName
-                currentName = null
-                returnToPreviousDialog(dialog)
-            }
-            .setNegativeButton("Cancel") { dialog, _ ->
-                currentName = null
-                returnToPreviousDialog(dialog)
-            }
-            .setNeutralButton("Reset") { dialog, _ ->
-                appliedFilter.name = null
-                returnToPreviousDialog(dialog)
-            }
-            .show()
-    }*/
 
     private fun returnToPreviousDialog(dialog: DialogInterface) {
         openFilters()

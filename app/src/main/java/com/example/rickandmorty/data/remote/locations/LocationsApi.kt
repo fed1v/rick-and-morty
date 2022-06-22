@@ -4,6 +4,7 @@ import com.example.rickandmorty.data.models.location.LocationDto
 import com.example.rickandmorty.data.models.location.LocationsApiResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
+import retrofit2.http.QueryMap
 
 interface LocationsApi {
 
@@ -15,6 +16,9 @@ interface LocationsApi {
 
     @GET("location/{ids}")
     suspend fun getLocationsByIds(@Path("ids") ids: String): List<LocationDto>
+
+    @GET("location")
+    suspend fun getLocationsByFilters(@QueryMap filters: Map<String, String?>): LocationsApiResponse
 
     companion object {
         const val BASE_URL = "https://rickandmortyapi.com/api/"

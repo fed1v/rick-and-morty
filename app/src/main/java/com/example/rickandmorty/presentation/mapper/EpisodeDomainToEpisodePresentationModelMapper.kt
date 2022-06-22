@@ -9,7 +9,7 @@ class EpisodeDomainToEpisodePresentationModelMapper : Mapper<Episode, EpisodePre
     override fun map(data: Episode): EpisodePresentation = EpisodePresentation(
         id = data.id,
         name = data.name,
-        episode = data.name,
+        episode = data.episode,
         airDate = data.air_date,
         characters = data.characters
     )

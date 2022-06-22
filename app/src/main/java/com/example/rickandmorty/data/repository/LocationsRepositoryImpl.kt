@@ -24,7 +24,13 @@ class LocationsRepositoryImpl(
         return api.getLocationsByIds(ids).map { mapper.map(it) }
     }
 
-    override suspend fun getLocationsByFilter(filter: LocationFilter): List<Location> {
-        TODO("Not yet implemented")
+    override suspend fun getLocationsByFilters(filters: LocationFilter): List<Location> {
+        val filtersToApply = mapOf<String, String?>(
+            "name" to filters.name,
+            "type" to filters.type,
+            "dimension" to filters.dimension
+        ).filter { it.value != null }
+
+        return api.getLocationsByFilters(filtersToApply).results.map { mapper.map(it) }
     }
 }

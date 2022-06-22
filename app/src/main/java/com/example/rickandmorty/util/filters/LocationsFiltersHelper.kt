@@ -8,28 +8,42 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class LocationsFiltersHelper(
     private val context: Context,
-    private val applyCallback: (LocationFilter) -> Unit
+    private val applyCallback: (LocationFilter) -> Unit,
+    private val resetCallback: () -> Unit
 ) {
 
     private var appliedFilter = LocationFilter()
 
-    private var namesArray = (1..10).map { "name$it" }.toTypedArray()
-    private var currentName: String? = null
 
-    private var typesArray = (1..10).map { "type$it" }.toTypedArray()
+    // TODO
+    private var typesArray = arrayOf(
+        "unknown",
+        "Planet",
+        "Cluster",
+        "Space station",
+        "TV",
+        "Resort",
+        "Fantasy town"
+    )
     private var currentType: String? = null
 
-    private var dimensionsArray = (1..10).map { "dimension$it" }.toTypedArray()
+
+    // TODO
+    private var dimensionsArray = arrayOf(
+        "unknown",
+        "Dimension C-137",
+        "Replacement Dimension",
+        "Dimension 5-126"
+    )
     private var currentDimension: String? = null
 
 
     fun openFilters() {
-        val name = if (appliedFilter.name == null) "Name" else "Name: ${appliedFilter.name}"
         val type = if (appliedFilter.type == null) "Type" else "Type: ${appliedFilter.type}"
         val dimension =
             if (appliedFilter.dimension == null) "Dimension" else "Dimension: ${appliedFilter.dimension}"
 
-        val filtersArray = arrayOf(name, type, dimension)
+        val filtersArray = arrayOf(/*name,*/ type, dimension)
 
         MaterialAlertDialogBuilder(context)
             .setTitle(R.string.filter)
@@ -45,7 +59,7 @@ class LocationsFiltersHelper(
                 dialog.dismiss()
             }
             .setNeutralButton("Reset") { dialog, _ ->
-                appliedFilter = LocationFilter()
+                resetFilters()
                 dialog.dismiss()
             }
             .show()
@@ -53,9 +67,8 @@ class LocationsFiltersHelper(
 
     private fun openFilter(id: Int) {
         when (id) {
-            0 -> openFilterName()
-            1 -> openFilterType()
-            2 -> openFilterDimension()
+            0 -> openFilterType()
+            1 -> openFilterDimension()
         }
     }
 
@@ -111,31 +124,6 @@ class LocationsFiltersHelper(
     }
 
 
-    private fun openFilterName() {
-        MaterialAlertDialogBuilder(context)
-            .setTitle("Name")
-            .setSingleChoiceItems(
-                namesArray,
-                namesArray.indexOf(appliedFilter.name)
-            ) { dialog, which ->
-                currentName = namesArray[which]
-            }
-            .setPositiveButton("Ok") { dialog, _ ->
-                appliedFilter.name = currentName
-                currentName = null
-                returnToPreviousDialog(dialog)
-            }
-            .setNegativeButton("Cancel") { dialog, _ ->
-                currentName = null
-                returnToPreviousDialog(dialog)
-            }
-            .setNeutralButton("Reset") { dialog, _ ->
-                appliedFilter.name = null
-                returnToPreviousDialog(dialog)
-            }
-            .show()
-    }
-
     private fun returnToPreviousDialog(dialog: DialogInterface) {
         openFilters()
         dialog.dismiss()
@@ -143,5 +131,10 @@ class LocationsFiltersHelper(
 
     private fun applyFilters() {
         applyCallback(appliedFilter)
+    }
+
+    private fun resetFilters() {
+        appliedFilter = LocationFilter()
+        resetCallback()
     }
 }

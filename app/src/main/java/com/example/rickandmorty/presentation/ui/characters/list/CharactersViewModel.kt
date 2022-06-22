@@ -22,7 +22,7 @@ class CharactersViewModel(
         }
     }
 
-    fun getCharactersByFilters(filters: CharacterFilter) = liveData {
+    fun getCharactersByFilters(filters: CharacterFilter) = liveData(Dispatchers.IO) {
         emit(Resource.loading(null))
         try {
             emit(Resource.success(data = getCharactersByFiltersUseCase.execute(filters)))

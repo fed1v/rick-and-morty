@@ -8,29 +8,25 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.characters.CharactersDao
-import com.example.rickandmorty.data.local.database.characters.CharacterEntity
 import com.example.rickandmorty.data.remote.characters.CharactersApi
+import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
 import com.example.rickandmorty.data.repository.CharactersRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentCharactersListBinding
+import com.example.rickandmorty.domain.models.character.CharacterFilter
 import com.example.rickandmorty.domain.repository.CharactersRepository
+import com.example.rickandmorty.domain.usecases.characters.GetCharactersByFiltersUseCase
 import com.example.rickandmorty.domain.usecases.characters.GetCharactersUseCase
 import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationModelMapper
-import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.presentation.models.CharacterPresentation
-import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
 import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAdapter
+import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
+import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.util.filters.CharactersFiltersHelper
-import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
-import com.example.rickandmorty.domain.models.character.CharacterFilter
-import com.example.rickandmorty.domain.usecases.characters.GetCharactersByFiltersUseCase
 import com.example.rickandmorty.util.status.Status
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 
 class CharactersListFragment : Fragment() {
@@ -73,28 +69,6 @@ class CharactersListFragment : Fragment() {
 
         initDependencies()
         initViewModel()
-
-
-        val listCharacters = (1..15).map {
-            CharacterEntity(
-                id = it,
-                name = "name$it",
-                status = "status$it",
-                species = "species$it",
-                type = "type$it",
-                gender = "gender$it",
-                originString = "origin$it",
-                locationString = "location$it",
-                episodesIds = "episodes$it",
-                image = "image$it"
-            )
-        }
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            //    dao.insertCharacters(listCharacters)
-            //    println("Inserted")
-        }
-
 
         setUpObservers()
 

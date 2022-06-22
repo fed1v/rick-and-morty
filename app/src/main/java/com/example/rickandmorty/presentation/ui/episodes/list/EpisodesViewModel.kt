@@ -6,13 +6,14 @@ import com.example.rickandmorty.domain.models.episode.EpisodeFilter
 import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesByFiltersUseCase
 import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesUseCase
 import com.example.rickandmorty.util.status.Resource
+import kotlinx.coroutines.Dispatchers
 
 class EpisodesViewModel(
     private val getEpisodesUseCase: GetEpisodesUseCase,
     private val getEpisodesByFiltersUseCase: GetEpisodesByFiltersUseCase
 ) : ViewModel() {
 
-    fun getEpisodes() = liveData {
+    fun getEpisodes() = liveData(Dispatchers.IO) {
         emit(Resource.loading(data = null))
         try {
             emit(Resource.success(data = getEpisodesUseCase.execute()))
@@ -21,7 +22,7 @@ class EpisodesViewModel(
         }
     }
 
-    fun getEpisodesByFilters(filters: EpisodeFilter) = liveData {
+    fun getEpisodesByFilters(filters: EpisodeFilter) = liveData(Dispatchers.IO) {
         emit(Resource.loading(data = null))
         try {
             emit(Resource.success(data = getEpisodesByFiltersUseCase.execute(filters)))

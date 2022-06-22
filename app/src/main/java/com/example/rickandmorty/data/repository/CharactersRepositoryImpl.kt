@@ -3,6 +3,7 @@ package com.example.rickandmorty.data.repository
 import com.example.rickandmorty.data.local.database.characters.CharactersDao
 import com.example.rickandmorty.data.mapper.CharacterDataToCharacterDomainMapper
 import com.example.rickandmorty.data.mapper.CharacterDtoToCharacterEntityMapper
+import com.example.rickandmorty.data.mapper.CharacterEntityToCharacterDomainMapper
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.domain.models.character.Character
 import com.example.rickandmorty.domain.models.character.CharacterFilter
@@ -15,18 +16,34 @@ class CharactersRepositoryImpl(
 
     private val mapper = CharacterDataToCharacterDomainMapper()
     private val mapperDtoToEntity = CharacterDtoToCharacterEntityMapper()
+    private val mapperEntityToModel = CharacterEntityToCharacterDomainMapper()
 
     override suspend fun getCharacters(): List<Character> {
-        val charactersFromApi = api.getCharacters().results
+        try {
+            val charactersFromApi = api.getCharacters().results
+            val charactersEntities = charactersFromApi.map { mapperDtoToEntity.map(it) }
+            dao.insertCharacters(charactersEntities)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
 
-        val charactersEntities = charactersFromApi.map { mapperDtoToEntity.map(it) }
-        dao.insertCharacters(charactersEntities)
+        val charactersFromDB = dao.getCharacters()
 
-        return charactersFromApi.map { mapper.map(it) }
+        return charactersFromDB.map { mapperEntityToModel.map(it) }
     }
 
     override suspend fun getCharacterById(id: Int): Character {
-        return mapper.map(api.getCharacterById(id))
+        try {
+            val characterFromApi = api.getCharacterById(id)
+            val characterEntity = mapperDtoToEntity.map(characterFromApi)
+            dao.insertCharacter(characterEntity)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        val characterFromDB = dao.getCharacterById(id)
+
+        return mapperEntityToModel.map(characterFromDB)
     }
 
     override suspend fun getCharactersByIds(ids: String): List<Character> {

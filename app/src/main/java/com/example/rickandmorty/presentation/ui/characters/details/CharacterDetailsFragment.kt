@@ -201,6 +201,7 @@ class CharacterDetailsFragment : Fragment() {
                     binding.characterDetailsProgressBar.visibility = View.GONE
                 }
                 Status.ERROR -> {
+                    println("Error in setUpCharacterObserver")
                     Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
                     binding.characterDetailsProgressBar.visibility = View.GONE
                 }

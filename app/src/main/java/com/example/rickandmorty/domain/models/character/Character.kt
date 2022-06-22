@@ -9,8 +9,14 @@ data class Character(
     val species: String,
     val type: String,
     val gender: String,
-    val origin: Location,
-    val location: Location,
+    val origin: CharacterLocation,
+    val location: CharacterLocation,
     val episodes: List<Int?>,
     val image: String
-)
+) {
+
+    data class CharacterLocation(
+        val id: Int,
+        val name: String
+    )
+}

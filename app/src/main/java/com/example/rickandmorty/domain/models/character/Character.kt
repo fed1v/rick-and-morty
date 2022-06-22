@@ -1,5 +1,7 @@
 package com.example.rickandmorty.domain.models.character
 
+import com.example.rickandmorty.domain.models.location.Location
+
 data class Character(
     val id: Int,
     val name: String,
@@ -7,6 +9,8 @@ data class Character(
     val species: String,
     val type: String,
     val gender: String,
-    val origin: String,
-    val location: String,
+    val origin: Location,
+    val location: Location,
+    val episodes: List<Int?>,
+    val image: String
 )

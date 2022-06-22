@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_margin="5dp"
-    tools:context=".presentation.ui.characters.CharacterDetailsFragment">
+    tools:context=".presentation.ui.characters.details.CharacterDetailsFragment">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/character_toolbar"
@@ -25,6 +25,24 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/character_toolbar" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/character_image"
+        app:layout_constraintBottom_toTopOf="@id/character_episodes"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        >
+
+        <ProgressBar
+            android:id="@+id/character_details_progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            />
+
+    </RelativeLayout>
 
     <TextView
         android:id="@+id/character_name"
@@ -95,15 +113,29 @@
         app:layout_constraintStart_toStartOf="@+id/character_name"
         app:layout_constraintTop_toBottomOf="@id/character_location" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_episodes"
+    <RelativeLayout
+        android:id="@+id/rv_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/character_episodes"
-        tools:listitem="@layout/item_episode" />
+        app:layout_constraintTop_toBottomOf="@id/character_episodes">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_episodes"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            tools:listitem="@layout/item_episode" />
+
+        <ProgressBar
+            android:id="@+id/episodes_progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true" />
+
+    </RelativeLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

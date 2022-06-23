@@ -2,9 +2,9 @@ package com.example.rickandmorty.data.repository
 
 import com.example.rickandmorty.data.local.database.converters.IdsConverter
 import com.example.rickandmorty.data.local.database.locations.LocationsDao
-import com.example.rickandmorty.data.mapper.LocationDtoToLocationDomainMapper
-import com.example.rickandmorty.data.mapper.LocationDtoToLocationEntityMapper
-import com.example.rickandmorty.data.mapper.LocationEntityToLocationDomainMapper
+import com.example.rickandmorty.data.mapper.location.LocationDtoToLocationDomainMapper
+import com.example.rickandmorty.data.mapper.location.LocationDtoToLocationEntityMapper
+import com.example.rickandmorty.data.mapper.location.LocationEntityToLocationDomainMapper
 import com.example.rickandmorty.data.remote.locations.LocationsApi
 import com.example.rickandmorty.domain.models.location.Location
 import com.example.rickandmorty.domain.models.location.LocationFilter
@@ -25,7 +25,6 @@ class LocationsRepositoryImpl(
             val locationsEntities = locationsFromApi.map { mapperDtoToEntity.map(it) }
             dao.insertLocations(locationsEntities)
         } catch (e: Exception) {
-            println("Error in getLocationsRepository")
             e.printStackTrace()
         }
 
@@ -45,7 +44,6 @@ class LocationsRepositoryImpl(
 
         val locationFromDB = dao.getLocationById(id)
         if (locationFromDB == null) return Location(-1, "?", "?", "?", emptyList())
-        println("Location From DB: $locationFromDB")
 
         return mapperEntityToDomain.map(locationFromDB)
     }

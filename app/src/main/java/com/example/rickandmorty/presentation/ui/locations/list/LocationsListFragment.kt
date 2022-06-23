@@ -194,6 +194,9 @@ class LocationsListFragment : Fragment() {
     }
 
     private fun showLocations(locations: List<LocationPresentation>) {
+        if (locations.isEmpty()) {
+            Toast.makeText(requireContext(), "Nothing found", Toast.LENGTH_SHORT).show()
+        }
         locationsAdapter.locationsList = locations
     }
 

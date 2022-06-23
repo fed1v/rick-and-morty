@@ -1,4 +1,4 @@
-package com.example.rickandmorty.data.mapper
+package com.example.rickandmorty.data.mapper.episode
 
 import com.example.rickandmorty.data.local.database.episodes.EpisodeEntity
 import com.example.rickandmorty.data.models.episode.EpisodeDto

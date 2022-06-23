@@ -1,4 +1,4 @@
-package com.example.rickandmorty.data.mapper
+package com.example.rickandmorty.data.mapper.location
 
 import com.example.rickandmorty.data.local.database.locations.LocationEntity
 import com.example.rickandmorty.domain.models.location.Location

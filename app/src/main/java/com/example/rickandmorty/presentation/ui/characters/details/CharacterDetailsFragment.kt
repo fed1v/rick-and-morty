@@ -78,6 +78,7 @@ class CharacterDetailsFragment : Fragment() {
             "",
             "",
             "",
+            "",
             LocationPresentation(-1, "", "", "", listOf()),
             LocationPresentation(-1, "", "", "", listOf()),
             listOf(),
@@ -361,6 +362,7 @@ class CharacterDetailsFragment : Fragment() {
         binding.characterSpecies.text = character.species
         binding.characterStatus.text = character.status
         binding.characterGender.text = character.gender
+        binding.characterType.text = character.type
     }
 
     private fun openFragment(fragment: Fragment, tag: String) {

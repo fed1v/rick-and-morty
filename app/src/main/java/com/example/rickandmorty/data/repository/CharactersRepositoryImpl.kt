@@ -1,10 +1,13 @@
 package com.example.rickandmorty.data.repository
 
+import androidx.sqlite.db.SimpleSQLiteQuery
+import androidx.sqlite.db.SupportSQLiteProgram
+import androidx.sqlite.db.SupportSQLiteQuery
 import com.example.rickandmorty.data.local.database.characters.CharactersDao
 import com.example.rickandmorty.data.local.database.converters.IdsConverter
-import com.example.rickandmorty.data.mapper.CharacterDtoToCharacterDomainMapper
-import com.example.rickandmorty.data.mapper.CharacterDtoToCharacterEntityMapper
-import com.example.rickandmorty.data.mapper.CharacterEntityToCharacterDomainMapper
+import com.example.rickandmorty.data.mapper.character.CharacterDtoToCharacterDomainMapper
+import com.example.rickandmorty.data.mapper.character.CharacterDtoToCharacterEntityMapper
+import com.example.rickandmorty.data.mapper.character.CharacterEntityToCharacterDomainMapper
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.domain.models.character.Character
 import com.example.rickandmorty.domain.models.character.CharacterFilter
@@ -71,6 +74,28 @@ class CharactersRepositoryImpl(
             "gender" to filters.gender,
         ).filter { it.value != null }
 
-        return api.getCharactersByFilters(filtersToApply).results.map { mapperDtoToDomain.map(it) }
+        try {
+            val charactersFromApi = api.getCharactersByFilters(filtersToApply)
+            val charactersEntities = charactersFromApi.results.map { mapperDtoToEntity.map(it) }
+            dao.insertCharacters(charactersEntities)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        val charactersFromDB = dao.getCharactersByFilters(
+            name = filtersToApply["name"],
+            status = filtersToApply["status"],
+            species = filtersToApply["species"],
+            type = filtersToApply["type"],
+            gender = filtersToApply["gender"],
+        )
+
+        return charactersFromDB.map { mapperEntityToDomain.map(it) }
+    }
+
+    override suspend fun getFilters(filterName: String): List<String> {
+        val query = SimpleSQLiteQuery("SELECT DISTINCT $filterName FROM characters")
+
+        return dao.getFilters(query)
     }
 }

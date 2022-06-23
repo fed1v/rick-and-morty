@@ -1,4 +1,4 @@
-package com.example.rickandmorty.data.mapper
+package com.example.rickandmorty.data.mapper.character
 
 import com.example.rickandmorty.data.local.database.characters.CharacterEntity
 import com.example.rickandmorty.domain.models.character.Character

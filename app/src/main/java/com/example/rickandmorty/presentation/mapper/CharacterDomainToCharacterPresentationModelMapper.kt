@@ -13,6 +13,7 @@ class CharacterDomainToCharacterPresentationModelMapper : Mapper<Character, Char
         status = data.status,
         species = data.species,
         gender = data.gender,
+        type = data.type,
         location = LocationPresentation(
             id = data.location.id,
             name = data.location.name,

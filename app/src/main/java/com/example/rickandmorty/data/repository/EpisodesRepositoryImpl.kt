@@ -2,9 +2,9 @@ package com.example.rickandmorty.data.repository
 
 import com.example.rickandmorty.data.local.database.converters.IdsConverter
 import com.example.rickandmorty.data.local.database.episodes.EpisodesDao
-import com.example.rickandmorty.data.mapper.EpisodeDtoToEpisodeDomainMapper
-import com.example.rickandmorty.data.mapper.EpisodeDtoToEpisodeEntityMapper
-import com.example.rickandmorty.data.mapper.EpisodeEntityToEpisodeDomainMapper
+import com.example.rickandmorty.data.mapper.episode.EpisodeDtoToEpisodeDomainMapper
+import com.example.rickandmorty.data.mapper.episode.EpisodeDtoToEpisodeEntityMapper
+import com.example.rickandmorty.data.mapper.episode.EpisodeEntityToEpisodeDomainMapper
 import com.example.rickandmorty.data.remote.episodes.EpisodesApi
 import com.example.rickandmorty.domain.models.episode.Episode
 import com.example.rickandmorty.domain.models.episode.EpisodeFilter

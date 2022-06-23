@@ -17,6 +17,7 @@ class CharactersProvider {
                         status = "status$it",
                         species = "species$it",
                         gender = "gender$it",
+                        type = "type$it",
                         location = LocationPresentation(
                             it,
                             "locationName$it",

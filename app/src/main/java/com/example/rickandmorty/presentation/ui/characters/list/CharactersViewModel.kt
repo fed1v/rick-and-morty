@@ -2,16 +2,35 @@ package com.example.rickandmorty.presentation.ui.characters.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
+import androidx.lifecycle.viewModelScope
 import com.example.rickandmorty.domain.models.character.CharacterFilter
 import com.example.rickandmorty.domain.usecases.characters.GetCharactersByFiltersUseCase
+import com.example.rickandmorty.domain.usecases.characters.GetCharactersFiltersUseCase
 import com.example.rickandmorty.domain.usecases.characters.GetCharactersUseCase
 import com.example.rickandmorty.util.status.Resource
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class CharactersViewModel(
     private val getCharactersUseCase: GetCharactersUseCase,
-    private val getCharactersByFiltersUseCase: GetCharactersByFiltersUseCase
+    private val getCharactersByFiltersUseCase: GetCharactersByFiltersUseCase,
+    private val getCharactersFiltersUseCase: GetCharactersFiltersUseCase
 ) : ViewModel() {
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            println(
+                "Result: ${
+                    getCharactersFiltersUseCase.execute("species")
+                }"
+            )
+        }
+    }
+
+    fun getFilters() = liveData<Pair<String, List<String>>>(Dispatchers.IO){
+        emit(Pair("species",  getCharactersFiltersUseCase.execute("species")))
+        emit(Pair("type",  getCharactersFiltersUseCase.execute("type")))
+    }
 
     fun getCharacters() = liveData(Dispatchers.IO) {
         emit(Resource.loading(null))

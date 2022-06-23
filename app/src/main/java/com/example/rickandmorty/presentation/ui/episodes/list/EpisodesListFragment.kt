@@ -194,6 +194,9 @@ class EpisodesListFragment : Fragment() {
     }
 
     private fun showEpisodes(episodes: List<EpisodePresentation>) {
+        if (episodes.isEmpty()) {
+            Toast.makeText(requireContext(), "Nothing found", Toast.LENGTH_SHORT).show()
+        }
         episodesAdapter.episodesList = episodes
     }
 

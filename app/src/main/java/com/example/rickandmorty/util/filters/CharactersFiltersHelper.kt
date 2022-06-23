@@ -15,23 +15,35 @@ class CharactersFiltersHelper(
     private var appliedFilter = CharacterFilter()
 
     private val statusArray = arrayOf(
-        "alive",
-        "dead",
-        "unknown"
+        "Alive",
+        "Dead",
+        "Unknown"
     )
     private var currentStatus: String? = null
 
-    private var speciesArray = (1..20).map { "species$it" }.toTypedArray()
+
+    // TODO
+    var speciesArray = arrayOf(
+        "Human",
+        "Humanoid",
+        "Alien",
+        "Poopybutthole",
+        "Cronenberg"
+    )
     private var currentSpecies: String? = null
 
-    private var typesArray = (1..10).map { "type$it" }.toTypedArray()
+    // TODO
+    var typesArray = arrayOf(
+        "",
+        "Genetic experiment"
+    )
     private var currentType: String? = null
 
     private val gendersArray = arrayOf(
-        "female",
-        "male",
-        "genderless",
-        "unknown"
+        "Female",
+        "Male",
+        "Genderless",
+        "Unknown"
     )
     private var currentGender: String? = null
 

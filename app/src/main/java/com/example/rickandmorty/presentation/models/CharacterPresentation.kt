@@ -10,6 +10,7 @@ data class CharacterPresentation(
     val status: String,
     val species: String,
     val gender: String,
+    val type: String,
     val location: LocationPresentation,
     val origin: LocationPresentation,
     val episodes: List<Int?>,

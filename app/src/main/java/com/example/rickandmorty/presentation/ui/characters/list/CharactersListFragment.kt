@@ -19,6 +19,7 @@ import com.example.rickandmorty.databinding.FragmentCharactersListBinding
 import com.example.rickandmorty.domain.models.character.CharacterFilter
 import com.example.rickandmorty.domain.repository.CharactersRepository
 import com.example.rickandmorty.domain.usecases.characters.GetCharactersByFiltersUseCase
+import com.example.rickandmorty.domain.usecases.characters.GetCharactersFiltersUseCase
 import com.example.rickandmorty.domain.usecases.characters.GetCharactersUseCase
 import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationModelMapper
 import com.example.rickandmorty.presentation.models.CharacterPresentation
@@ -45,6 +46,7 @@ class CharactersListFragment : Fragment() {
 
     private lateinit var getCharactersUseCase: GetCharactersUseCase
     private lateinit var getCharactersByFiltersUseCase: GetCharactersByFiltersUseCase
+    private lateinit var getCharactersFiltersUseCase: GetCharactersFiltersUseCase
 
     private lateinit var viewModel: CharactersViewModel
 
@@ -61,18 +63,33 @@ class CharactersListFragment : Fragment() {
         setBottomNavigationCheckedItem()
         initToolbar()
         initRecyclerView()
+
+
+        initDependencies()
+        initViewModel()
+        initFilters()
+
+        setUpObservers()
+
+        return binding.root
+    }
+
+    private fun initFilters() {
         charactersFiltersHelper = CharactersFiltersHelper(
             context = requireContext(),
             applyCallback = { onFiltersApplied(it) },
             resetCallback = { onResetClicked() }
         )
-
-        initDependencies()
-        initViewModel()
-
-        setUpObservers()
-
-        return binding.root
+        viewModel.getFilters().observe(viewLifecycleOwner) { filter ->
+            when (filter.first) {
+                "species" -> {
+                    charactersFiltersHelper!!.speciesArray = filter.second.toTypedArray()
+                }
+                "type" -> {
+                    charactersFiltersHelper!!.typesArray = filter.second.toTypedArray()
+                }
+            }
+        }
     }
 
     private fun initViewModel() {
@@ -80,7 +97,8 @@ class CharactersListFragment : Fragment() {
             owner = this,
             factory = CharactersViewModelFactory(
                 getCharactersUseCase = getCharactersUseCase,
-                getCharactersByFiltersUseCase = getCharactersByFiltersUseCase
+                getCharactersByFiltersUseCase = getCharactersByFiltersUseCase,
+                getCharactersFiltersUseCase = getCharactersFiltersUseCase
             )
         ).get(CharactersViewModel::class.java)
     }
@@ -96,7 +114,7 @@ class CharactersListFragment : Fragment() {
         )
         getCharactersUseCase = GetCharactersUseCase(repository)
         getCharactersByFiltersUseCase = GetCharactersByFiltersUseCase(repository)
-
+        getCharactersFiltersUseCase = GetCharactersFiltersUseCase(repository)
     }
 
     private fun initToolbar() {
@@ -160,6 +178,9 @@ class CharactersListFragment : Fragment() {
     }
 
     private fun showCharacters(characters: List<CharacterPresentation>) {
+        if (characters.isEmpty()) {
+            Toast.makeText(requireContext(), "Nothing found", Toast.LENGTH_SHORT).show()
+        }
         charactersAdapter.charactersList = characters
     }
 

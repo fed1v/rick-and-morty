@@ -5,7 +5,7 @@ import com.example.rickandmorty.domain.models.episode.Episode
 import com.example.rickandmorty.util.ExtractIdFromUrlUtil
 import com.example.rickandmorty.util.mapper.Mapper
 
-class EpisodeDataToEpisodeDomainMapper : Mapper<EpisodeDto, Episode> {
+class EpisodeDtoToEpisodeDomainMapper : Mapper<EpisodeDto, Episode> {
 
     override fun map(data: EpisodeDto): Episode = Episode(
         id = data.id,

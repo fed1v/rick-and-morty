@@ -4,10 +4,10 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
-import com.example.rickandmorty.data.local.database.converters.EpisodeIdsConverter
+import com.example.rickandmorty.data.local.database.converters.IdsConverter
 
 @Entity(tableName = "characters")
-@TypeConverters(EpisodeIdsConverter::class)
+@TypeConverters(IdsConverter::class)
 data class CharacterEntity(
     @PrimaryKey(autoGenerate = false)
     val id: Int,

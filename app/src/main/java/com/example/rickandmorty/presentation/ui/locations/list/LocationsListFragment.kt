@@ -10,6 +10,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
+import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
+import com.example.rickandmorty.data.local.database.locations.LocationsDao
 import com.example.rickandmorty.data.remote.locations.LocationsApi
 import com.example.rickandmorty.data.remote.locations.LocationsApiBuilder
 import com.example.rickandmorty.data.repository.LocationsRepositoryImpl
@@ -35,7 +37,10 @@ class LocationsListFragment : Fragment() {
 
     private var appliedFilters = LocationFilter()
 
-    private lateinit var api: LocationsApi
+    private lateinit var locationsApi: LocationsApi
+
+    private lateinit var locationsDao: LocationsDao
+
     private lateinit var repository: LocationsRepository
 
     private lateinit var getLocationsUseCase: GetLocationsUseCase
@@ -81,8 +86,14 @@ class LocationsListFragment : Fragment() {
     }
 
     private fun initDependencies() {
-        api = LocationsApiBuilder.apiService
-        repository = LocationsRepositoryImpl(api)
+        locationsApi = LocationsApiBuilder.apiService
+        locationsDao = RickAndMortyDatabase
+            .getInstance(requireContext().applicationContext).locationDao
+
+        repository = LocationsRepositoryImpl(
+            api = locationsApi,
+            dao = locationsDao
+        )
 
         getLocationsUseCase = GetLocationsUseCase(repository)
         getLocationsByFiltersUseCase = GetLocationsByFiltersUseCase(repository)

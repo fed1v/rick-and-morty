@@ -5,13 +5,14 @@ import androidx.lifecycle.liveData
 import com.example.rickandmorty.domain.usecases.characters.GetCharactersByIdsUseCase
 import com.example.rickandmorty.domain.usecases.locations.GetLocationByIdUseCase
 import com.example.rickandmorty.util.status.Resource
+import kotlinx.coroutines.Dispatchers
 
 class LocationDetailsViewModel(
     private val getLocationByIdUseCase: GetLocationByIdUseCase,
     private val getCharactersByIdsUseCase: GetCharactersByIdsUseCase
 ) : ViewModel() {
 
-    fun getLocation(id: Int) = liveData {
+    fun getLocation(id: Int) = liveData(Dispatchers.IO) {
         emit(Resource.loading(data = null))
         try {
             emit(Resource.success(data = getLocationByIdUseCase.execute(id)))
@@ -20,8 +21,8 @@ class LocationDetailsViewModel(
         }
     }
 
-    fun getResidents(ids: List<Int?>) = liveData {
-        if(ids.isEmpty()) {
+    fun getResidents(ids: List<Int?>) = liveData(Dispatchers.IO) {
+        if (ids.isEmpty()) {
             emit(Resource.loading(data = null))
             emit(Resource.success(listOf()))
             return@liveData

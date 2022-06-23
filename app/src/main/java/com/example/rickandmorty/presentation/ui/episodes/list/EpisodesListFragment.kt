@@ -10,6 +10,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
+import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
+import com.example.rickandmorty.data.local.database.episodes.EpisodesDao
 import com.example.rickandmorty.data.remote.episodes.EpisodesApi
 import com.example.rickandmorty.data.remote.episodes.EpisodesApiBuilder
 import com.example.rickandmorty.data.repository.EpisodesRepositoryImpl
@@ -37,6 +39,9 @@ class EpisodesListFragment : Fragment() {
     private var appliedFilters = EpisodeFilter()
 
     private lateinit var api: EpisodesApi
+
+    private lateinit var episodesDao: EpisodesDao
+
     private lateinit var repository: EpisodesRepository
 
     private lateinit var getEpisodesUseCase: GetEpisodesUseCase
@@ -84,7 +89,12 @@ class EpisodesListFragment : Fragment() {
 
     private fun initDependencies() {
         api = EpisodesApiBuilder.apiService
-        repository = EpisodesRepositoryImpl(api)
+        episodesDao = RickAndMortyDatabase
+            .getInstance(requireContext().applicationContext).episodesDao
+        repository = EpisodesRepositoryImpl(
+            api = api,
+            dao = episodesDao
+        )
 
         getEpisodesUseCase = GetEpisodesUseCase(repository)
         getEpisodesByFiltersUseCase = GetEpisodesByFiltersUseCase(repository)

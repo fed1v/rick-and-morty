@@ -5,7 +5,7 @@ import com.example.rickandmorty.domain.models.character.Character
 import com.example.rickandmorty.util.ExtractIdFromUrlUtil
 import com.example.rickandmorty.util.mapper.Mapper
 
-class CharacterDataToCharacterDomainMapper : Mapper<CharacterDto, Character> {
+class CharacterDtoToCharacterDomainMapper : Mapper<CharacterDto, Character> {
 
     private val extractor = ExtractIdFromUrlUtil()
 

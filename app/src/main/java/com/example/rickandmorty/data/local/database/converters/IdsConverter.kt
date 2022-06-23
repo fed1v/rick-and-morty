@@ -2,7 +2,7 @@ package com.example.rickandmorty.data.local.database.converters
 
 import androidx.room.TypeConverter
 
-class EpisodeIdsConverter {
+class IdsConverter {
 
     @TypeConverter
     fun toStringIds(list: List<Int>): String {
@@ -11,6 +11,7 @@ class EpisodeIdsConverter {
 
     @TypeConverter
     fun fromStringIds(ids: String): List<Int> {
+        if (ids.isBlank()) return emptyList()
         return ids.split(",").map { it.toInt() }
     }
 }

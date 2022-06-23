@@ -73,6 +73,7 @@ class CharacterDetailsViewModel(
                 emit(Resource.success(data = result))
             }
         } catch (e: Exception) {
+            e.printStackTrace()
             emit(Resource.error(data = null, message = e.message ?: "Error"))
         }
     }

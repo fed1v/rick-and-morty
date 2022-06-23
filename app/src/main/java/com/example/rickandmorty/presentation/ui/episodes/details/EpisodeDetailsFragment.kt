@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.characters.CharactersDao
+import com.example.rickandmorty.data.local.database.episodes.EpisodesDao
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
 import com.example.rickandmorty.data.remote.episodes.EpisodesApi
@@ -42,6 +43,7 @@ class EpisodeDetailsFragment : Fragment() {
     private lateinit var episodesApi: EpisodesApi
     private lateinit var charactersApi: CharactersApi
 
+    private lateinit var episodesDao: EpisodesDao
     private lateinit var charactersDao: CharactersDao
 
     private lateinit var episodesRepository: EpisodesRepository
@@ -90,9 +92,15 @@ class EpisodeDetailsFragment : Fragment() {
         episodesApi = EpisodesApiBuilder.apiService
         charactersApi = CharactersApiBuilder.apiService
 
-        charactersDao = RickAndMortyDatabase.getInstance(requireContext()).charactersDao
+        episodesDao = RickAndMortyDatabase
+            .getInstance(requireContext().applicationContext).episodesDao
+        charactersDao = RickAndMortyDatabase
+            .getInstance(requireContext().applicationContext).charactersDao
 
-        episodesRepository = EpisodesRepositoryImpl(episodesApi)
+        episodesRepository = EpisodesRepositoryImpl(
+            api = episodesApi,
+            dao = episodesDao
+        )
         charactersRepository = CharactersRepositoryImpl(
             api = charactersApi,
             dao = charactersDao

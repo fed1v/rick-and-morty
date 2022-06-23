@@ -4,13 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import com.example.rickandmorty.domain.models.episode.EpisodeFilter
 import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesByFiltersUseCase
+import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesFiltersUseCase
 import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesUseCase
 import com.example.rickandmorty.util.status.Resource
 import kotlinx.coroutines.Dispatchers
 
 class EpisodesViewModel(
     private val getEpisodesUseCase: GetEpisodesUseCase,
-    private val getEpisodesByFiltersUseCase: GetEpisodesByFiltersUseCase
+    private val getEpisodesByFiltersUseCase: GetEpisodesByFiltersUseCase,
+    private val getEpisodesFiltersUseCase: GetEpisodesFiltersUseCase
 ) : ViewModel() {
 
     fun getEpisodes() = liveData(Dispatchers.IO) {
@@ -30,4 +32,9 @@ class EpisodesViewModel(
             emit(Resource.error(data = null, message = "Nothing found"))
         }
     }
+
+    fun getFilters() = liveData<Pair<String, List<String>>>(Dispatchers.IO) {
+        emit(Pair("episode", getEpisodesFiltersUseCase.execute("episode")))
+    }
+
 }

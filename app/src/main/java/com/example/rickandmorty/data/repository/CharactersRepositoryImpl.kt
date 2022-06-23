@@ -1,11 +1,8 @@
 package com.example.rickandmorty.data.repository
 
 import androidx.sqlite.db.SimpleSQLiteQuery
-import androidx.sqlite.db.SupportSQLiteProgram
-import androidx.sqlite.db.SupportSQLiteQuery
 import com.example.rickandmorty.data.local.database.characters.CharactersDao
 import com.example.rickandmorty.data.local.database.converters.IdsConverter
-import com.example.rickandmorty.data.mapper.character.CharacterDtoToCharacterDomainMapper
 import com.example.rickandmorty.data.mapper.character.CharacterDtoToCharacterEntityMapper
 import com.example.rickandmorty.data.mapper.character.CharacterEntityToCharacterDomainMapper
 import com.example.rickandmorty.data.remote.characters.CharactersApi
@@ -18,7 +15,6 @@ class CharactersRepositoryImpl(
     private val dao: CharactersDao
 ) : CharactersRepository {
 
-    private val mapperDtoToDomain = CharacterDtoToCharacterDomainMapper()
     private val mapperDtoToEntity = CharacterDtoToCharacterEntityMapper()
     private val mapperEntityToDomain = CharacterEntityToCharacterDomainMapper()
 
@@ -95,7 +91,6 @@ class CharactersRepositoryImpl(
 
     override suspend fun getFilters(filterName: String): List<String> {
         val query = SimpleSQLiteQuery("SELECT DISTINCT $filterName FROM characters")
-
         return dao.getFilters(query)
     }
 }

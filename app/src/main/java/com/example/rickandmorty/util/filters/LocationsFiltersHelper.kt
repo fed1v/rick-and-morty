@@ -14,9 +14,7 @@ class LocationsFiltersHelper(
 
     private var appliedFilter = LocationFilter()
 
-
-    // TODO
-    private var typesArray = arrayOf(
+    var typesArray = arrayOf(
         "unknown",
         "Planet",
         "Cluster",
@@ -28,8 +26,7 @@ class LocationsFiltersHelper(
     private var currentType: String? = null
 
 
-    // TODO
-    private var dimensionsArray = arrayOf(
+    var dimensionsArray = arrayOf(
         "unknown",
         "Dimension C-137",
         "Replacement Dimension",

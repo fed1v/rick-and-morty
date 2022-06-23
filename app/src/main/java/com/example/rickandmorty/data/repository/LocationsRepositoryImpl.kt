@@ -1,8 +1,8 @@
 package com.example.rickandmorty.data.repository
 
+import androidx.sqlite.db.SimpleSQLiteQuery
 import com.example.rickandmorty.data.local.database.converters.IdsConverter
 import com.example.rickandmorty.data.local.database.locations.LocationsDao
-import com.example.rickandmorty.data.mapper.location.LocationDtoToLocationDomainMapper
 import com.example.rickandmorty.data.mapper.location.LocationDtoToLocationEntityMapper
 import com.example.rickandmorty.data.mapper.location.LocationEntityToLocationDomainMapper
 import com.example.rickandmorty.data.remote.locations.LocationsApi
@@ -15,7 +15,6 @@ class LocationsRepositoryImpl(
     private val dao: LocationsDao
 ) : LocationsRepository {
 
-    private val mapperDtoToDomain = LocationDtoToLocationDomainMapper()
     private val mapperDtoToEntity = LocationDtoToLocationEntityMapper()
     private val mapperEntityToDomain = LocationEntityToLocationDomainMapper()
 
@@ -70,6 +69,25 @@ class LocationsRepositoryImpl(
             "dimension" to filters.dimension
         ).filter { it.value != null }
 
-        return api.getLocationsByFilters(filtersToApply).results.map { mapperDtoToDomain.map(it) }
+        try {
+            val locationsFromApi = api.getLocationsByFilters(filtersToApply)
+            val locationsEntities = locationsFromApi.results.map { mapperDtoToEntity.map(it) }
+            dao.insertLocations(locationsEntities)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        val locationsFromDB = dao.getLocationsByFilters(
+            name = filtersToApply["name"],
+            type = filtersToApply["type"],
+            dimension = filtersToApply["dimension"]
+        )
+
+        return locationsFromDB.map { mapperEntityToDomain.map(it) }
+    }
+
+    override suspend fun getFilters(filterName: String): List<String> {
+        val query = SimpleSQLiteQuery("SELECT DISTINCT $filterName FROM locations")
+        return dao.getFilters(query)
     }
 }

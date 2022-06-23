@@ -19,6 +19,7 @@ import com.example.rickandmorty.databinding.FragmentEpisodesListBinding
 import com.example.rickandmorty.domain.models.episode.EpisodeFilter
 import com.example.rickandmorty.domain.repository.EpisodesRepository
 import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesByFiltersUseCase
+import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesFiltersUseCase
 import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesUseCase
 import com.example.rickandmorty.presentation.mapper.EpisodeDomainToEpisodePresentationModelMapper
 import com.example.rickandmorty.presentation.models.EpisodePresentation
@@ -46,6 +47,7 @@ class EpisodesListFragment : Fragment() {
 
     private lateinit var getEpisodesUseCase: GetEpisodesUseCase
     private lateinit var getEpisodesByFiltersUseCase: GetEpisodesByFiltersUseCase
+    private lateinit var getEpisodesFiltersUseCase: GetEpisodesFiltersUseCase
 
     private lateinit var viewModel: EpisodesViewModel
 
@@ -61,20 +63,30 @@ class EpisodesListFragment : Fragment() {
         binding = FragmentEpisodesListBinding.inflate(inflater, container, false)
         setBottomNavigationCheckedItem()
         initToolbar()
+        initRecyclerView()
+
+        initDependencies()
+        initViewModel()
+        initFilters()
+
+        setUpObservers()
+
+        return binding.root
+    }
+
+    private fun initFilters() {
         episodesFiltersHelper = EpisodesFiltersHelper(
             context = requireContext(),
             applyCallback = { onFiltersApplied(it) },
             resetCallback = { onResetClicked() }
         )
-
-        initRecyclerView()
-
-        initDependencies()
-        initViewModel()
-
-        setUpObservers()
-
-        return binding.root
+        viewModel.getFilters().observe(viewLifecycleOwner) { filter ->
+            when (filter.first) {
+                "episode" -> {
+                    episodesFiltersHelper!!.episodesArray = filter.second.toTypedArray()
+                }
+            }
+        }
     }
 
     private fun initViewModel() {
@@ -82,7 +94,8 @@ class EpisodesListFragment : Fragment() {
             owner = this,
             factory = EpisodesViewModelFactory(
                 getEpisodesUseCase = getEpisodesUseCase,
-                getEpisodesByFiltersUseCase = getEpisodesByFiltersUseCase
+                getEpisodesByFiltersUseCase = getEpisodesByFiltersUseCase,
+                getEpisodesFiltersUseCase = getEpisodesFiltersUseCase
             )
         ).get(EpisodesViewModel::class.java)
     }
@@ -98,6 +111,7 @@ class EpisodesListFragment : Fragment() {
 
         getEpisodesUseCase = GetEpisodesUseCase(repository)
         getEpisodesByFiltersUseCase = GetEpisodesByFiltersUseCase(repository)
+        getEpisodesFiltersUseCase = GetEpisodesFiltersUseCase(repository)
     }
 
     private fun setUpObservers() {
@@ -123,7 +137,7 @@ class EpisodesListFragment : Fragment() {
         }
     }
 
-    fun setUpEpisodesByFiltersObserver(filters: EpisodeFilter) {
+    private fun setUpEpisodesByFiltersObserver(filters: EpisodeFilter) {
         viewModel.getEpisodesByFilters(filters).observe(viewLifecycleOwner) { resource ->
             when (resource.status) {
                 Status.SUCCESS -> {
@@ -219,10 +233,8 @@ class EpisodesListFragment : Fragment() {
     }
 
     private fun onFiltersApplied(filters: EpisodeFilter) {
-        println("Filters applied: ${filters}")
         val name = filters.name ?: appliedFilters.name
         appliedFilters = filters.copy(name = name)
-        println("Filters: ${appliedFilters}")
         setUpEpisodesByFiltersObserver(appliedFilters)
     }
 

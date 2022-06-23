@@ -1,8 +1,8 @@
 package com.example.rickandmorty.data.repository
 
+import androidx.sqlite.db.SimpleSQLiteQuery
 import com.example.rickandmorty.data.local.database.converters.IdsConverter
 import com.example.rickandmorty.data.local.database.episodes.EpisodesDao
-import com.example.rickandmorty.data.mapper.episode.EpisodeDtoToEpisodeDomainMapper
 import com.example.rickandmorty.data.mapper.episode.EpisodeDtoToEpisodeEntityMapper
 import com.example.rickandmorty.data.mapper.episode.EpisodeEntityToEpisodeDomainMapper
 import com.example.rickandmorty.data.remote.episodes.EpisodesApi
@@ -15,7 +15,6 @@ class EpisodesRepositoryImpl(
     private val dao: EpisodesDao
 ) : EpisodesRepository {
 
-    private val mapperDtoToDomain = EpisodeDtoToEpisodeDomainMapper()
     private val mapperDtoToEntity = EpisodeDtoToEpisodeEntityMapper()
     private val mapperEntityToDomain = EpisodeEntityToEpisodeDomainMapper()
 
@@ -68,6 +67,24 @@ class EpisodesRepositoryImpl(
             "episode" to filters.episode
         ).filter { it.value != null }
 
-        return api.getEpisodesByFilters(filtersToApply).results.map { mapperDtoToDomain.map(it) }
+        try {
+            val episodesFromApi = api.getEpisodesByFilters(filtersToApply)
+            val episodesEntities = episodesFromApi.results.map { mapperDtoToEntity.map(it) }
+            dao.insertEpisodes(episodesEntities)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        val episodesFromDB = dao.getEpisodesByFilters(
+            name = filtersToApply["name"],
+            episode = filtersToApply["episode"]
+        )
+
+        return episodesFromDB.map { mapperEntityToDomain.map(it) }
+    }
+
+    override suspend fun getFilters(filterName: String): List<String> {
+        val query = SimpleSQLiteQuery("SELECT DISTINCT $filterName FROM episodes")
+        return dao.getFilters(query)
     }
 }

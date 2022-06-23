@@ -19,6 +19,7 @@ import com.example.rickandmorty.databinding.FragmentLocationsListBinding
 import com.example.rickandmorty.domain.models.location.LocationFilter
 import com.example.rickandmorty.domain.repository.LocationsRepository
 import com.example.rickandmorty.domain.usecases.locations.GetLocationsByFiltersUseCase
+import com.example.rickandmorty.domain.usecases.locations.GetLocationsFiltersUseCase
 import com.example.rickandmorty.domain.usecases.locations.GetLocationsUseCase
 import com.example.rickandmorty.presentation.mapper.LocationDomainToLocationPresentationMapper
 import com.example.rickandmorty.presentation.models.LocationPresentation
@@ -45,6 +46,8 @@ class LocationsListFragment : Fragment() {
 
     private lateinit var getLocationsUseCase: GetLocationsUseCase
     private lateinit var getLocationsByFiltersUseCase: GetLocationsByFiltersUseCase
+    private lateinit var getLocationsFiltersUseCase: GetLocationsFiltersUseCase
+
 
     private lateinit var viewModel: LocationsViewModel
 
@@ -61,18 +64,32 @@ class LocationsListFragment : Fragment() {
         setBottomNavigationCheckedItem()
         initToolbar()
         initRecyclerView()
+
+        initDependencies()
+        initViewModel()
+        initFilters()
+
+        setUpObservers()
+
+        return binding.root
+    }
+
+    private fun initFilters() {
         locationsFiltersHelper = LocationsFiltersHelper(
             context = requireContext(),
             applyCallback = { onFiltersApplied(it) },
             resetCallback = { onResetClicked() }
         )
-
-        initDependencies()
-        initViewModel()
-
-        setUpObservers()
-
-        return binding.root
+        viewModel.getFilters().observe(viewLifecycleOwner) { filter ->
+            when (filter.first) {
+                "type" -> {
+                    locationsFiltersHelper!!.typesArray = filter.second.toTypedArray()
+                }
+                "dimension" -> {
+                    locationsFiltersHelper!!.dimensionsArray = filter.second.toTypedArray()
+                }
+            }
+        }
     }
 
     private fun initViewModel() {
@@ -80,7 +97,8 @@ class LocationsListFragment : Fragment() {
             owner = this,
             factory = LocationsViewModelFactory(
                 getLocationsUseCase = getLocationsUseCase,
-                getLocationsByFiltersUseCase = getLocationsByFiltersUseCase
+                getLocationsByFiltersUseCase = getLocationsByFiltersUseCase,
+                getLocationsFiltersUseCase = getLocationsFiltersUseCase
             )
         ).get(LocationsViewModel::class.java)
     }
@@ -97,6 +115,7 @@ class LocationsListFragment : Fragment() {
 
         getLocationsUseCase = GetLocationsUseCase(repository)
         getLocationsByFiltersUseCase = GetLocationsByFiltersUseCase(repository)
+        getLocationsFiltersUseCase = GetLocationsFiltersUseCase(repository)
     }
 
     private fun setUpObservers() {

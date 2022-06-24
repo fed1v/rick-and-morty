@@ -4,14 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import com.example.rickandmorty.domain.usecases.characters.GetCharactersByIdsUseCase
 import com.example.rickandmorty.domain.usecases.episodes.GetEpisodeByIdUseCase
-import com.example.rickandmorty.util.status.Resource
+import com.example.rickandmorty.util.resource.Resource
+import kotlinx.coroutines.Dispatchers
 
 class EpisodeDetailsViewModel(
     private val getEpisodeByIdUseCase: GetEpisodeByIdUseCase,
     private val getCharactersByIdsUseCase: GetCharactersByIdsUseCase
 ) : ViewModel() {
 
-    fun getEpisode(id: Int) = liveData {
+    fun getEpisode(id: Int) = liveData(Dispatchers.IO) {
         emit(Resource.loading(data = null))
         try {
             emit(Resource.success(data = getEpisodeByIdUseCase.execute(id)))
@@ -20,8 +21,8 @@ class EpisodeDetailsViewModel(
         }
     }
 
-    fun getEpisodeCharactersByIds(ids: List<Int?>) = liveData {
-        if(ids.isEmpty()) {
+    fun getEpisodeCharactersByIds(ids: List<Int?>) = liveData(Dispatchers.IO) {
+        if (ids.isEmpty()) {
             emit(Resource.loading(data = null))
             emit(Resource.success(listOf()))
             return@liveData

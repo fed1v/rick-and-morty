@@ -1,4 +1,4 @@
-package com.example.rickandmorty.data.local
+package com.example.rickandmorty.data.local.providers
 
 import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.presentation.models.LocationPresentation
@@ -17,6 +17,7 @@ class CharactersProvider {
                         status = "status$it",
                         species = "species$it",
                         gender = "gender$it",
+                        type = "type$it",
                         location = LocationPresentation(
                             it,
                             "locationName$it",

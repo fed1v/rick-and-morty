@@ -1,11 +1,11 @@
-package com.example.rickandmorty.data.mapper
+package com.example.rickandmorty.data.mapper.location
 
 import com.example.rickandmorty.data.models.location.LocationDto
 import com.example.rickandmorty.domain.models.location.Location
 import com.example.rickandmorty.util.ExtractIdFromUrlUtil
 import com.example.rickandmorty.util.mapper.Mapper
 
-class LocationDataToLocationDomainMapper : Mapper<LocationDto, Location> {
+class LocationDtoToLocationDomainMapper : Mapper<LocationDto, Location> {
 
     override fun map(data: LocationDto): Location = Location(
         id = data.id,

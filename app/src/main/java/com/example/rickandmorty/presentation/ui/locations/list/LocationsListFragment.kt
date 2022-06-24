@@ -10,6 +10,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
+import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
+import com.example.rickandmorty.data.local.database.locations.LocationsDao
 import com.example.rickandmorty.data.remote.locations.LocationsApi
 import com.example.rickandmorty.data.remote.locations.LocationsApiBuilder
 import com.example.rickandmorty.data.repository.LocationsRepositoryImpl
@@ -17,6 +19,7 @@ import com.example.rickandmorty.databinding.FragmentLocationsListBinding
 import com.example.rickandmorty.domain.models.location.LocationFilter
 import com.example.rickandmorty.domain.repository.LocationsRepository
 import com.example.rickandmorty.domain.usecases.locations.GetLocationsByFiltersUseCase
+import com.example.rickandmorty.domain.usecases.locations.GetLocationsFiltersUseCase
 import com.example.rickandmorty.domain.usecases.locations.GetLocationsUseCase
 import com.example.rickandmorty.presentation.mapper.LocationDomainToLocationPresentationMapper
 import com.example.rickandmorty.presentation.models.LocationPresentation
@@ -24,7 +27,7 @@ import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.presentation.ui.locations.adapters.LocationsAdapter
 import com.example.rickandmorty.presentation.ui.locations.details.LocationDetailsFragment
 import com.example.rickandmorty.util.filters.LocationsFiltersHelper
-import com.example.rickandmorty.util.status.Status
+import com.example.rickandmorty.util.resource.Status
 
 class LocationsListFragment : Fragment() {
 
@@ -35,11 +38,16 @@ class LocationsListFragment : Fragment() {
 
     private var appliedFilters = LocationFilter()
 
-    private lateinit var api: LocationsApi
+    private lateinit var locationsApi: LocationsApi
+
+    private lateinit var locationsDao: LocationsDao
+
     private lateinit var repository: LocationsRepository
 
     private lateinit var getLocationsUseCase: GetLocationsUseCase
     private lateinit var getLocationsByFiltersUseCase: GetLocationsByFiltersUseCase
+    private lateinit var getLocationsFiltersUseCase: GetLocationsFiltersUseCase
+
 
     private lateinit var viewModel: LocationsViewModel
 
@@ -56,18 +64,32 @@ class LocationsListFragment : Fragment() {
         setBottomNavigationCheckedItem()
         initToolbar()
         initRecyclerView()
+
+        initDependencies()
+        initViewModel()
+        initFilters()
+
+        setUpObservers()
+
+        return binding.root
+    }
+
+    private fun initFilters() {
         locationsFiltersHelper = LocationsFiltersHelper(
             context = requireContext(),
             applyCallback = { onFiltersApplied(it) },
             resetCallback = { onResetClicked() }
         )
-
-        initDependencies()
-        initViewModel()
-
-        setUpObservers()
-
-        return binding.root
+        viewModel.getFilters().observe(viewLifecycleOwner) { filter ->
+            when (filter.first) {
+                "type" -> {
+                    locationsFiltersHelper!!.typesArray = filter.second.toTypedArray()
+                }
+                "dimension" -> {
+                    locationsFiltersHelper!!.dimensionsArray = filter.second.toTypedArray()
+                }
+            }
+        }
     }
 
     private fun initViewModel() {
@@ -75,17 +97,25 @@ class LocationsListFragment : Fragment() {
             owner = this,
             factory = LocationsViewModelFactory(
                 getLocationsUseCase = getLocationsUseCase,
-                getLocationsByFiltersUseCase = getLocationsByFiltersUseCase
+                getLocationsByFiltersUseCase = getLocationsByFiltersUseCase,
+                getLocationsFiltersUseCase = getLocationsFiltersUseCase
             )
         ).get(LocationsViewModel::class.java)
     }
 
     private fun initDependencies() {
-        api = LocationsApiBuilder.apiService
-        repository = LocationsRepositoryImpl(api)
+        locationsApi = LocationsApiBuilder.apiService
+        locationsDao = RickAndMortyDatabase
+            .getInstance(requireContext().applicationContext).locationDao
+
+        repository = LocationsRepositoryImpl(
+            api = locationsApi,
+            dao = locationsDao
+        )
 
         getLocationsUseCase = GetLocationsUseCase(repository)
         getLocationsByFiltersUseCase = GetLocationsByFiltersUseCase(repository)
+        getLocationsFiltersUseCase = GetLocationsFiltersUseCase(repository)
     }
 
     private fun setUpObservers() {
@@ -183,6 +213,9 @@ class LocationsListFragment : Fragment() {
     }
 
     private fun showLocations(locations: List<LocationPresentation>) {
+        if (locations.isEmpty()) {
+            Toast.makeText(requireContext(), "Nothing found", Toast.LENGTH_SHORT).show()
+        }
         locationsAdapter.locationsList = locations
     }
 

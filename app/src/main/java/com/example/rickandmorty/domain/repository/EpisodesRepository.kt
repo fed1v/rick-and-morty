@@ -12,4 +12,6 @@ interface EpisodesRepository {
     suspend fun getEpisodesByIds(ids: String): List<Episode>
 
     suspend fun getEpisodesByFilters(filters: EpisodeFilter): List<Episode>
+
+    suspend fun getFilters(filterName: String): List<String>
 }

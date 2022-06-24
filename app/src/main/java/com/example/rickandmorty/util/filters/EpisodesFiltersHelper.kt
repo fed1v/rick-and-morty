@@ -14,8 +14,7 @@ class EpisodesFiltersHelper(
 
     private var appliedFilter = EpisodeFilter()
 
-    // TODO
-    private var episodesArray = arrayOf(
+    var episodesArray = arrayOf(
         "S01E03",
         "S01",
         "S02",
@@ -60,6 +59,7 @@ class EpisodesFiltersHelper(
 
 
     private fun openFilterEpisode() {
+        episodesArray.sortBy { it }
         MaterialAlertDialogBuilder(context)
             .setTitle("Type")
             .setSingleChoiceItems(
@@ -97,5 +97,4 @@ class EpisodesFiltersHelper(
         appliedFilter = EpisodeFilter()
         resetCallback()
     }
-
 }

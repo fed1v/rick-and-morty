@@ -4,14 +4,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import com.example.rickandmorty.domain.models.character.CharacterFilter
 import com.example.rickandmorty.domain.usecases.characters.GetCharactersByFiltersUseCase
+import com.example.rickandmorty.domain.usecases.characters.GetCharactersFiltersUseCase
 import com.example.rickandmorty.domain.usecases.characters.GetCharactersUseCase
-import com.example.rickandmorty.util.status.Resource
+import com.example.rickandmorty.util.resource.Resource
 import kotlinx.coroutines.Dispatchers
 
 class CharactersViewModel(
     private val getCharactersUseCase: GetCharactersUseCase,
-    private val getCharactersByFiltersUseCase: GetCharactersByFiltersUseCase
+    private val getCharactersByFiltersUseCase: GetCharactersByFiltersUseCase,
+    private val getCharactersFiltersUseCase: GetCharactersFiltersUseCase
 ) : ViewModel() {
+
+    fun getFilters() = liveData<Pair<String, List<String>>>(Dispatchers.IO) {
+        emit(Pair("species", getCharactersFiltersUseCase.execute("species")))
+        emit(Pair("type", getCharactersFiltersUseCase.execute("type")))
+    }
 
     fun getCharacters() = liveData(Dispatchers.IO) {
         emit(Resource.loading(null))
@@ -22,7 +29,7 @@ class CharactersViewModel(
         }
     }
 
-    fun getCharactersByFilters(filters: CharacterFilter) = liveData {
+    fun getCharactersByFilters(filters: CharacterFilter) = liveData(Dispatchers.IO) {
         emit(Resource.loading(null))
         try {
             emit(Resource.success(data = getCharactersByFiltersUseCase.execute(filters)))
@@ -30,5 +37,4 @@ class CharactersViewModel(
             emit(Resource.error(data = null, message = "Nothing found"))
         }
     }
-
 }

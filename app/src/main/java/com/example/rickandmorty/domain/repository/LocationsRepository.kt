@@ -12,4 +12,6 @@ interface LocationsRepository {
     suspend fun getLocationsByIds(ids: String): List<Location>
 
     suspend fun getLocationsByFilters(filters: LocationFilter): List<Location>
+
+    suspend fun getFilters(filterName: String): List<String>
 }

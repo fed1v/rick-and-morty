@@ -10,6 +10,9 @@ import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
+import com.example.rickandmorty.data.local.database.characters.CharactersDao
+import com.example.rickandmorty.data.local.database.locations.LocationsDao
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
 import com.example.rickandmorty.data.remote.locations.LocationsApi
@@ -28,9 +31,8 @@ import com.example.rickandmorty.presentation.models.LocationPresentation
 import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAdapter
 import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
 import com.example.rickandmorty.presentation.ui.hostActivity
-import com.example.rickandmorty.util.status.Status
+import com.example.rickandmorty.util.resource.Status
 
-//TODO Earth (5-126)
 class LocationDetailsFragment : Fragment() {
 
     private lateinit var binding: FragmentLocationDetailsBinding
@@ -40,6 +42,9 @@ class LocationDetailsFragment : Fragment() {
 
     private lateinit var locationsApi: LocationsApi
     private lateinit var charactersApi: CharactersApi
+
+    private lateinit var charactersDao: CharactersDao
+    private lateinit var locationsDao: LocationsDao
 
     private lateinit var locationsRepository: LocationsRepository
     private lateinit var charactersRepository: CharactersRepository
@@ -87,8 +92,20 @@ class LocationDetailsFragment : Fragment() {
         locationsApi = LocationsApiBuilder.apiService
         charactersApi = CharactersApiBuilder.apiService
 
-        locationsRepository = LocationsRepositoryImpl(locationsApi)
-        charactersRepository = CharactersRepositoryImpl(charactersApi)
+        charactersDao =
+            RickAndMortyDatabase.getInstance(requireContext().applicationContext).charactersDao
+        locationsDao =
+            RickAndMortyDatabase.getInstance(requireContext().applicationContext).locationDao
+
+
+        locationsRepository = LocationsRepositoryImpl(
+            api = locationsApi,
+            dao = locationsDao
+        )
+        charactersRepository = CharactersRepositoryImpl(
+            api = charactersApi,
+            dao = charactersDao
+        )
 
         getLocationByIdUseCase = GetLocationByIdUseCase(locationsRepository)
         getCharactersByIdsUseCase = GetCharactersByIdsUseCase(charactersRepository)

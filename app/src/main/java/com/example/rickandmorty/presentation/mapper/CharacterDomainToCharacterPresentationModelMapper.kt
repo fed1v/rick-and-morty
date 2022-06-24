@@ -13,19 +13,20 @@ class CharacterDomainToCharacterPresentationModelMapper : Mapper<Character, Char
         status = data.status,
         species = data.species,
         gender = data.gender,
+        type = data.type,
         location = LocationPresentation(
             id = data.location.id,
             name = data.location.name,
-            type = data.location.type,
-            dimension = data.location.dimension,
-            residents = data.location.residents
+            type = "unknown",
+            dimension = "unknown",
+            residents = listOf()
         ), // TODO
         origin = LocationPresentation(
             id = data.origin.id,
             name = data.origin.name,
-            type = data.origin.type,
-            dimension = data.origin.dimension,
-            residents = data.origin.residents
+            type = "unknown",
+            dimension = "unknown",
+            residents = listOf()
         ),
         episodes = data.episodes,
         image = data.image

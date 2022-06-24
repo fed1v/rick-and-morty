@@ -12,6 +12,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.example.rickandmorty.R
+import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
+import com.example.rickandmorty.data.local.database.characters.CharactersDao
+import com.example.rickandmorty.data.local.database.episodes.EpisodesDao
+import com.example.rickandmorty.data.local.database.locations.LocationsDao
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
 import com.example.rickandmorty.data.remote.episodes.EpisodesApi
@@ -38,7 +42,7 @@ import com.example.rickandmorty.presentation.ui.episodes.details.EpisodeDetailsF
 import com.example.rickandmorty.presentation.ui.episodes.adapters.EpisodesAdapter
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.presentation.ui.locations.details.LocationDetailsFragment
-import com.example.rickandmorty.util.status.Status
+import com.example.rickandmorty.util.resource.Status
 
 
 class CharacterDetailsFragment : Fragment() {
@@ -51,6 +55,10 @@ class CharacterDetailsFragment : Fragment() {
     private lateinit var episodesApi: EpisodesApi
     private lateinit var charactersApi: CharactersApi
     private lateinit var locationsApi: LocationsApi
+
+    private lateinit var charactersDao: CharactersDao
+    private lateinit var episodesDao: EpisodesDao
+    private lateinit var locationsDao: LocationsDao
 
     private lateinit var episodesRepository: EpisodesRepository
     private lateinit var charactersRepository: CharactersRepository
@@ -66,6 +74,7 @@ class CharacterDetailsFragment : Fragment() {
         super.onCreate(savedInstanceState)
         character = arguments?.getParcelable("Character") ?: CharacterPresentation(
             -1,
+            "",
             "",
             "",
             "",
@@ -105,9 +114,25 @@ class CharacterDetailsFragment : Fragment() {
         charactersApi = CharactersApiBuilder.apiService
         locationsApi = LocationsApiBuilder.apiService
 
-        episodesRepository = EpisodesRepositoryImpl(episodesApi)
-        charactersRepository = CharactersRepositoryImpl(charactersApi)
-        locationsRepository = LocationsRepositoryImpl(locationsApi)
+        charactersDao = RickAndMortyDatabase
+            .getInstance(requireContext().applicationContext).charactersDao
+        episodesDao = RickAndMortyDatabase
+            .getInstance(requireContext().applicationContext).episodesDao
+        locationsDao = RickAndMortyDatabase
+            .getInstance(requireContext().applicationContext).locationDao
+
+        episodesRepository = EpisodesRepositoryImpl(
+            api = episodesApi,
+            dao = episodesDao
+        )
+        charactersRepository = CharactersRepositoryImpl(
+            api = charactersApi,
+            dao = charactersDao
+        )
+        locationsRepository = LocationsRepositoryImpl(
+            api = locationsApi,
+            dao = locationsDao
+        )
 
         getEpisodesByIdsUseCase = GetEpisodesByIdsUseCase(episodesRepository)
         getCharacterByIdUseCase = GetCharacterByIdUseCase(charactersRepository)
@@ -137,6 +162,7 @@ class CharacterDetailsFragment : Fragment() {
         setUpCharacterObserver(id = characterId)
     }
 
+    // Abradolf Lincler
     private fun setUpOriginsObserver(origin: LocationPresentation) {
         viewModel.getOrigin(origin = origin)
             .observe(viewLifecycleOwner) { resource ->
@@ -264,18 +290,29 @@ class CharacterDetailsFragment : Fragment() {
 
     private fun showOrigin(origin: LocationPresentation) {
         binding.characterOrigin.apply {
-            if (origin.name == "unknown_origin") {
-                text = requireContext().getString(R.string.unknown)
-                setOnClickListener {
-                    Toast.makeText(requireContext(), "Origin is unknown", Toast.LENGTH_SHORT).show()
+            when (origin.name) {
+                "?" -> {
+                    text = character.origin.name
+                    setOnClickListener {
+                        Toast.makeText(requireContext(), "Cannot open origin", Toast.LENGTH_SHORT)
+                            .show()
+                    }
                 }
-            } else {
-                text = origin.name
-                setOnClickListener {
-                    openFragment(
-                        LocationDetailsFragment.newInstance(origin),
-                        "LocationDetailsFragment"
-                    )
+                "unknown_origin" -> {
+                    text = requireContext().getString(R.string.unknown)
+                    setOnClickListener {
+                        Toast.makeText(requireContext(), "Origin is unknown", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                }
+                else -> {
+                    text = origin.name
+                    setOnClickListener {
+                        openFragment(
+                            LocationDetailsFragment.newInstance(origin),
+                            "LocationDetailsFragment"
+                        )
+                    }
                 }
             }
         }
@@ -285,22 +322,31 @@ class CharacterDetailsFragment : Fragment() {
     private fun showLocation(location: LocationPresentation) {
         println("location: ${location}")
         binding.characterLocation.apply {
-            if (location.name == "unknown_location") {
-                text = requireContext().getString(R.string.unknown)
-                setOnClickListener {
-                    Toast.makeText(requireContext(), "Location is unknown", Toast.LENGTH_SHORT)
-                        .show()
+            when (location.name) {
+                "?" -> {
+                    text = character.location.name
+                    setOnClickListener {
+                        Toast.makeText(requireContext(), "Cannot open location", Toast.LENGTH_SHORT)
+                            .show()
+                    }
                 }
-            } else {
-                text = location.name
-                setOnClickListener {
-                    openFragment(
-                        LocationDetailsFragment.newInstance(location),
-                        "LocationDetailsFragment"
-                    )
+                "unknown_location" -> {
+                    text = requireContext().getString(R.string.unknown)
+                    setOnClickListener {
+                        Toast.makeText(requireContext(), "Location is unknown", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                }
+                else -> {
+                    text = location.name
+                    setOnClickListener {
+                        openFragment(
+                            LocationDetailsFragment.newInstance(location),
+                            "LocationDetailsFragment"
+                        )
+                    }
                 }
             }
-
         }
     }
 
@@ -316,6 +362,7 @@ class CharacterDetailsFragment : Fragment() {
         binding.characterSpecies.text = character.species
         binding.characterStatus.text = character.status
         binding.characterGender.text = character.gender
+        binding.characterType.text = character.type
     }
 
     private fun openFragment(fragment: Fragment, tag: String) {

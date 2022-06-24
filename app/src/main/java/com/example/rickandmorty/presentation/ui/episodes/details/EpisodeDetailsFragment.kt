@@ -10,6 +10,9 @@ import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
+import com.example.rickandmorty.data.local.database.characters.CharactersDao
+import com.example.rickandmorty.data.local.database.episodes.EpisodesDao
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
 import com.example.rickandmorty.data.remote.episodes.EpisodesApi
@@ -28,7 +31,7 @@ import com.example.rickandmorty.presentation.models.EpisodePresentation
 import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAdapter
 import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
 import com.example.rickandmorty.presentation.ui.hostActivity
-import com.example.rickandmorty.util.status.Status
+import com.example.rickandmorty.util.resource.Status
 
 class EpisodeDetailsFragment : Fragment() {
 
@@ -39,6 +42,9 @@ class EpisodeDetailsFragment : Fragment() {
 
     private lateinit var episodesApi: EpisodesApi
     private lateinit var charactersApi: CharactersApi
+
+    private lateinit var episodesDao: EpisodesDao
+    private lateinit var charactersDao: CharactersDao
 
     private lateinit var episodesRepository: EpisodesRepository
     private lateinit var charactersRepository: CharactersRepository
@@ -86,8 +92,19 @@ class EpisodeDetailsFragment : Fragment() {
         episodesApi = EpisodesApiBuilder.apiService
         charactersApi = CharactersApiBuilder.apiService
 
-        episodesRepository = EpisodesRepositoryImpl(episodesApi)
-        charactersRepository = CharactersRepositoryImpl(charactersApi)
+        episodesDao = RickAndMortyDatabase
+            .getInstance(requireContext().applicationContext).episodesDao
+        charactersDao = RickAndMortyDatabase
+            .getInstance(requireContext().applicationContext).charactersDao
+
+        episodesRepository = EpisodesRepositoryImpl(
+            api = episodesApi,
+            dao = episodesDao
+        )
+        charactersRepository = CharactersRepositoryImpl(
+            api = charactersApi,
+            dao = charactersDao
+        )
 
         getEpisodeByIdUseCase = GetEpisodeByIdUseCase(episodesRepository)
         getCharactersByIdsUseCase = GetCharactersByIdsUseCase(charactersRepository)

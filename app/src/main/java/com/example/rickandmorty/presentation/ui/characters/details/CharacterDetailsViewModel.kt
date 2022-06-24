@@ -7,7 +7,8 @@ import com.example.rickandmorty.domain.usecases.characters.GetCharacterByIdUseCa
 import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesByIdsUseCase
 import com.example.rickandmorty.domain.usecases.locations.GetLocationByIdUseCase
 import com.example.rickandmorty.presentation.models.LocationPresentation
-import com.example.rickandmorty.util.status.Resource
+import com.example.rickandmorty.util.resource.Resource
+import kotlinx.coroutines.Dispatchers
 
 class CharacterDetailsViewModel(
     private val getEpisodesByIdsUseCase: GetEpisodesByIdsUseCase,
@@ -15,8 +16,8 @@ class CharacterDetailsViewModel(
     private val getLocationByIdUseCase: GetLocationByIdUseCase
 ) : ViewModel() {
 
-    fun getEpisodesByIds(ids: List<Int?>) = liveData {
-        if(ids.isEmpty()) {
+    fun getEpisodesByIds(ids: List<Int?>) = liveData(Dispatchers.IO) {
+        if (ids.isEmpty()) {
             emit(Resource.loading(data = null))
             emit(Resource.success(listOf()))
             return@liveData
@@ -38,7 +39,7 @@ class CharacterDetailsViewModel(
         }
     }
 
-    fun getCharacterById(id: Int) = liveData {
+    fun getCharacterById(id: Int) = liveData(Dispatchers.IO) {
         emit(Resource.loading(null))
         try {
             emit(Resource.success(data = getCharacterByIdUseCase.execute(id)))
@@ -47,7 +48,7 @@ class CharacterDetailsViewModel(
         }
     }
 
-    fun getLocation(location: LocationPresentation) = liveData {
+    fun getLocation(location: LocationPresentation) = liveData(Dispatchers.IO) {
         if (location.id == -1) {
             emit(
                 Resource.success(
@@ -72,11 +73,12 @@ class CharacterDetailsViewModel(
                 emit(Resource.success(data = result))
             }
         } catch (e: Exception) {
+            e.printStackTrace()
             emit(Resource.error(data = null, message = e.message ?: "Error"))
         }
     }
 
-    fun getOrigin(origin: LocationPresentation) = liveData {
+    fun getOrigin(origin: LocationPresentation) = liveData(Dispatchers.IO) {
         if (origin.id == -1) {
             emit(
                 Resource.success(

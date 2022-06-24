@@ -115,8 +115,8 @@ class CharactersFiltersHelper(
     }
 
 
-    //TODO
     private fun openFilterType() {
+        typesArray.sortBy { it }
         MaterialAlertDialogBuilder(context)
             .setTitle("Type")
             .setSingleChoiceItems(
@@ -141,8 +141,8 @@ class CharactersFiltersHelper(
             .show()
     }
 
-    //TODO
     private fun openFilterSpecies() {
+        speciesArray.sortBy { it }
         MaterialAlertDialogBuilder(context)
             .setTitle("Species")
             .setSingleChoiceItems(
@@ -205,5 +205,4 @@ class CharactersFiltersHelper(
         appliedFilter = CharacterFilter()
         resetCallback()
     }
-
 }

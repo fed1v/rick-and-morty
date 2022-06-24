@@ -70,6 +70,7 @@ class LocationsFiltersHelper(
     }
 
     private fun openFilterDimension() {
+        dimensionsArray.sortBy { it }
         MaterialAlertDialogBuilder(context)
             .setTitle("Dimension")
             .setSingleChoiceItems(
@@ -96,6 +97,7 @@ class LocationsFiltersHelper(
 
 
     private fun openFilterType() {
+        typesArray.sortBy { it }
         MaterialAlertDialogBuilder(context)
             .setTitle("Type")
             .setSingleChoiceItems(

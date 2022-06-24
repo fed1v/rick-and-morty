@@ -7,7 +7,7 @@ import com.example.rickandmorty.domain.usecases.characters.GetCharacterByIdUseCa
 import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesByIdsUseCase
 import com.example.rickandmorty.domain.usecases.locations.GetLocationByIdUseCase
 import com.example.rickandmorty.presentation.models.LocationPresentation
-import com.example.rickandmorty.util.status.Resource
+import com.example.rickandmorty.util.resource.Resource
 import kotlinx.coroutines.Dispatchers
 
 class CharacterDetailsViewModel(

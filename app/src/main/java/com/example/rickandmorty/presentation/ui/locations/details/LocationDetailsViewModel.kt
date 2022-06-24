@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import com.example.rickandmorty.domain.usecases.characters.GetCharactersByIdsUseCase
 import com.example.rickandmorty.domain.usecases.locations.GetLocationByIdUseCase
-import com.example.rickandmorty.util.status.Resource
+import com.example.rickandmorty.util.resource.Resource
 import kotlinx.coroutines.Dispatchers
 
 class LocationDetailsViewModel(

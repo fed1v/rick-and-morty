@@ -42,7 +42,7 @@ import com.example.rickandmorty.presentation.ui.episodes.details.EpisodeDetailsF
 import com.example.rickandmorty.presentation.ui.episodes.adapters.EpisodesAdapter
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.presentation.ui.locations.details.LocationDetailsFragment
-import com.example.rickandmorty.util.status.Status
+import com.example.rickandmorty.util.resource.Status
 
 
 class CharacterDetailsFragment : Fragment() {

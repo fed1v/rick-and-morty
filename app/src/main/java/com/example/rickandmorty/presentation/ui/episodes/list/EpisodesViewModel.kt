@@ -6,7 +6,7 @@ import com.example.rickandmorty.domain.models.episode.EpisodeFilter
 import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesByFiltersUseCase
 import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesFiltersUseCase
 import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesUseCase
-import com.example.rickandmorty.util.status.Resource
+import com.example.rickandmorty.util.resource.Resource
 import kotlinx.coroutines.Dispatchers
 
 class EpisodesViewModel(

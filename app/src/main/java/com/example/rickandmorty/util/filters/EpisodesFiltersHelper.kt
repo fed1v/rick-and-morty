@@ -59,6 +59,7 @@ class EpisodesFiltersHelper(
 
 
     private fun openFilterEpisode() {
+        episodesArray.sortBy { it }
         MaterialAlertDialogBuilder(context)
             .setTitle("Type")
             .setSingleChoiceItems(

@@ -27,7 +27,7 @@ import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.presentation.ui.locations.adapters.LocationsAdapter
 import com.example.rickandmorty.presentation.ui.locations.details.LocationDetailsFragment
 import com.example.rickandmorty.util.filters.LocationsFiltersHelper
-import com.example.rickandmorty.util.status.Status
+import com.example.rickandmorty.util.resource.Status
 
 class LocationsListFragment : Fragment() {
 

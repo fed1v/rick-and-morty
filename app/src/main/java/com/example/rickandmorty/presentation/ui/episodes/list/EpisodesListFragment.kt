@@ -27,7 +27,7 @@ import com.example.rickandmorty.presentation.ui.episodes.adapters.EpisodesAdapte
 import com.example.rickandmorty.presentation.ui.episodes.details.EpisodeDetailsFragment
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.util.filters.EpisodesFiltersHelper
-import com.example.rickandmorty.util.status.Status
+import com.example.rickandmorty.util.resource.Status
 
 
 class EpisodesListFragment : Fragment() {

@@ -27,7 +27,7 @@ import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAd
 import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.util.filters.CharactersFiltersHelper
-import com.example.rickandmorty.util.status.Status
+import com.example.rickandmorty.util.resource.Status
 
 
 class CharactersListFragment : Fragment() {

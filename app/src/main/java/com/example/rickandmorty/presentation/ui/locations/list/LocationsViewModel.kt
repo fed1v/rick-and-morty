@@ -6,7 +6,7 @@ import com.example.rickandmorty.domain.models.location.LocationFilter
 import com.example.rickandmorty.domain.usecases.locations.GetLocationsByFiltersUseCase
 import com.example.rickandmorty.domain.usecases.locations.GetLocationsFiltersUseCase
 import com.example.rickandmorty.domain.usecases.locations.GetLocationsUseCase
-import com.example.rickandmorty.util.status.Resource
+import com.example.rickandmorty.util.resource.Resource
 import kotlinx.coroutines.Dispatchers
 
 class LocationsViewModel(

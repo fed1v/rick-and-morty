@@ -31,7 +31,7 @@ import com.example.rickandmorty.presentation.models.LocationPresentation
 import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAdapter
 import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
 import com.example.rickandmorty.presentation.ui.hostActivity
-import com.example.rickandmorty.util.status.Status
+import com.example.rickandmorty.util.resource.Status
 
 class LocationDetailsFragment : Fragment() {
 

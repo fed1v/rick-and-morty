@@ -16,6 +16,7 @@ import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.characters.CharactersDao
 import com.example.rickandmorty.data.local.database.episodes.EpisodesDao
 import com.example.rickandmorty.data.local.database.locations.LocationsDao
+import com.example.rickandmorty.data.pagination.CharactersRemoteKeysDao
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
 import com.example.rickandmorty.data.remote.episodes.EpisodesApi
@@ -56,9 +57,12 @@ class CharacterDetailsFragment : Fragment() {
     private lateinit var charactersApi: CharactersApi
     private lateinit var locationsApi: LocationsApi
 
+    private lateinit var database: RickAndMortyDatabase
+
     private lateinit var charactersDao: CharactersDao
     private lateinit var episodesDao: EpisodesDao
     private lateinit var locationsDao: LocationsDao
+    private lateinit var keysDao: CharactersRemoteKeysDao
 
     private lateinit var episodesRepository: EpisodesRepository
     private lateinit var charactersRepository: CharactersRepository
@@ -114,12 +118,12 @@ class CharacterDetailsFragment : Fragment() {
         charactersApi = CharactersApiBuilder.apiService
         locationsApi = LocationsApiBuilder.apiService
 
-        charactersDao = RickAndMortyDatabase
-            .getInstance(requireContext().applicationContext).charactersDao
-        episodesDao = RickAndMortyDatabase
-            .getInstance(requireContext().applicationContext).episodesDao
-        locationsDao = RickAndMortyDatabase
-            .getInstance(requireContext().applicationContext).locationDao
+        database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
+
+        charactersDao = database.charactersDao
+        episodesDao = database.episodesDao
+        locationsDao = database.locationDao
+        keysDao = database.charactersRemoteKeysDao
 
         episodesRepository = EpisodesRepositoryImpl(
             api = episodesApi,
@@ -127,7 +131,7 @@ class CharacterDetailsFragment : Fragment() {
         )
         charactersRepository = CharactersRepositoryImpl(
             api = charactersApi,
-            dao = charactersDao
+            database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
         )
         locationsRepository = LocationsRepositoryImpl(
             api = locationsApi,

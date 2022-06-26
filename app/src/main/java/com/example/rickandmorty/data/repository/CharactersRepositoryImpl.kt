@@ -1,19 +1,25 @@
 package com.example.rickandmorty.data.repository
 
+import androidx.paging.*
 import androidx.sqlite.db.SimpleSQLiteQuery
-import com.example.rickandmorty.data.local.database.characters.CharactersDao
+import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.converters.IdsConverter
 import com.example.rickandmorty.data.mapper.character.CharacterDtoToCharacterEntityMapper
 import com.example.rickandmorty.data.mapper.character.CharacterEntityToCharacterDomainMapper
+import com.example.rickandmorty.data.pagination.CharactersMediator
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.domain.models.character.Character
 import com.example.rickandmorty.domain.models.character.CharacterFilter
 import com.example.rickandmorty.domain.repository.CharactersRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class CharactersRepositoryImpl(
     private val api: CharactersApi,
-    private val dao: CharactersDao
+    private val database: RickAndMortyDatabase
 ) : CharactersRepository {
+
+    private val dao = database.charactersDao
 
     private val mapperDtoToEntity = CharacterDtoToCharacterEntityMapper()
     private val mapperEntityToDomain = CharacterEntityToCharacterDomainMapper()
@@ -92,5 +98,37 @@ class CharactersRepositoryImpl(
     override suspend fun getFilters(filterName: String): List<String> {
         val query = SimpleSQLiteQuery("SELECT DISTINCT $filterName FROM characters")
         return dao.getFilters(query)
+    }
+
+    @OptIn(ExperimentalPagingApi::class)
+    override suspend fun getCharactersWithPagination(): Flow<PagingData<Character>> {
+        val pagingSourceFactory = {
+            dao.getAllPagedCharacters()
+        }
+
+        return Pager(
+            config = getDefaultPageConfig(),
+            pagingSourceFactory = pagingSourceFactory,
+            remoteMediator = CharactersMediator(
+                api = api,
+                database = database
+            )
+        ).flow.map { data ->
+            data.map { characterEntity ->
+                mapperEntityToDomain.map(characterEntity)
+            }
+        }
+    }
+
+
+    private fun getDefaultPageConfig(): PagingConfig {
+        return PagingConfig(
+            pageSize = 20,
+            enablePlaceholders = true,
+            prefetchDistance = 20,
+            initialLoadSize = 20,
+            maxSize = PagingConfig.MAX_SIZE_UNBOUNDED,
+            jumpThreshold = Int.MIN_VALUE
+        )
     }
 }

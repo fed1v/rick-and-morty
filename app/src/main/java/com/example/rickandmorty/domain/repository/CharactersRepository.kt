@@ -1,7 +1,9 @@
 package com.example.rickandmorty.domain.repository
 
+import androidx.paging.PagingData
 import com.example.rickandmorty.domain.models.character.Character
 import com.example.rickandmorty.domain.models.character.CharacterFilter
+import kotlinx.coroutines.flow.Flow
 
 interface CharactersRepository {
 
@@ -14,4 +16,6 @@ interface CharactersRepository {
     suspend fun getCharactersByFilters(filters: CharacterFilter): List<Character>
 
     suspend fun getFilters(filterName: String): List<String>
+
+    suspend fun getCharactersWithPagination(): Flow<PagingData<Character>>
 }

@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.characters.CharactersDao
 import com.example.rickandmorty.data.local.database.episodes.EpisodesDao
+import com.example.rickandmorty.data.pagination.CharactersRemoteKeysDao
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
 import com.example.rickandmorty.data.remote.episodes.EpisodesApi
@@ -43,8 +44,11 @@ class EpisodeDetailsFragment : Fragment() {
     private lateinit var episodesApi: EpisodesApi
     private lateinit var charactersApi: CharactersApi
 
+    private lateinit var database: RickAndMortyDatabase
+
     private lateinit var episodesDao: EpisodesDao
     private lateinit var charactersDao: CharactersDao
+    private lateinit var keysDao: CharactersRemoteKeysDao
 
     private lateinit var episodesRepository: EpisodesRepository
     private lateinit var charactersRepository: CharactersRepository
@@ -92,10 +96,11 @@ class EpisodeDetailsFragment : Fragment() {
         episodesApi = EpisodesApiBuilder.apiService
         charactersApi = CharactersApiBuilder.apiService
 
-        episodesDao = RickAndMortyDatabase
-            .getInstance(requireContext().applicationContext).episodesDao
-        charactersDao = RickAndMortyDatabase
-            .getInstance(requireContext().applicationContext).charactersDao
+        database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
+
+        episodesDao = database.episodesDao
+        charactersDao = database.charactersDao
+        keysDao = database.charactersRemoteKeysDao
 
         episodesRepository = EpisodesRepositoryImpl(
             api = episodesApi,
@@ -103,7 +108,7 @@ class EpisodeDetailsFragment : Fragment() {
         )
         charactersRepository = CharactersRepositoryImpl(
             api = charactersApi,
-            dao = charactersDao
+            database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
         )
 
         getEpisodeByIdUseCase = GetEpisodeByIdUseCase(episodesRepository)

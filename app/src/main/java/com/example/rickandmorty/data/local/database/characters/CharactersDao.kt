@@ -1,5 +1,6 @@
 package com.example.rickandmorty.data.local.database.characters
 
+import androidx.paging.PagingSource
 import androidx.room.*
 import androidx.sqlite.db.SupportSQLiteQuery
 
@@ -41,4 +42,11 @@ interface CharactersDao {
 
     @RawQuery
     fun getFilters(query: SupportSQLiteQuery): List<String>
+
+
+    @Query("SELECT * FROM characters")
+    fun getAllPagedCharacters(): PagingSource<Int, CharacterEntity>
+
+    @Query("DELETE FROM characters")
+    fun clearCharacters()
 }

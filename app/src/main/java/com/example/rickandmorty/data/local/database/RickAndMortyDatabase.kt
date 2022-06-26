@@ -10,12 +10,16 @@ import com.example.rickandmorty.data.local.database.episodes.EpisodesDao
 import com.example.rickandmorty.data.local.database.episodes.EpisodeEntity
 import com.example.rickandmorty.data.local.database.locations.LocationsDao
 import com.example.rickandmorty.data.local.database.locations.LocationEntity
+import com.example.rickandmorty.data.pagination.CharactersRemoteKeysDao
+import com.example.rickandmorty.data.pagination.RemoteKeys
 
 @Database(
-    version = 1, entities = [
+    version = 1,
+    entities = [
         CharacterEntity::class,
         EpisodeEntity::class,
-        LocationEntity::class
+        LocationEntity::class,
+        RemoteKeys::class
     ]
 )
 abstract class RickAndMortyDatabase : RoomDatabase() {
@@ -23,6 +27,8 @@ abstract class RickAndMortyDatabase : RoomDatabase() {
     abstract val charactersDao: CharactersDao
     abstract val episodesDao: EpisodesDao
     abstract val locationDao: LocationsDao
+
+    abstract val charactersRemoteKeysDao: CharactersRemoteKeysDao
 
     companion object {
         private var INSTANCE: RickAndMortyDatabase? = null

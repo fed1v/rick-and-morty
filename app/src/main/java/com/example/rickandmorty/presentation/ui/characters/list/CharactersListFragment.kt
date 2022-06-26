@@ -8,10 +8,12 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.characters.CharactersDao
+import com.example.rickandmorty.data.pagination.CharactersRemoteKeysDao
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
 import com.example.rickandmorty.data.repository.CharactersRepositoryImpl
@@ -21,19 +23,38 @@ import com.example.rickandmorty.domain.repository.CharactersRepository
 import com.example.rickandmorty.domain.usecases.characters.GetCharactersByFiltersUseCase
 import com.example.rickandmorty.domain.usecases.characters.GetCharactersFiltersUseCase
 import com.example.rickandmorty.domain.usecases.characters.GetCharactersUseCase
+import com.example.rickandmorty.domain.usecases.characters.GetCharactersWithPaginationUseCase
 import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationModelMapper
 import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAdapter
+import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersPagedAdapter
 import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
 import com.example.rickandmorty.presentation.ui.hostActivity
+import com.example.rickandmorty.util.OnItemSelectedListener
 import com.example.rickandmorty.util.filters.CharactersFiltersHelper
 import com.example.rickandmorty.util.resource.Status
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 
 class CharactersListFragment : Fragment() {
 
     private lateinit var binding: FragmentCharactersListBinding
     private lateinit var charactersAdapter: CharactersAdapter
+
+    private lateinit var charactersPagedAdapter: CharactersPagedAdapter
+
+    private val onCharacterSelectedListener = object : OnItemSelectedListener<CharacterPresentation> {
+        override fun onSelectItem(item: CharacterPresentation) {
+            hostActivity().openFragment(
+                fragment = CharacterDetailsFragment.newInstance(item),
+                tag = "CharacterDetailsFragment"
+            )
+        }
+    }
+
+    private var bundleRecyclerViewState: Bundle = Bundle()
+
     private lateinit var toolbar: Toolbar
     private var charactersFiltersHelper: CharactersFiltersHelper? = null
 
@@ -42,11 +63,15 @@ class CharactersListFragment : Fragment() {
     private lateinit var api: CharactersApi
     private lateinit var repository: CharactersRepository
 
+    private lateinit var database: RickAndMortyDatabase
+
     private lateinit var charactersDao: CharactersDao
+    private lateinit var charactersRemoteKeysDao: CharactersRemoteKeysDao
 
     private lateinit var getCharactersUseCase: GetCharactersUseCase
     private lateinit var getCharactersByFiltersUseCase: GetCharactersByFiltersUseCase
     private lateinit var getCharactersFiltersUseCase: GetCharactersFiltersUseCase
+    private lateinit var getCharactersWithPaginationUseCase: GetCharactersWithPaginationUseCase
 
     private lateinit var viewModel: CharactersViewModel
 
@@ -64,12 +89,28 @@ class CharactersListFragment : Fragment() {
         initToolbar()
         initRecyclerView()
 
-
         initDependencies()
         initViewModel()
         initFilters()
 
-        setUpObservers()
+//        setUpCharactersPagingObserver()
+
+        binding.charactersProgressBar.visibility = View.GONE
+
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.charactersFlow.collectLatest {
+                charactersPagedAdapter.submitData(it)
+            }
+        }
+
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.getCharactersWithPagination()
+        }
+
+
+        //    setUpObservers()
 
         return binding.root
     }
@@ -98,23 +139,29 @@ class CharactersListFragment : Fragment() {
             factory = CharactersViewModelFactory(
                 getCharactersUseCase = getCharactersUseCase,
                 getCharactersByFiltersUseCase = getCharactersByFiltersUseCase,
-                getCharactersFiltersUseCase = getCharactersFiltersUseCase
+                getCharactersFiltersUseCase = getCharactersFiltersUseCase,
+                getCharactersWithPaginationUseCase = getCharactersWithPaginationUseCase
             )
         ).get(CharactersViewModel::class.java)
     }
 
     private fun initDependencies() {
         api = CharactersApiBuilder.apiService
-        charactersDao =
-            RickAndMortyDatabase.getInstance(requireContext().applicationContext).charactersDao
+
+        database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
+
+        charactersDao = database.charactersDao
+        charactersRemoteKeysDao = database.charactersRemoteKeysDao
 
         repository = CharactersRepositoryImpl(
             api = api,
-            dao = charactersDao
+            database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
         )
+
         getCharactersUseCase = GetCharactersUseCase(repository)
         getCharactersByFiltersUseCase = GetCharactersByFiltersUseCase(repository)
         getCharactersFiltersUseCase = GetCharactersFiltersUseCase(repository)
+        getCharactersWithPaginationUseCase = GetCharactersWithPaginationUseCase(repository)
     }
 
     private fun initToolbar() {
@@ -123,7 +170,7 @@ class CharactersListFragment : Fragment() {
     }
 
     private fun setUpObservers() {
-        setUpCharactersObserver()
+        // setUpCharactersObserver()
         //    setUpCharactersByFiltersObserver()
     }
 
@@ -173,11 +220,19 @@ class CharactersListFragment : Fragment() {
 
     private fun initRecyclerView() {
         charactersAdapter = CharactersAdapter { onCharacterClicked(it) }
+
+        charactersPagedAdapter = CharactersPagedAdapter(
+            onItemSelectedListener = onCharacterSelectedListener
+        )
+
+        binding.rvCharacters.itemAnimator = null
         binding.rvCharacters.layoutManager = GridLayoutManager(requireContext(), 2)
-        binding.rvCharacters.adapter = charactersAdapter
+        //    binding.rvCharacters.adapter = charactersAdapter
+        binding.rvCharacters.adapter = charactersPagedAdapter
     }
 
     private fun showCharacters(characters: List<CharacterPresentation>) {
+        binding.rvCharacters.adapter = charactersAdapter
         if (characters.isEmpty()) {
             Toast.makeText(requireContext(), "Nothing found", Toast.LENGTH_SHORT).show()
         }

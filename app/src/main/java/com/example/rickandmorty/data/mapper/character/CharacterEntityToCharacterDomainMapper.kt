@@ -3,11 +3,12 @@ package com.example.rickandmorty.data.mapper.character
 import com.example.rickandmorty.data.local.database.characters.CharacterEntity
 import com.example.rickandmorty.domain.models.character.Character
 import com.example.rickandmorty.util.mapper.Mapper
+import kotlin.math.abs
 
 class CharacterEntityToCharacterDomainMapper : Mapper<CharacterEntity, Character> {
 
     override fun map(data: CharacterEntity): Character = Character(
-        id = data.id,
+        id = abs(data.id),
         name = data.name,
         status = data.status,
         species = data.species,

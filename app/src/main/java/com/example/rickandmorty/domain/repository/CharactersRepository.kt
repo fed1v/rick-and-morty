@@ -18,4 +18,6 @@ interface CharactersRepository {
     suspend fun getFilters(filterName: String): List<String>
 
     suspend fun getCharactersWithPagination(): Flow<PagingData<Character>>
+
+    suspend fun getCharactersByFiltersWithPagination(filters: CharacterFilter): Flow<PagingData<Character>>
 }

@@ -6,7 +6,9 @@ import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.converters.IdsConverter
 import com.example.rickandmorty.data.mapper.character.CharacterDtoToCharacterEntityMapper
 import com.example.rickandmorty.data.mapper.character.CharacterEntityToCharacterDomainMapper
+import com.example.rickandmorty.data.pagination.CharactersFiltersMediator
 import com.example.rickandmorty.data.pagination.CharactersMediator
+import com.example.rickandmorty.data.pagination.RemoteKeys
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.domain.models.character.Character
 import com.example.rickandmorty.domain.models.character.CharacterFilter
@@ -14,12 +16,14 @@ import com.example.rickandmorty.domain.repository.CharactersRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
+@OptIn(ExperimentalPagingApi::class)
 class CharactersRepositoryImpl(
     private val api: CharactersApi,
     private val database: RickAndMortyDatabase
 ) : CharactersRepository {
 
     private val dao = database.charactersDao
+    private val charactersRemoteKeysDao = database.charactersRemoteKeysDao
 
     private val mapperDtoToEntity = CharacterDtoToCharacterEntityMapper()
     private val mapperEntityToDomain = CharacterEntityToCharacterDomainMapper()
@@ -43,6 +47,19 @@ class CharactersRepositoryImpl(
             val characterFromApi = api.getCharacterById(id)
             val characterEntity = mapperDtoToEntity.map(characterFromApi)
             dao.insertCharacter(characterEntity)
+
+            var prevKey: Int? = (characterFromApi.id - 1) / 20
+            if (prevKey != null && prevKey <= 0) prevKey = null
+            val nextKey = (prevKey?.plus(2)) ?: 2
+
+            val key = RemoteKeys(
+                    id = characterFromApi.id,
+                    prevKey = prevKey,
+                    nextKey = nextKey
+                )
+
+            charactersRemoteKeysDao.insertAll(listOf(key))
+
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -57,6 +74,20 @@ class CharactersRepositoryImpl(
             val charactersFromApi = api.getCharactersByIds(ids)
             val charactersEntities = charactersFromApi.map { mapperDtoToEntity.map(it) }
             dao.insertCharacters(charactersEntities)
+
+            val keys = charactersFromApi.map {
+                var prevKey: Int? = (it.id - 1) / 20
+                if (prevKey != null && prevKey <= 0) prevKey = null
+                val nextKey = (prevKey?.plus(2)) ?: 2
+
+                RemoteKeys(
+                    id = it.id,
+                    prevKey = prevKey,
+                    nextKey = nextKey
+                )
+            }
+
+            charactersRemoteKeysDao.insertAll(keys)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -65,6 +96,8 @@ class CharactersRepositoryImpl(
         val charactersFromDB = dao.getCharactersByIds(idsList)
 
         return charactersFromDB.map { mapperEntityToDomain.map(it) }
+            .distinctBy { it.id }
+            .sortedBy { it.id }
     }
 
     override suspend fun getCharactersByFilters(filters: CharacterFilter): List<Character> {
@@ -80,6 +113,21 @@ class CharactersRepositoryImpl(
             val charactersFromApi = api.getCharactersByFilters(filtersToApply)
             val charactersEntities = charactersFromApi.results.map { mapperDtoToEntity.map(it) }
             dao.insertCharacters(charactersEntities)
+
+            val keys = charactersEntities.map {
+                var prevKey: Int? = (it.id - 1) / 20
+                if (prevKey != null && prevKey <= 0) prevKey = null
+                val nextKey = (prevKey?.plus(2)) ?: 2
+
+                RemoteKeys(
+                    id = it.id,
+                    prevKey = prevKey,
+                    nextKey = nextKey
+                )
+            }
+
+            charactersRemoteKeysDao.insertAll(keys)
+
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -100,10 +148,9 @@ class CharactersRepositoryImpl(
         return dao.getFilters(query)
     }
 
-    @OptIn(ExperimentalPagingApi::class)
     override suspend fun getCharactersWithPagination(): Flow<PagingData<Character>> {
         val pagingSourceFactory = {
-            dao.getAllPagedCharacters()
+            dao.getPagedCharactersFromIndex(0)
         }
 
         return Pager(
@@ -121,11 +168,47 @@ class CharactersRepositoryImpl(
     }
 
 
+    override suspend fun getCharactersByFiltersWithPagination(filters: CharacterFilter): Flow<PagingData<Character>> {
+
+        val filtersToApply = mapOf(
+            "name" to filters.name,
+            "status" to filters.status,
+            "species" to filters.species,
+            "type" to filters.type,
+            "gender" to filters.gender,
+        ).filter { it.value != null }
+
+        val pagingSourceFactory = {
+            dao.getPagedCharactersByFilters(
+                name = filtersToApply["name"],
+                status = filtersToApply["status"],
+                species = filtersToApply["species"],
+                type = filtersToApply["type"],
+                gender = filtersToApply["gender"],
+            )
+        }
+
+        return Pager(
+            config = getDefaultPageConfig(),
+            pagingSourceFactory = pagingSourceFactory,
+            remoteMediator = CharactersFiltersMediator(
+                api = api,
+                database = database,
+                characterFilters = filters
+            )
+        ).flow.map { data ->
+            data.map { character ->
+                mapperEntityToDomain.map(character)
+            }
+        }
+    }
+
+
     private fun getDefaultPageConfig(): PagingConfig {
         return PagingConfig(
             pageSize = 20,
             enablePlaceholders = true,
-            prefetchDistance = 20,
+            prefetchDistance = 10,
             initialLoadSize = 20,
             maxSize = PagingConfig.MAX_SIZE_UNBOUNDED,
             jumpThreshold = Int.MIN_VALUE

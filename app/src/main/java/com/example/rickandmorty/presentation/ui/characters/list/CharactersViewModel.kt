@@ -6,10 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.map
 import com.example.rickandmorty.domain.models.character.CharacterFilter
-import com.example.rickandmorty.domain.usecases.characters.GetCharactersByFiltersUseCase
-import com.example.rickandmorty.domain.usecases.characters.GetCharactersFiltersUseCase
-import com.example.rickandmorty.domain.usecases.characters.GetCharactersUseCase
-import com.example.rickandmorty.domain.usecases.characters.GetCharactersWithPaginationUseCase
+import com.example.rickandmorty.domain.usecases.characters.*
 import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationModelMapper
 import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.util.resource.Resource
@@ -22,7 +19,8 @@ class CharactersViewModel(
     private val getCharactersUseCase: GetCharactersUseCase,
     private val getCharactersByFiltersUseCase: GetCharactersByFiltersUseCase,
     private val getCharactersFiltersUseCase: GetCharactersFiltersUseCase,
-    private val getCharactersWithPaginationUseCase: GetCharactersWithPaginationUseCase
+    private val getCharactersWithPaginationUseCase: GetCharactersWithPaginationUseCase,
+    private val getCharactersByFiltersWithPaginationUseCase: GetCharactersByFiltersWithPaginationUseCase
 ) : ViewModel() {
 
     private var _charactersFlow = MutableSharedFlow<PagingData<CharacterPresentation>>()
@@ -52,12 +50,21 @@ class CharactersViewModel(
     }
 
 
-
-
     suspend fun getCharactersWithPagination() {
         val mapperDomainToPresentation = CharacterDomainToCharacterPresentationModelMapper()
 
         getCharactersWithPaginationUseCase.execute()
+            .onEach { data ->
+                _charactersFlow.emit(
+                    data.map { character -> mapperDomainToPresentation.map(character) }
+                )
+            }.launchIn(viewModelScope)
+    }
+
+    suspend fun getCharactersByFiltersWithPagination(filters: CharacterFilter) {
+        val mapperDomainToPresentation = CharacterDomainToCharacterPresentationModelMapper()
+
+        getCharactersByFiltersWithPaginationUseCase.execute(filters)
             .onEach { data ->
                 _charactersFlow.emit(
                     data.map { character -> mapperDomainToPresentation.map(character) }

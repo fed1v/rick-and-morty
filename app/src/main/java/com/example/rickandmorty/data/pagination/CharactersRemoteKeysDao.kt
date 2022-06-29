@@ -14,6 +14,24 @@ interface CharactersRemoteKeysDao {
     @Query("SELECT * FROM remotekeys WHERE id = :id")
     suspend fun remoteKeysCharacterId(id: Int): RemoteKeys?
 
+    @Query("SELECT * FROM remotekeys")
+    suspend fun getAllKeys(): List<RemoteKeys?>
+
     @Query("DELETE FROM remotekeys")
     suspend fun clearRemoteKeys()
+
+    @Query("SELECT * FROM remotekeys WHERE (id>:id)")
+    fun getKeysFromIndex(id: Int): List<RemoteKeys>
+
+    @Query("DELETE FROM remotekeys WHERE (id>:id)")
+    suspend fun deleteKeysFromId(id: Int)
+
+    @Query("DELETE FROM remotekeys WHERE id IN (:ids)")
+    suspend fun deleteKeysByIds(ids: List<Int>)
+
+    @Query("SELECT * FROM remotekeys WHERE (id<0)")
+    suspend fun getHiddenKeys(): List<RemoteKeys>
+
+    @Query("DELETE FROM remotekeys WHERE (id<0)")
+    suspend fun clearHiddenKeys()
 }

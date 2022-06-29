@@ -20,10 +20,79 @@ class CharactersMediator(
     private val charactersDao = database.charactersDao
     private val charactersRemoteKeysDao = database.charactersRemoteKeysDao
 
+    private var startPaginationFromIndex: Int = -1
+
+    private var charactersToRemember = mutableListOf<CharacterEntity>()
+    private var keysToRemember = mutableListOf<RemoteKeys>()
+
+    private var hiddenCharacters = mutableListOf<CharacterEntity>()
+    private var hiddenKeys = mutableListOf<RemoteKeys>()
+
+    override suspend fun initialize(): InitializeAction {
+        println("................Initialize...............")
+
+        var rememberFromIndex = -1
+        val keys = charactersRemoteKeysDao.getAllKeys()
+
+        for (i in keys.indices) {
+            if (i + 1 <= keys.size - 1) {
+                if ((keys[i]?.id ?: -1) > 0
+                    && (keys[i + 1]?.id ?: -1) > 0
+                    && keys[i]?.id != keys[i + 1]?.id?.minus(1)
+                ) {
+                    println("i: $i; id=${keys[i]!!.id}")
+                    println("i+1: ${i + 1}; id=${keys[i + 1]!!.id}")
+                    rememberFromIndex = keys[i]?.id ?: -1
+                    println("Remember from index: $rememberFromIndex")
+                    startPaginationFromIndex = keys[i]?.id ?: -1
+                    break
+                }
+            }
+        }
+
+        database.withTransaction {
+            val hidCharacters = charactersDao.getHiddenCharacters()
+            hiddenCharacters.addAll(hidCharacters)
+
+            val hidKeys = charactersRemoteKeysDao.getHiddenKeys()
+            hiddenKeys.addAll(hidKeys)
+        }
+
+
+        if (rememberFromIndex != -1) {
+            rememberFromIndex /= 20
+            rememberFromIndex *= 20
+            println("RememberFromIndex222: $rememberFromIndex")
+
+            database.withTransaction {
+                val charactersToDelete = charactersDao.getCharactersFromIndex(rememberFromIndex)
+                charactersToRemember.addAll(charactersToDelete)
+
+                val keysToDelete = charactersRemoteKeysDao.getKeysFromIndex(rememberFromIndex)
+                keysToRemember.addAll(keysToDelete)
+
+                val charactersToHide = charactersToDelete.map { it.copy(id = -it.id) }
+                charactersDao.insertCharacters(charactersToHide)
+
+                val keysToHide = keysToDelete.map { it.copy(id = -it.id) }
+                charactersRemoteKeysDao.insertAll(keysToHide)
+
+                charactersDao.deleteCharactersFromId(rememberFromIndex)
+                charactersRemoteKeysDao.deleteKeysFromId(rememberFromIndex)
+            }
+        }
+
+        println("Start from: ${startPaginationFromIndex}")
+
+        return super.initialize()
+    }
+
     override suspend fun load(
         loadType: LoadType,
         state: PagingState<Int, CharacterEntity>
     ): MediatorResult {
+
+        println("____________________________________________________________________________________")
 
         val pageKeyData = getKeyPageData(loadType, state)
         val page = when (pageKeyData) {
@@ -40,17 +109,11 @@ class CharactersMediator(
             val charactersFromApi = charactersApiResponse.results
 
             val isEndOfList = charactersFromApi.isEmpty()
-                    || charactersApiResponse.info.next.isNullOrBlank()
+                    || charactersApiResponse.info.next.isBlank()
                     || charactersApiResponse.toString().contains("error")
 
-            println("IsEndOfList? $isEndOfList")
-            println("Characters from api: ${charactersFromApi}")
 
             database.withTransaction {
-                if (loadType == LoadType.REFRESH) {
-                //    charactersRemoteKeysDao.clearRemoteKeys()
-                //    charactersDao.clearCharacters()
-                }
                 val prevKey = if (page == 1) null else page - 1
                 val nextKey = if (isEndOfList) null else page + 1
 
@@ -74,22 +137,47 @@ class CharactersMediator(
                 val mapperDtoToEntity = CharacterDtoToCharacterEntityMapper()
                 val charactersEntities = charactersFromApi.map { mapperDtoToEntity.map(it) }
 
-                println("Insert Characters: $charactersEntities")
-
+                println("Insert Characters: ${charactersEntities.map { it.id }}")
 
                 charactersDao.insertCharacters(charactersEntities)
+
+                if (isEndOfList) {
+                    println("END OF LIST")
+                    //            charactersDao.insertCharacters(charactersToRemember)
+                    charactersRemoteKeysDao.insertAll(hiddenKeys)
+                    //            charactersRemoteKeysDao.insertAll(keysToRemember)
+                    charactersDao.insertCharacters(hiddenCharacters)
+
+                    charactersDao.clearHiddenCharacters()
+                    charactersRemoteKeysDao.clearHiddenKeys()
+                }
             }
 
             return MediatorResult.Success(endOfPaginationReached = isEndOfList)
 
         } catch (e: Exception) {
+            println("ERROR")
+
+            database.withTransaction {
+                charactersDao.insertCharacters(charactersToRemember)
+                charactersRemoteKeysDao.insertAll(keysToRemember)
+                //        charactersRemoteKeysDao.insertAll(keysToRemember.map { it.copy(id = -it.id) })
+                charactersDao.insertCharacters(hiddenCharacters.map { it.copy(id = -it.id) })
+                //        charactersRemoteKeysDao.insertAll(hiddenKeys)
+                charactersRemoteKeysDao.insertAll(hiddenKeys.map { it.copy(id = -it.id) })
+
+                charactersDao.clearHiddenCharacters()
+                charactersRemoteKeysDao.clearHiddenKeys()
+            }
+
+            e.printStackTrace()
             return MediatorResult.Error(e)
         }
     }
 
     private suspend fun getKeyPageData(
         loadType: LoadType,
-        state: PagingState<Int, CharacterEntity>
+        state: PagingState<Int, CharacterEntity>,
     ): Any {
         return when (loadType) {
             LoadType.REFRESH -> {
@@ -123,7 +211,9 @@ class CharactersMediator(
             }
     }
 
-    private suspend fun getLastRemoteKey(state: PagingState<Int, CharacterEntity>): RemoteKeys? {
+    private suspend fun getLastRemoteKey(
+        state: PagingState<Int, CharacterEntity>,
+    ): RemoteKeys? {
         return state.pages
             .lastOrNull { it.data.isNotEmpty() }
             ?.data

@@ -25,6 +25,12 @@ interface CharactersApi {
     @GET("character")
     suspend fun getPagedCharacters(@Query("page") page: Int): CharactersApiResponse
 
+    @GET("character")
+    suspend fun getPagedCharactersByFilters(
+        @Query("page") page: Int,
+        @QueryMap filters: Map<String, String?>
+    ): CharactersApiResponse
+
     companion object {
         const val BASE_URL = "https://rickandmortyapi.com/api/"
     }

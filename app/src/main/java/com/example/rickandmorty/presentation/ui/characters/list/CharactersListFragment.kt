@@ -9,6 +9,7 @@ import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
@@ -20,10 +21,7 @@ import com.example.rickandmorty.data.repository.CharactersRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentCharactersListBinding
 import com.example.rickandmorty.domain.models.character.CharacterFilter
 import com.example.rickandmorty.domain.repository.CharactersRepository
-import com.example.rickandmorty.domain.usecases.characters.GetCharactersByFiltersUseCase
-import com.example.rickandmorty.domain.usecases.characters.GetCharactersFiltersUseCase
-import com.example.rickandmorty.domain.usecases.characters.GetCharactersUseCase
-import com.example.rickandmorty.domain.usecases.characters.GetCharactersWithPaginationUseCase
+import com.example.rickandmorty.domain.usecases.characters.*
 import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationModelMapper
 import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAdapter
@@ -44,16 +42,15 @@ class CharactersListFragment : Fragment() {
 
     private lateinit var charactersPagedAdapter: CharactersPagedAdapter
 
-    private val onCharacterSelectedListener = object : OnItemSelectedListener<CharacterPresentation> {
-        override fun onSelectItem(item: CharacterPresentation) {
-            hostActivity().openFragment(
-                fragment = CharacterDetailsFragment.newInstance(item),
-                tag = "CharacterDetailsFragment"
-            )
+    private val onCharacterSelectedListener =
+        object : OnItemSelectedListener<CharacterPresentation> {
+            override fun onSelectItem(item: CharacterPresentation) {
+                hostActivity().openFragment(
+                    fragment = CharacterDetailsFragment.newInstance(item),
+                    tag = "CharacterDetailsFragment"
+                )
+            }
         }
-    }
-
-    private var bundleRecyclerViewState: Bundle = Bundle()
 
     private lateinit var toolbar: Toolbar
     private var charactersFiltersHelper: CharactersFiltersHelper? = null
@@ -72,6 +69,7 @@ class CharactersListFragment : Fragment() {
     private lateinit var getCharactersByFiltersUseCase: GetCharactersByFiltersUseCase
     private lateinit var getCharactersFiltersUseCase: GetCharactersFiltersUseCase
     private lateinit var getCharactersWithPaginationUseCase: GetCharactersWithPaginationUseCase
+    private lateinit var getCharactersByFiltersWithPaginationUseCase: GetCharactersByFiltersWithPaginationUseCase
 
     private lateinit var viewModel: CharactersViewModel
 
@@ -95,7 +93,7 @@ class CharactersListFragment : Fragment() {
 
 //        setUpCharactersPagingObserver()
 
-        binding.charactersProgressBar.visibility = View.GONE
+        binding.charactersProgressBar.visibility = View.VISIBLE
 
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -140,7 +138,8 @@ class CharactersListFragment : Fragment() {
                 getCharactersUseCase = getCharactersUseCase,
                 getCharactersByFiltersUseCase = getCharactersByFiltersUseCase,
                 getCharactersFiltersUseCase = getCharactersFiltersUseCase,
-                getCharactersWithPaginationUseCase = getCharactersWithPaginationUseCase
+                getCharactersWithPaginationUseCase = getCharactersWithPaginationUseCase,
+                getCharactersByFiltersWithPaginationUseCase = getCharactersByFiltersWithPaginationUseCase
             )
         ).get(CharactersViewModel::class.java)
     }
@@ -162,6 +161,8 @@ class CharactersListFragment : Fragment() {
         getCharactersByFiltersUseCase = GetCharactersByFiltersUseCase(repository)
         getCharactersFiltersUseCase = GetCharactersFiltersUseCase(repository)
         getCharactersWithPaginationUseCase = GetCharactersWithPaginationUseCase(repository)
+        getCharactersByFiltersWithPaginationUseCase =
+            GetCharactersByFiltersWithPaginationUseCase(repository)
     }
 
     private fun initToolbar() {
@@ -219,11 +220,25 @@ class CharactersListFragment : Fragment() {
     }
 
     private fun initRecyclerView() {
-        charactersAdapter = CharactersAdapter { onCharacterClicked(it) }
+        //    charactersAdapter = CharactersAdapter { onCharacterClicked(it) }
 
         charactersPagedAdapter = CharactersPagedAdapter(
             onItemSelectedListener = onCharacterSelectedListener
         )
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            charactersPagedAdapter.loadStateFlow.collect { state ->
+
+                binding.charactersProgressBar.visibility =
+                    if (state.refresh is LoadState.Loading) View.VISIBLE else View.GONE
+
+                if (state.refresh is LoadState.Error && charactersPagedAdapter.itemCount == 0) {
+                    println("Nothing found")
+                    binding.charactersProgressBar.visibility = View.GONE
+                    Toast.makeText(requireContext(), "Nothing found", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
 
         binding.rvCharacters.itemAnimator = null
         binding.rvCharacters.layoutManager = GridLayoutManager(requireContext(), 2)
@@ -294,20 +309,31 @@ class CharactersListFragment : Fragment() {
         println("Filters applied: ${filters}")
         val name = filters.name ?: appliedFilters.name
         appliedFilters = filters.copy(name = name)
-        setUpCharactersByFiltersObserver(appliedFilters)
+        ////    setUpCharactersByFiltersObserver(appliedFilters)
+        viewLifecycleOwner.lifecycleScope.launch {
+            binding.charactersProgressBar.visibility = View.VISIBLE
+            viewModel.getCharactersByFiltersWithPagination(filters)
+            println("ItemCount: ${charactersPagedAdapter.itemCount}")
+        }
     }
 
     private fun onResetClicked() {
-
         appliedFilters = CharacterFilter()
-        setUpCharactersByFiltersObserver(appliedFilters)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.getCharactersWithPagination()
+        }
+        ////    setUpCharactersByFiltersObserver(appliedFilters)
     }
 
 
     private fun searchByQuery(query: String?) {
         println("Query: $query")
         appliedFilters.name = query
-        setUpCharactersByFiltersObserver(appliedFilters)
+        viewLifecycleOwner.lifecycleScope.launch {
+            binding.charactersProgressBar.visibility = View.VISIBLE
+            viewModel.getCharactersByFiltersWithPagination(appliedFilters)
+        }
+        ////    setUpCharactersByFiltersObserver(appliedFilters)
     }
 
     override fun onDestroy() {

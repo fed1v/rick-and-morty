@@ -6,9 +6,9 @@ import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.converters.IdsConverter
 import com.example.rickandmorty.data.mapper.character.CharacterDtoToCharacterEntityMapper
 import com.example.rickandmorty.data.mapper.character.CharacterEntityToCharacterDomainMapper
-import com.example.rickandmorty.data.pagination.CharactersFiltersMediator
-import com.example.rickandmorty.data.pagination.CharactersMediator
-import com.example.rickandmorty.data.pagination.RemoteKeys
+import com.example.rickandmorty.data.pagination.characters.CharactersFiltersMediator
+import com.example.rickandmorty.data.pagination.characters.CharactersMediator
+import com.example.rickandmorty.data.local.database.characters.remote_keys.CharacterRemoteKeys
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.domain.models.character.Character
 import com.example.rickandmorty.domain.models.character.CharacterFilter
@@ -52,13 +52,13 @@ class CharactersRepositoryImpl(
             if (prevKey != null && prevKey <= 0) prevKey = null
             val nextKey = (prevKey?.plus(2)) ?: 2
 
-            val key = RemoteKeys(
+            val key = CharacterRemoteKeys(
                     id = characterFromApi.id,
                     prevKey = prevKey,
                     nextKey = nextKey
                 )
 
-            charactersRemoteKeysDao.insertAll(listOf(key))
+            charactersRemoteKeysDao.insertKeys(listOf(key))
 
         } catch (e: Exception) {
             e.printStackTrace()
@@ -80,14 +80,14 @@ class CharactersRepositoryImpl(
                 if (prevKey != null && prevKey <= 0) prevKey = null
                 val nextKey = (prevKey?.plus(2)) ?: 2
 
-                RemoteKeys(
+                CharacterRemoteKeys(
                     id = it.id,
                     prevKey = prevKey,
                     nextKey = nextKey
                 )
             }
 
-            charactersRemoteKeysDao.insertAll(keys)
+            charactersRemoteKeysDao.insertKeys(keys)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -119,14 +119,14 @@ class CharactersRepositoryImpl(
                 if (prevKey != null && prevKey <= 0) prevKey = null
                 val nextKey = (prevKey?.plus(2)) ?: 2
 
-                RemoteKeys(
+                CharacterRemoteKeys(
                     id = it.id,
                     prevKey = prevKey,
                     nextKey = nextKey
                 )
             }
 
-            charactersRemoteKeysDao.insertAll(keys)
+            charactersRemoteKeysDao.insertKeys(keys)
 
         } catch (e: Exception) {
             e.printStackTrace()
@@ -150,7 +150,7 @@ class CharactersRepositoryImpl(
 
     override suspend fun getCharactersWithPagination(): Flow<PagingData<Character>> {
         val pagingSourceFactory = {
-            dao.getPagedCharactersFromIndex(0)
+            dao.getPagedCharactersFromId(0)
         }
 
         return Pager(

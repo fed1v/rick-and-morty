@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.characters.CharactersDao
-import com.example.rickandmorty.data.pagination.CharactersRemoteKeysDao
+import com.example.rickandmorty.data.local.database.characters.remote_keys.CharactersRemoteKeysDao
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
 import com.example.rickandmorty.data.repository.CharactersRepositoryImpl
@@ -232,7 +232,10 @@ class CharactersListFragment : Fragment() {
                 binding.charactersProgressBar.visibility =
                     if (state.refresh is LoadState.Loading) View.VISIBLE else View.GONE
 
-                if (state.refresh is LoadState.Error && charactersPagedAdapter.itemCount == 0) {
+                if (state.source.refresh is LoadState.NotLoading
+                    && state.refresh is LoadState.Error
+                    && charactersPagedAdapter.itemCount == 0
+                ) {
                     println("Nothing found")
                     binding.charactersProgressBar.visibility = View.GONE
                     Toast.makeText(requireContext(), "Nothing found", Toast.LENGTH_SHORT).show()
@@ -312,7 +315,7 @@ class CharactersListFragment : Fragment() {
         ////    setUpCharactersByFiltersObserver(appliedFilters)
         viewLifecycleOwner.lifecycleScope.launch {
             binding.charactersProgressBar.visibility = View.VISIBLE
-            viewModel.getCharactersByFiltersWithPagination(filters)
+            viewModel.getCharactersByFiltersWithPagination(appliedFilters) // ??
             println("ItemCount: ${charactersPagedAdapter.itemCount}")
         }
     }

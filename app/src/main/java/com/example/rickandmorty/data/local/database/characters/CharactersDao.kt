@@ -63,10 +63,10 @@ interface CharactersDao {
     fun deleteCharactersFromId(id: Int)
 
     @Query("SELECT * FROM characters WHERE (id>:id)")
-    fun getCharactersFromIndex(id: Int): List<CharacterEntity>
+    fun getCharactersFromId(id: Int): List<CharacterEntity>
 
     @Query("SELECT * FROM characters WHERE (id>:id)")
-    fun getPagedCharactersFromIndex(id: Int): PagingSource<Int, CharacterEntity>
+    fun getPagedCharactersFromId(id: Int): PagingSource<Int, CharacterEntity>
 
     @Query("SELECT * FROM characters WHERE (id<0)")
     suspend fun getHiddenCharacters(): List<CharacterEntity>

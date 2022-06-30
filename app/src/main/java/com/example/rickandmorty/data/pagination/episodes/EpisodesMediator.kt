@@ -1,4 +1,4 @@
-package com.example.rickandmorty.data.pagination
+package com.example.rickandmorty.data.pagination.episodes
 
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
@@ -6,33 +6,36 @@ import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
-import com.example.rickandmorty.data.local.database.characters.CharacterEntity
-import com.example.rickandmorty.data.mapper.character.CharacterDtoToCharacterEntityMapper
-import com.example.rickandmorty.data.remote.characters.CharactersApi
-
+import com.example.rickandmorty.data.local.database.episodes.EpisodeEntity
+import com.example.rickandmorty.data.local.database.episodes.remote_keys.EpisodeRemoteKeys
+import com.example.rickandmorty.data.mapper.episode.EpisodeDtoToEpisodeEntityMapper
+import com.example.rickandmorty.data.remote.episodes.EpisodesApi
 
 @OptIn(ExperimentalPagingApi::class)
-class CharactersMediator(
-    private val api: CharactersApi,
+class EpisodesMediator(
+    private val api: EpisodesApi,
     private val database: RickAndMortyDatabase
-) : RemoteMediator<Int, CharacterEntity>() {
+) : RemoteMediator<Int, EpisodeEntity>() {
 
-    private val charactersDao = database.charactersDao
-    private val charactersRemoteKeysDao = database.charactersRemoteKeysDao
+    private val episodesDao = database.episodesDao
+    private val episodesRemoteKeysDao = database.episodesRemoteKeysDao
 
     private var startPaginationFromIndex: Int = -1
 
-    private var charactersToRemember = mutableListOf<CharacterEntity>()
-    private var keysToRemember = mutableListOf<RemoteKeys>()
+    private var episodesToRemember = mutableListOf<EpisodeEntity>()
+    private var keysToRemember = mutableListOf<EpisodeRemoteKeys>()
 
-    private var hiddenCharacters = mutableListOf<CharacterEntity>()
-    private var hiddenKeys = mutableListOf<RemoteKeys>()
+    private var hiddenEpisodes = mutableListOf<EpisodeEntity>()
+    private var hiddenKeys = mutableListOf<EpisodeRemoteKeys>()
+
 
     override suspend fun initialize(): InitializeAction {
-        println("................Initialize...............")
+        println(".............EpisodesMediator initialize...............")
+
 
         var rememberFromIndex = -1
-        val keys = charactersRemoteKeysDao.getAllKeys()
+
+        val keys = episodesRemoteKeysDao.getAllKeys()//.map { it?.copy(id = abs(it.id)) }
 
         for (i in keys.indices) {
             if (i + 1 <= keys.size - 1) {
@@ -50,11 +53,22 @@ class CharactersMediator(
             }
         }
 
-        database.withTransaction {
-            val hidCharacters = charactersDao.getHiddenCharacters()
-            hiddenCharacters.addAll(hidCharacters)
+        if (keys.isNotEmpty() && rememberFromIndex == -1) {
+            if ((keys[keys.lastIndex]?.id?.rem(20) ?: -1) != 0) {
+                println("% != 0")
+                println("Last id: ${keys[keys.lastIndex]?.id}")
+                rememberFromIndex = keys[keys.lastIndex]?.id ?: 0
+                rememberFromIndex /= 20
+                rememberFromIndex *= 20
+                println("Then rememberFromIndex=$rememberFromIndex")
+            }
+        }
 
-            val hidKeys = charactersRemoteKeysDao.getHiddenKeys()
+        database.withTransaction {
+            val hidEpisodes = episodesDao.getHiddenEpisodes()
+            hiddenEpisodes.addAll(hidEpisodes)
+
+            val hidKeys = episodesRemoteKeysDao.getHiddenKeys()
             hiddenKeys.addAll(hidKeys)
         }
 
@@ -62,34 +76,35 @@ class CharactersMediator(
         if (rememberFromIndex != -1) {
             rememberFromIndex /= 20
             rememberFromIndex *= 20
-            println("RememberFromIndex222: $rememberFromIndex")
+            println("RememberFromIndex: $rememberFromIndex")
 
             database.withTransaction {
-                val charactersToDelete = charactersDao.getCharactersFromIndex(rememberFromIndex)
-                charactersToRemember.addAll(charactersToDelete)
+                val episodesToDelete = episodesDao.getEpisodesFromId(rememberFromIndex)
+                episodesToRemember.addAll(episodesToDelete)
 
-                val keysToDelete = charactersRemoteKeysDao.getKeysFromIndex(rememberFromIndex)
+                val keysToDelete = episodesRemoteKeysDao.getKeysFromId(rememberFromIndex)
                 keysToRemember.addAll(keysToDelete)
 
-                val charactersToHide = charactersToDelete.map { it.copy(id = -it.id) }
-                charactersDao.insertCharacters(charactersToHide)
+                val episodesToHide = episodesToDelete.map { it.copy(id = -it.id) }
+                episodesDao.insertEpisodes(episodesToHide)
 
                 val keysToHide = keysToDelete.map { it.copy(id = -it.id) }
-                charactersRemoteKeysDao.insertAll(keysToHide)
+                episodesRemoteKeysDao.insertKeys(keysToHide)
 
-                charactersDao.deleteCharactersFromId(rememberFromIndex)
-                charactersRemoteKeysDao.deleteKeysFromId(rememberFromIndex)
+                episodesDao.deleteEpisodesFromId(rememberFromIndex)
+                episodesRemoteKeysDao.deleteKeysFromId(rememberFromIndex)
             }
         }
 
         println("Start from: ${startPaginationFromIndex}")
+
 
         return super.initialize()
     }
 
     override suspend fun load(
         loadType: LoadType,
-        state: PagingState<Int, CharacterEntity>
+        state: PagingState<Int, EpisodeEntity>
     ): MediatorResult {
 
         println("____________________________________________________________________________________")
@@ -105,12 +120,12 @@ class CharactersMediator(
         }
 
         try {
-            val charactersApiResponse = api.getPagedCharacters(page = page)
-            val charactersFromApi = charactersApiResponse.results
+            val episodesApiResponse = api.getPagedEpisodes(page = page)
+            val episodesFromApi = episodesApiResponse.results
 
-            val isEndOfList = charactersFromApi.isEmpty()
-                    || charactersApiResponse.info.next.isBlank()
-                    || charactersApiResponse.toString().contains("error")
+            val isEndOfList = episodesFromApi.isEmpty()
+                    || episodesApiResponse.info?.next.isNullOrBlank()
+                    || episodesApiResponse.toString().contains("error")
 
 
             database.withTransaction {
@@ -124,32 +139,32 @@ class CharactersMediator(
                 println("________")
 
 
-                val keys = charactersFromApi.map {
-                    RemoteKeys(
+                val keys = episodesFromApi.map {
+                    EpisodeRemoteKeys(
                         id = it.id,
                         prevKey = prevKey,
                         nextKey = nextKey
                     )
                 }
 
-                charactersRemoteKeysDao.insertAll(keys)
+                episodesRemoteKeysDao.insertKeys(keys)
 
-                val mapperDtoToEntity = CharacterDtoToCharacterEntityMapper()
-                val charactersEntities = charactersFromApi.map { mapperDtoToEntity.map(it) }
+                val mapperDtoToEntity = EpisodeDtoToEpisodeEntityMapper()
+                val episodesEntities = episodesFromApi.map { mapperDtoToEntity.map(it) }
 
-                println("Insert Characters: ${charactersEntities.map { it.id }}")
+                println("Insert Episodes: ${episodesEntities.map { it.id }}")
 
-                charactersDao.insertCharacters(charactersEntities)
+                episodesDao.insertEpisodes(episodesEntities)
 
                 if (isEndOfList) {
                     println("END OF LIST")
                     //            charactersDao.insertCharacters(charactersToRemember)
-                    charactersRemoteKeysDao.insertAll(hiddenKeys)
+                    episodesRemoteKeysDao.insertKeys(hiddenKeys)
                     //            charactersRemoteKeysDao.insertAll(keysToRemember)
-                    charactersDao.insertCharacters(hiddenCharacters)
+                    episodesDao.insertEpisodes(hiddenEpisodes)
 
-                    charactersDao.clearHiddenCharacters()
-                    charactersRemoteKeysDao.clearHiddenKeys()
+                    episodesDao.clearHiddenEpisodes()
+                    episodesRemoteKeysDao.clearHiddenKeys()
                 }
             }
 
@@ -159,25 +174,31 @@ class CharactersMediator(
             println("ERROR")
 
             database.withTransaction {
-                charactersDao.insertCharacters(charactersToRemember)
-                charactersRemoteKeysDao.insertAll(keysToRemember)
+                episodesDao.insertEpisodes(episodesToRemember)
+                episodesRemoteKeysDao.insertKeys(keysToRemember)
+                println("episodesToRemember: ${episodesToRemember.map { it.id }}")
+                println("keysToRemember: ${keysToRemember.map { it.id }}")
+                println("hiddenEpisodes: ${hiddenEpisodes.map { it.id }}")
+                println("hiddenKeys: ${hiddenKeys.map { it.id }}")
                 //        charactersRemoteKeysDao.insertAll(keysToRemember.map { it.copy(id = -it.id) })
-                charactersDao.insertCharacters(hiddenCharacters.map { it.copy(id = -it.id) })
+                episodesDao.insertEpisodes(hiddenEpisodes.map { it.copy(id = -it.id) })
                 //        charactersRemoteKeysDao.insertAll(hiddenKeys)
-                charactersRemoteKeysDao.insertAll(hiddenKeys.map { it.copy(id = -it.id) })
+                episodesRemoteKeysDao.insertKeys(hiddenKeys.map { it.copy(id = -it.id) })
 
-                charactersDao.clearHiddenCharacters()
-                charactersRemoteKeysDao.clearHiddenKeys()
+                episodesDao.clearHiddenEpisodes()
+                episodesRemoteKeysDao.clearHiddenKeys()
             }
 
             e.printStackTrace()
             return MediatorResult.Error(e)
         }
+
     }
+
 
     private suspend fun getKeyPageData(
         loadType: LoadType,
-        state: PagingState<Int, CharacterEntity>,
+        state: PagingState<Int, EpisodeEntity>,
     ): Any {
         return when (loadType) {
             LoadType.REFRESH -> {
@@ -201,33 +222,35 @@ class CharactersMediator(
         }
     }
 
-    private suspend fun getFirstRemoteKey(state: PagingState<Int, CharacterEntity>): RemoteKeys? {
+    private suspend fun getFirstRemoteKey(state: PagingState<Int, EpisodeEntity>): EpisodeRemoteKeys? {
         return state.pages
             .firstOrNull { it.data.isNotEmpty() }
             ?.data
             ?.firstOrNull()
-            ?.let { character ->
-                charactersRemoteKeysDao.remoteKeysCharacterId(character.id)
+            ?.let { episode ->
+                episodesRemoteKeysDao.remoteKeysEpisodesId(episode.id)
             }
     }
 
     private suspend fun getLastRemoteKey(
-        state: PagingState<Int, CharacterEntity>,
-    ): RemoteKeys? {
+        state: PagingState<Int, EpisodeEntity>,
+    ): EpisodeRemoteKeys? {
         return state.pages
             .lastOrNull { it.data.isNotEmpty() }
             ?.data
             ?.lastOrNull()
             ?.let { character ->
-                charactersRemoteKeysDao.remoteKeysCharacterId(character.id)
+                episodesRemoteKeysDao.remoteKeysEpisodesId(character.id)
             }
     }
 
-    private suspend fun getClosestRemoteKey(state: PagingState<Int, CharacterEntity>): RemoteKeys? {
+    private suspend fun getClosestRemoteKey(
+        state: PagingState<Int, EpisodeEntity>
+    ): EpisodeRemoteKeys? {
         return state.anchorPosition
             ?.let { position ->
                 state.closestItemToPosition(position)?.id?.let { id ->
-                    charactersRemoteKeysDao.remoteKeysCharacterId(id)
+                    episodesRemoteKeysDao.remoteKeysEpisodesId(id)
                 }
             }
     }

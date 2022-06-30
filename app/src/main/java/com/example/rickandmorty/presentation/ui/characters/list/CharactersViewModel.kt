@@ -12,6 +12,7 @@ import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.util.resource.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
@@ -24,7 +25,7 @@ class CharactersViewModel(
 ) : ViewModel() {
 
     private var _charactersFlow = MutableSharedFlow<PagingData<CharacterPresentation>>()
-    val charactersFlow = _charactersFlow
+    val charactersFlow: SharedFlow<PagingData<CharacterPresentation>> = _charactersFlow
 
     fun getFilters() = liveData<Pair<String, List<String>>>(Dispatchers.IO) {
         emit(Pair("species", getCharactersFiltersUseCase.execute("species")))

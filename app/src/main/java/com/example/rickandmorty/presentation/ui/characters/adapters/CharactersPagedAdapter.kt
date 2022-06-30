@@ -14,9 +14,8 @@ import com.example.rickandmorty.util.OnItemSelectedListener
 
 class CharactersPagedAdapter(
     private val onItemSelectedListener: OnItemSelectedListener<CharacterPresentation>
-) :
-    PagingDataAdapter<CharacterPresentation, CharactersPagedAdapter.CharactersPagedViewHolder>(
-        CharactersPagedDiffCallback()
+) : PagingDataAdapter<CharacterPresentation, CharactersPagedAdapter.CharactersPagedViewHolder>(
+        diffCallback = CharactersPagedDiffCallback()
     ) {
 
 

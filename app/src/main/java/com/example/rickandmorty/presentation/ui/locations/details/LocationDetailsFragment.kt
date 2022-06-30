@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.characters.CharactersDao
 import com.example.rickandmorty.data.local.database.locations.LocationsDao
-import com.example.rickandmorty.data.pagination.CharactersRemoteKeysDao
+import com.example.rickandmorty.data.local.database.characters.remote_keys.CharactersRemoteKeysDao
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
 import com.example.rickandmorty.data.remote.locations.LocationsApi

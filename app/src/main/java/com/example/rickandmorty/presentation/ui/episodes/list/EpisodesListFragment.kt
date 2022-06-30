@@ -8,6 +8,8 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
@@ -18,28 +20,46 @@ import com.example.rickandmorty.data.repository.EpisodesRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentEpisodesListBinding
 import com.example.rickandmorty.domain.models.episode.EpisodeFilter
 import com.example.rickandmorty.domain.repository.EpisodesRepository
-import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesByFiltersUseCase
-import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesFiltersUseCase
-import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesUseCase
+import com.example.rickandmorty.domain.usecases.episodes.*
 import com.example.rickandmorty.presentation.mapper.EpisodeDomainToEpisodePresentationModelMapper
 import com.example.rickandmorty.presentation.models.EpisodePresentation
 import com.example.rickandmorty.presentation.ui.episodes.adapters.EpisodesAdapter
+import com.example.rickandmorty.presentation.ui.episodes.adapters.EpisodesPagedAdapter
 import com.example.rickandmorty.presentation.ui.episodes.details.EpisodeDetailsFragment
 import com.example.rickandmorty.presentation.ui.hostActivity
+import com.example.rickandmorty.util.OnItemSelectedListener
 import com.example.rickandmorty.util.filters.EpisodesFiltersHelper
 import com.example.rickandmorty.util.resource.Status
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 
 class EpisodesListFragment : Fragment() {
 
     private lateinit var binding: FragmentEpisodesListBinding
+
     private lateinit var episodesAdapter: EpisodesAdapter
+    private lateinit var episodesPagedAdapter: EpisodesPagedAdapter
+
+    private val onEpisodeSelectedListener =
+        object : OnItemSelectedListener<EpisodePresentation> {
+            override fun onSelectItem(item: EpisodePresentation) {
+                hostActivity().openFragment(
+                    fragment = EpisodeDetailsFragment.newInstance(item),
+                    tag = "EpisodeDetailsFragment"
+                )
+            }
+        }
+
     private lateinit var toolbar: Toolbar
     private var episodesFiltersHelper: EpisodesFiltersHelper? = null
 
     private var appliedFilters = EpisodeFilter()
 
     private lateinit var api: EpisodesApi
+
+    private lateinit var database: RickAndMortyDatabase
 
     private lateinit var episodesDao: EpisodesDao
 
@@ -48,6 +68,9 @@ class EpisodesListFragment : Fragment() {
     private lateinit var getEpisodesUseCase: GetEpisodesUseCase
     private lateinit var getEpisodesByFiltersUseCase: GetEpisodesByFiltersUseCase
     private lateinit var getEpisodesFiltersUseCase: GetEpisodesFiltersUseCase
+    private lateinit var getEpisodesWithPaginationUseCase: GetEpisodesWithPaginationUseCase
+    private lateinit var getEpisodesByFiltersWithPaginationUseCase: GetEpisodesByFiltersWithPaginationUseCase
+
 
     private lateinit var viewModel: EpisodesViewModel
 
@@ -69,7 +92,17 @@ class EpisodesListFragment : Fragment() {
         initViewModel()
         initFilters()
 
-        setUpObservers()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.episodesFlow.collectLatest { data ->
+                episodesPagedAdapter.submitData(data)
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.getEpisodesWithPagination()
+        }
+
+        //    setUpObservers()
 
         return binding.root
     }
@@ -95,27 +128,32 @@ class EpisodesListFragment : Fragment() {
             factory = EpisodesViewModelFactory(
                 getEpisodesUseCase = getEpisodesUseCase,
                 getEpisodesByFiltersUseCase = getEpisodesByFiltersUseCase,
-                getEpisodesFiltersUseCase = getEpisodesFiltersUseCase
+                getEpisodesFiltersUseCase = getEpisodesFiltersUseCase,
+                getEpisodesWithPaginationUseCase = getEpisodesWithPaginationUseCase,
+                getEpisodesByFiltersWithPaginationUseCase = getEpisodesByFiltersWithPaginationUseCase
             )
         ).get(EpisodesViewModel::class.java)
     }
 
     private fun initDependencies() {
         api = EpisodesApiBuilder.apiService
-        episodesDao = RickAndMortyDatabase
-            .getInstance(requireContext().applicationContext).episodesDao
+        database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
+        episodesDao = database.episodesDao
         repository = EpisodesRepositoryImpl(
             api = api,
-            dao = episodesDao
+            database = database
         )
 
         getEpisodesUseCase = GetEpisodesUseCase(repository)
         getEpisodesByFiltersUseCase = GetEpisodesByFiltersUseCase(repository)
         getEpisodesFiltersUseCase = GetEpisodesFiltersUseCase(repository)
+        getEpisodesWithPaginationUseCase = GetEpisodesWithPaginationUseCase(repository)
+        getEpisodesByFiltersWithPaginationUseCase =
+            GetEpisodesByFiltersWithPaginationUseCase(repository)
     }
 
     private fun setUpObservers() {
-        setUpEpisodesObserver()
+        //    setUpEpisodesObserver()
     }
 
     private fun setUpEpisodesObserver() {
@@ -201,11 +239,6 @@ class EpisodesListFragment : Fragment() {
         episodesFiltersHelper?.openFilters()
     }
 
-    private fun searchByQuery(query: String?) {
-        println("Query: $query")
-        appliedFilters.name = query
-        setUpEpisodesByFiltersObserver(appliedFilters)
-    }
 
     private fun showEpisodes(episodes: List<EpisodePresentation>) {
         if (episodes.isEmpty()) {
@@ -215,9 +248,34 @@ class EpisodesListFragment : Fragment() {
     }
 
     private fun initRecyclerView() {
-        episodesAdapter = EpisodesAdapter { onEpisodeClicked(it) }
+        //    episodesAdapter = EpisodesAdapter { onEpisodeClicked(it) }
+
+        episodesPagedAdapter = EpisodesPagedAdapter(
+            onItemSelectedListener = onEpisodeSelectedListener
+        )
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            episodesPagedAdapter.loadStateFlow.collect { state ->
+
+                binding.episodesProgressBar.visibility =
+                    if (state.refresh is LoadState.Loading) View.VISIBLE else View.GONE
+
+                if (state.source.refresh is LoadState.NotLoading
+                    && state.refresh is LoadState.Error
+                    && episodesPagedAdapter.itemCount == 0
+                ) {
+                    println("Nothing found")
+                    binding.episodesProgressBar.visibility = View.GONE
+                    Toast.makeText(requireContext(), "Nothing found", Toast.LENGTH_SHORT).show()
+                }
+
+            }
+        }
+
+        binding.rvEpisodes.itemAnimator = null
         binding.rvEpisodes.layoutManager = GridLayoutManager(requireContext(), 2)
-        binding.rvEpisodes.adapter = episodesAdapter
+        //    binding.rvEpisodes.adapter = episodesAdapter
+        binding.rvEpisodes.adapter = episodesPagedAdapter
     }
 
     private fun setBottomNavigationCheckedItem() {
@@ -232,15 +290,32 @@ class EpisodesListFragment : Fragment() {
         )
     }
 
+    private fun searchByQuery(query: String?) {
+        println("Query: $query")
+        appliedFilters.name = query
+        //    setUpEpisodesByFiltersObserver(appliedFilters)
+        viewLifecycleOwner.lifecycleScope.launch {
+            binding.episodesProgressBar.visibility = View.VISIBLE
+            viewModel.getEpisodesByFiltersWithPagination(appliedFilters)
+        }
+    }
+
     private fun onFiltersApplied(filters: EpisodeFilter) {
         val name = filters.name ?: appliedFilters.name
         appliedFilters = filters.copy(name = name)
-        setUpEpisodesByFiltersObserver(appliedFilters)
+        //    setUpEpisodesByFiltersObserver(appliedFilters)
+        viewLifecycleOwner.lifecycleScope.launch {
+            binding.episodesProgressBar.visibility = View.VISIBLE
+            viewModel.getEpisodesByFiltersWithPagination(appliedFilters) // ?? TODO
+        }
     }
 
     private fun onResetClicked() {
         appliedFilters = EpisodeFilter()
-        setUpEpisodesByFiltersObserver(appliedFilters)
+        //    setUpEpisodesByFiltersObserver(appliedFilters)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.getEpisodesWithPagination()
+        }
     }
 
     override fun onDestroy() {

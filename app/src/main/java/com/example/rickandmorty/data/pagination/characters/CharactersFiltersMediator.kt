@@ -1,4 +1,4 @@
-package com.example.rickandmorty.data.pagination
+package com.example.rickandmorty.data.pagination.characters
 
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
@@ -7,6 +7,7 @@ import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.characters.CharacterEntity
+import com.example.rickandmorty.data.local.database.characters.remote_keys.CharacterRemoteKeys
 import com.example.rickandmorty.data.mapper.character.CharacterDtoToCharacterEntityMapper
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.domain.models.character.CharacterFilter
@@ -81,7 +82,7 @@ class CharactersFiltersMediator(
             charactersRemoteKeysDao.deleteKeysByIds(idsOfHiddenCharactersList)
 
             val isEndOfList = charactersFromApi.isEmpty()
-                    || charactersApiResponse.info.next.isBlank()
+                    || charactersApiResponse.info?.next.isNullOrBlank()
                     || charactersApiResponse.toString().contains("error")
 
 
@@ -108,14 +109,14 @@ class CharactersFiltersMediator(
                     if (prevKey != null && prevKey <= 0) prevKey = null
                     val nextKey = prevKey?.plus(2) ?: 2
 
-                    RemoteKeys(
+                    CharacterRemoteKeys(
                         id = it.id,
                         prevKey = prevKey,
                         nextKey = nextKey
                     )
                 }
 
-                charactersRemoteKeysDao.insertAll(keys)
+                charactersRemoteKeysDao.insertKeys(keys)
 
                 val mapperDtoToEntity = CharacterDtoToCharacterEntityMapper()
                 val charactersEntities = charactersFromApi.map { mapperDtoToEntity.map(it) }
@@ -173,7 +174,7 @@ class CharactersFiltersMediator(
         }
     }
 
-    private suspend fun getFirstRemoteKey(state: PagingState<Int, CharacterEntity>): RemoteKeys? {
+    private suspend fun getFirstRemoteKey(state: PagingState<Int, CharacterEntity>): CharacterRemoteKeys? {
         return state.pages
             .firstOrNull { it.data.isNotEmpty() }
             ?.data
@@ -186,7 +187,7 @@ class CharactersFiltersMediator(
 
     private suspend fun getLastRemoteKey(
         state: PagingState<Int, CharacterEntity>,
-    ): RemoteKeys? {
+    ): CharacterRemoteKeys? {
         return state.pages
             .lastOrNull { it.data.isNotEmpty() }
             ?.data
@@ -196,7 +197,7 @@ class CharactersFiltersMediator(
             }
     }
 
-    private suspend fun getClosestRemoteKey(state: PagingState<Int, CharacterEntity>): RemoteKeys? {
+    private suspend fun getClosestRemoteKey(state: PagingState<Int, CharacterEntity>): CharacterRemoteKeys? {
         return state.anchorPosition
             ?.let { position ->
                 state.closestItemToPosition(position)?.id?.let { id ->

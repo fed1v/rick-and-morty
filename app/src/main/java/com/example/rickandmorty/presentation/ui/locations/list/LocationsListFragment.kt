@@ -38,7 +38,6 @@ class LocationsListFragment : Fragment() {
 
     private lateinit var binding: FragmentLocationsListBinding
 
-    private lateinit var locationsAdapter: LocationsAdapter
     private lateinit var locationsPagedAdapter: LocationsPagedAdapter
 
     private val onLocationSelectedListener = object : OnItemSelectedListener<LocationPresentation> {
@@ -91,9 +90,22 @@ class LocationsListFragment : Fragment() {
 
         setUpObservers()
 
-        getCharacters()
+        getLocations()
+
+        initSwipeRefreshListener()
 
         return binding.root
+    }
+
+    private fun initSwipeRefreshListener() {
+        binding.swipeRefreshLayout.apply {
+            setOnRefreshListener {
+                isRefreshing = true
+                getLocations()
+                binding.rvLocations.scrollToPosition(0)
+                isRefreshing = false
+            }
+        }
     }
 
     private fun setUpObservers() {
@@ -104,10 +116,15 @@ class LocationsListFragment : Fragment() {
         }
     }
 
-    private fun getCharacters() {
+    private fun getLocations() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.getLocationsWithPagination()
+            viewModel.getLocationsWithPagination()
         }
+    }
+
+    private suspend fun getLocationsByFilters(filters: LocationFilter) {
+        viewModel.getLocationsByFiltersWithPagination(filters)
     }
 
     private fun initFilters() {
@@ -213,38 +230,13 @@ class LocationsListFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             locationsPagedAdapter.loadStateFlow.collect { state ->
 
-                println("State: $state")
-
-                if (state.append is LoadState.Loading) {
-                    println("Loading")
-                    binding.locationsBottomProgressBar.isVisible = true
-                }
-
-                if (state.append is LoadState.NotLoading
-                    || state.append is LoadState.Error
-                ) {
-                    println("Not Loading")
-                    binding.locationsBottomProgressBar.isVisible = false
-                }
-
-                if (state.refresh is LoadState.Loading) {
-                    binding.locationsProgressBar.isVisible = true
-                    println("Refresh: Loading")
-                }
-
-                if (state.refresh is LoadState.NotLoading
-                    || state.refresh is LoadState.Error
-                ) {
-                    binding.locationsProgressBar.isVisible = false
-                    println("Refresh: NotLoading")
-                }
-
+                binding.locationsBottomProgressBar.isVisible = state.append is LoadState.Loading
+                binding.locationsProgressBar.isVisible = state.refresh is LoadState.Loading
 
                 if (state.source.refresh is LoadState.NotLoading
                     && state.refresh is LoadState.Error
                     && locationsPagedAdapter.itemCount == 0
                 ) {
-                    println("Nothing found")
                     binding.locationsProgressBar.visibility = View.GONE
                     Toast.makeText(requireContext(), "Nothing found", Toast.LENGTH_SHORT).show()
                 }
@@ -266,7 +258,7 @@ class LocationsListFragment : Fragment() {
         appliedFilters = filters.copy(name = name)
         viewLifecycleOwner.lifecycleScope.launch {
             binding.locationsProgressBar.visibility = View.VISIBLE
-            viewModel.getLocationsByFiltersWithPagination(appliedFilters)
+            getLocationsByFilters(appliedFilters)
         }
     }
 
@@ -274,7 +266,7 @@ class LocationsListFragment : Fragment() {
         appliedFilters.name = query
         viewLifecycleOwner.lifecycleScope.launch {
             binding.locationsProgressBar.visibility = View.VISIBLE
-            viewModel.getLocationsByFiltersWithPagination(appliedFilters)
+            getLocationsByFilters(appliedFilters)
         }
     }
 
@@ -282,7 +274,7 @@ class LocationsListFragment : Fragment() {
         appliedFilters = LocationFilter()
         viewLifecycleOwner.lifecycleScope.launch {
             binding.locationsProgressBar.visibility = View.VISIBLE
-            viewModel.getLocationsWithPagination()
+            getLocations()
         }
     }
 

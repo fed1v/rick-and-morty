@@ -7,7 +7,7 @@ import androidx.paging.PagingData
 import androidx.paging.map
 import com.example.rickandmorty.domain.models.episode.EpisodeFilter
 import com.example.rickandmorty.domain.usecases.episodes.*
-import com.example.rickandmorty.presentation.mapper.EpisodeDomainToEpisodePresentationModelMapper
+import com.example.rickandmorty.presentation.mapper.EpisodeDomainToEpisodePresentationMapper
 import com.example.rickandmorty.presentation.models.EpisodePresentation
 import com.example.rickandmorty.util.resource.Resource
 import kotlinx.coroutines.Dispatchers
@@ -50,7 +50,7 @@ class EpisodesViewModel(
     }
 
     suspend fun getEpisodesWithPagination() {
-        val mapperDomainToPresentation = EpisodeDomainToEpisodePresentationModelMapper()
+        val mapperDomainToPresentation = EpisodeDomainToEpisodePresentationMapper()
 
         getEpisodesWithPaginationUseCase.execute()
             .onEach { data ->
@@ -61,7 +61,7 @@ class EpisodesViewModel(
     }
 
     suspend fun getEpisodesByFiltersWithPagination(filters: EpisodeFilter) {
-        val mapperDomainToPresentation = EpisodeDomainToEpisodePresentationModelMapper()
+        val mapperDomainToPresentation = EpisodeDomainToEpisodePresentationMapper()
 
         getEpisodesByFiltersWithPaginationUseCase.execute(filters)
             .onEach { data ->

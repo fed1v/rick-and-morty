@@ -53,10 +53,10 @@ class CharactersRepositoryImpl(
             val nextKey = (prevKey?.plus(2)) ?: 2
 
             val key = CharacterRemoteKeys(
-                    id = characterFromApi.id,
-                    prevKey = prevKey,
-                    nextKey = nextKey
-                )
+                id = characterFromApi.id,
+                prevKey = prevKey,
+                nextKey = nextKey
+            )
 
             charactersRemoteKeysDao.insertKeys(listOf(key))
 
@@ -169,7 +169,6 @@ class CharactersRepositoryImpl(
 
 
     override suspend fun getCharactersByFiltersWithPagination(filters: CharacterFilter): Flow<PagingData<Character>> {
-
         val filtersToApply = mapOf(
             "name" to filters.name,
             "status" to filters.status,

@@ -4,7 +4,7 @@ import com.example.rickandmorty.domain.models.episode.Episode
 import com.example.rickandmorty.presentation.models.EpisodePresentation
 import com.example.rickandmorty.util.mapper.Mapper
 
-class EpisodeDomainToEpisodePresentationModelMapper : Mapper<Episode, EpisodePresentation> {
+class EpisodeDomainToEpisodePresentationMapper : Mapper<Episode, EpisodePresentation> {
 
     override fun map(data: Episode): EpisodePresentation = EpisodePresentation(
         id = data.id,

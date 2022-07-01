@@ -6,8 +6,12 @@ import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.text.HtmlCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
@@ -18,27 +22,42 @@ import com.example.rickandmorty.data.repository.LocationsRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentLocationsListBinding
 import com.example.rickandmorty.domain.models.location.LocationFilter
 import com.example.rickandmorty.domain.repository.LocationsRepository
-import com.example.rickandmorty.domain.usecases.locations.GetLocationsByFiltersUseCase
-import com.example.rickandmorty.domain.usecases.locations.GetLocationsFiltersUseCase
-import com.example.rickandmorty.domain.usecases.locations.GetLocationsUseCase
-import com.example.rickandmorty.presentation.mapper.LocationDomainToLocationPresentationMapper
+import com.example.rickandmorty.domain.usecases.locations.*
 import com.example.rickandmorty.presentation.models.LocationPresentation
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.presentation.ui.locations.adapters.LocationsAdapter
+import com.example.rickandmorty.presentation.ui.locations.adapters.LocationsPagedAdapter
 import com.example.rickandmorty.presentation.ui.locations.details.LocationDetailsFragment
+import com.example.rickandmorty.util.OnItemSelectedListener
 import com.example.rickandmorty.util.filters.LocationsFiltersHelper
-import com.example.rickandmorty.util.resource.Status
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
+@ExperimentalPagingApi
 class LocationsListFragment : Fragment() {
 
     private lateinit var binding: FragmentLocationsListBinding
+
     private lateinit var locationsAdapter: LocationsAdapter
+    private lateinit var locationsPagedAdapter: LocationsPagedAdapter
+
+    private val onLocationSelectedListener = object : OnItemSelectedListener<LocationPresentation> {
+        override fun onSelectItem(item: LocationPresentation) {
+            hostActivity().openFragment(
+                fragment = LocationDetailsFragment.newInstance(item),
+                tag = "LocationDetailsFragment"
+            )
+        }
+    }
+
     private lateinit var toolbar: Toolbar
     private var locationsFiltersHelper: LocationsFiltersHelper? = null
 
     private var appliedFilters = LocationFilter()
 
     private lateinit var locationsApi: LocationsApi
+
+    private lateinit var database: RickAndMortyDatabase
 
     private lateinit var locationsDao: LocationsDao
 
@@ -47,7 +66,8 @@ class LocationsListFragment : Fragment() {
     private lateinit var getLocationsUseCase: GetLocationsUseCase
     private lateinit var getLocationsByFiltersUseCase: GetLocationsByFiltersUseCase
     private lateinit var getLocationsFiltersUseCase: GetLocationsFiltersUseCase
-
+    private lateinit var getLocationsWithPaginationUseCase: GetLocationsWithPaginationUseCase
+    private lateinit var getLocationsByFiltersWithPaginationUseCase: GetLocationsByFiltersWithPaginationUseCase
 
     private lateinit var viewModel: LocationsViewModel
 
@@ -71,7 +91,23 @@ class LocationsListFragment : Fragment() {
 
         setUpObservers()
 
+        getCharacters()
+
         return binding.root
+    }
+
+    private fun setUpObservers() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.locationsFlow.collectLatest { data ->
+                locationsPagedAdapter.submitData(data)
+            }
+        }
+    }
+
+    private fun getCharacters() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.getLocationsWithPagination()
+        }
     }
 
     private fun initFilters() {
@@ -98,68 +134,31 @@ class LocationsListFragment : Fragment() {
             factory = LocationsViewModelFactory(
                 getLocationsUseCase = getLocationsUseCase,
                 getLocationsByFiltersUseCase = getLocationsByFiltersUseCase,
-                getLocationsFiltersUseCase = getLocationsFiltersUseCase
+                getLocationsFiltersUseCase = getLocationsFiltersUseCase,
+                getLocationsWithPaginationUseCase = getLocationsWithPaginationUseCase,
+                getLocationsByFiltersWithPaginationUseCase = getLocationsByFiltersWithPaginationUseCase
             )
         ).get(LocationsViewModel::class.java)
     }
 
     private fun initDependencies() {
         locationsApi = LocationsApiBuilder.apiService
-        locationsDao = RickAndMortyDatabase
-            .getInstance(requireContext().applicationContext).locationDao
+
+        database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
+
+        locationsDao = database.locationDao
 
         repository = LocationsRepositoryImpl(
             api = locationsApi,
-            dao = locationsDao
+            database = database
         )
 
         getLocationsUseCase = GetLocationsUseCase(repository)
         getLocationsByFiltersUseCase = GetLocationsByFiltersUseCase(repository)
         getLocationsFiltersUseCase = GetLocationsFiltersUseCase(repository)
-    }
-
-    private fun setUpObservers() {
-        setUpLocationsObserver()
-    }
-
-    private fun setUpLocationsObserver() {
-        viewModel.getLocations().observe(viewLifecycleOwner) { resource ->
-            when (resource.status) {
-                Status.SUCCESS -> {
-                    val mapper = LocationDomainToLocationPresentationMapper()
-                    val result = resource.data?.map { mapper.map(it) } ?: listOf()
-                    binding.locationsProgressBar.visibility = View.GONE
-                    showLocations(result)
-                }
-                Status.ERROR -> {
-                    binding.locationsProgressBar.visibility = View.GONE
-                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
-                }
-                Status.LOADING -> {
-                    binding.locationsProgressBar.visibility = View.VISIBLE
-                }
-            }
-        }
-    }
-
-    private fun setUpLocationsByFiltersObservers(filters: LocationFilter) {
-        viewModel.getLocationsByFilters(filters).observe(viewLifecycleOwner) { resource ->
-            when (resource.status) {
-                Status.SUCCESS -> {
-                    val mapper = LocationDomainToLocationPresentationMapper()
-                    val result = resource.data?.map { mapper.map(it) } ?: listOf()
-                    binding.locationsProgressBar.visibility = View.GONE
-                    showLocations(result)
-                }
-                Status.ERROR -> {
-                    binding.locationsProgressBar.visibility = View.GONE
-                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
-                }
-                Status.LOADING -> {
-                    binding.locationsProgressBar.visibility = View.VISIBLE
-                }
-            }
-        }
+        getLocationsWithPaginationUseCase = GetLocationsWithPaginationUseCase(repository)
+        getLocationsByFiltersWithPaginationUseCase =
+            GetLocationsByFiltersWithPaginationUseCase(repository)
     }
 
     private fun initToolbar() {
@@ -206,47 +205,85 @@ class LocationsListFragment : Fragment() {
         locationsFiltersHelper?.openFilters()
     }
 
-    private fun searchByQuery(query: String?) {
-        println("Query: $query")
-        appliedFilters.name = query
-        setUpLocationsByFiltersObservers(appliedFilters)
-    }
-
-    private fun showLocations(locations: List<LocationPresentation>) {
-        if (locations.isEmpty()) {
-            Toast.makeText(requireContext(), "Nothing found", Toast.LENGTH_SHORT).show()
-        }
-        locationsAdapter.locationsList = locations
-    }
-
     private fun initRecyclerView() {
-        locationsAdapter = LocationsAdapter { onLocationClicked(it) }
+        locationsPagedAdapter = LocationsPagedAdapter(
+            onItemSelectedListener = onLocationSelectedListener
+        )
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            locationsPagedAdapter.loadStateFlow.collect { state ->
+
+                println("State: $state")
+
+                if (state.append is LoadState.Loading) {
+                    println("Loading")
+                    binding.locationsBottomProgressBar.isVisible = true
+                }
+
+                if (state.append is LoadState.NotLoading
+                    || state.append is LoadState.Error
+                ) {
+                    println("Not Loading")
+                    binding.locationsBottomProgressBar.isVisible = false
+                }
+
+                if (state.refresh is LoadState.Loading) {
+                    binding.locationsProgressBar.isVisible = true
+                    println("Refresh: Loading")
+                }
+
+                if (state.refresh is LoadState.NotLoading
+                    || state.refresh is LoadState.Error
+                ) {
+                    binding.locationsProgressBar.isVisible = false
+                    println("Refresh: NotLoading")
+                }
+
+
+                if (state.source.refresh is LoadState.NotLoading
+                    && state.refresh is LoadState.Error
+                    && locationsPagedAdapter.itemCount == 0
+                ) {
+                    println("Nothing found")
+                    binding.locationsProgressBar.visibility = View.GONE
+                    Toast.makeText(requireContext(), "Nothing found", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        binding.rvLocations.itemAnimator = null
         binding.rvLocations.layoutManager = GridLayoutManager(requireContext(), 2)
-        binding.rvLocations.adapter = locationsAdapter
+        binding.rvLocations.adapter = locationsPagedAdapter
     }
 
     private fun setBottomNavigationCheckedItem() {
         hostActivity().setBottomNavItemChecked(MENU_ITEM_NUMBER)
     }
 
-    private fun onLocationClicked(location: LocationPresentation) {
-        hostActivity().openFragment(
-            LocationDetailsFragment.newInstance(location),
-            "LocationDetailsFragment"
-        )
-    }
 
     private fun onFiltersApplied(filters: LocationFilter) {
-        println("Filters applied: ${filters}")
         val name = filters.name ?: appliedFilters.name
         appliedFilters = filters.copy(name = name)
-        println("Filters: ${appliedFilters}")
-        setUpLocationsByFiltersObservers(appliedFilters)
+        viewLifecycleOwner.lifecycleScope.launch {
+            binding.locationsProgressBar.visibility = View.VISIBLE
+            viewModel.getLocationsByFiltersWithPagination(appliedFilters)
+        }
+    }
+
+    private fun searchByQuery(query: String?) {
+        appliedFilters.name = query
+        viewLifecycleOwner.lifecycleScope.launch {
+            binding.locationsProgressBar.visibility = View.VISIBLE
+            viewModel.getLocationsByFiltersWithPagination(appliedFilters)
+        }
     }
 
     private fun onResetClicked() {
         appliedFilters = LocationFilter()
-        setUpLocationsByFiltersObservers(appliedFilters)
+        viewLifecycleOwner.lifecycleScope.launch {
+            binding.locationsProgressBar.visibility = View.VISIBLE
+            viewModel.getLocationsWithPagination()
+        }
     }
 
     override fun onDestroy() {

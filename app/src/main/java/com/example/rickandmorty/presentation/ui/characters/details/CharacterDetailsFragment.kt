@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.paging.ExperimentalPagingApi
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.example.rickandmorty.R
@@ -33,8 +34,8 @@ import com.example.rickandmorty.domain.repository.LocationsRepository
 import com.example.rickandmorty.domain.usecases.characters.GetCharacterByIdUseCase
 import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesByIdsUseCase
 import com.example.rickandmorty.domain.usecases.locations.GetLocationByIdUseCase
-import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationModelMapper
-import com.example.rickandmorty.presentation.mapper.EpisodeDomainToEpisodePresentationModelMapper
+import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationMapper
+import com.example.rickandmorty.presentation.mapper.EpisodeDomainToEpisodePresentationMapper
 import com.example.rickandmorty.presentation.mapper.LocationDomainToLocationPresentationMapper
 import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.presentation.models.EpisodePresentation
@@ -45,7 +46,7 @@ import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.presentation.ui.locations.details.LocationDetailsFragment
 import com.example.rickandmorty.util.resource.Status
 
-
+@ExperimentalPagingApi
 class CharacterDetailsFragment : Fragment() {
 
     private lateinit var binding: FragmentCharacterDetailsBinding
@@ -135,7 +136,7 @@ class CharacterDetailsFragment : Fragment() {
         )
         locationsRepository = LocationsRepositoryImpl(
             api = locationsApi,
-            dao = locationsDao
+            database = database
         )
 
         getEpisodesByIdsUseCase = GetEpisodesByIdsUseCase(episodesRepository)
@@ -166,7 +167,6 @@ class CharacterDetailsFragment : Fragment() {
         setUpCharacterObserver(id = characterId)
     }
 
-    // Abradolf Lincler
     private fun setUpOriginsObserver(origin: LocationPresentation) {
         viewModel.getOrigin(origin = origin)
             .observe(viewLifecycleOwner) { resource ->
@@ -217,7 +217,7 @@ class CharacterDetailsFragment : Fragment() {
         viewModel.getCharacterById(id).observe(viewLifecycleOwner) { resource ->
             when (resource.status) {
                 Status.SUCCESS -> {
-                    val mapper = CharacterDomainToCharacterPresentationModelMapper()
+                    val mapper = CharacterDomainToCharacterPresentationMapper()
                     showCharacter(mapper.map(resource.data!!))
                     binding.characterDetailsProgressBar.visibility = View.GONE
                 }
@@ -236,7 +236,7 @@ class CharacterDetailsFragment : Fragment() {
         viewModel.getEpisodesByIds(ids).observe(viewLifecycleOwner) { resource ->
             when (resource.status) {
                 Status.SUCCESS -> {
-                    val mapper = EpisodeDomainToEpisodePresentationModelMapper()
+                    val mapper = EpisodeDomainToEpisodePresentationMapper()
                     val result = resource.data?.map { mapper.map(it) } ?: listOf()
                     binding.episodesProgressBar.visibility = View.GONE
                     showCharacterEpisodes(result)

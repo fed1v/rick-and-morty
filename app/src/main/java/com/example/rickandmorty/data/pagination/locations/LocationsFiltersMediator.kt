@@ -1,4 +1,4 @@
-package com.example.rickandmorty.data.pagination.characters
+package com.example.rickandmorty.data.pagination.locations
 
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
@@ -6,36 +6,39 @@ import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
-import com.example.rickandmorty.data.local.database.characters.CharacterEntity
-import com.example.rickandmorty.data.local.database.characters.remote_keys.CharacterRemoteKeys
-import com.example.rickandmorty.data.mapper.character.CharacterDtoToCharacterEntityMapper
-import com.example.rickandmorty.data.remote.characters.CharactersApi
-import com.example.rickandmorty.domain.models.character.CharacterFilter
+import com.example.rickandmorty.data.local.database.episodes.EpisodeEntity
+import com.example.rickandmorty.data.local.database.episodes.remote_keys.EpisodeRemoteKeys
+import com.example.rickandmorty.data.local.database.locations.LocationEntity
+import com.example.rickandmorty.data.local.database.locations.remote_keys.LocationRemoteKeys
+import com.example.rickandmorty.data.mapper.episode.EpisodeDtoToEpisodeEntityMapper
+import com.example.rickandmorty.data.mapper.location.LocationDtoToLocationEntityMapper
+import com.example.rickandmorty.data.remote.locations.LocationsApi
+import com.example.rickandmorty.domain.models.episode.EpisodeFilter
+import com.example.rickandmorty.domain.models.location.LocationFilter
 
 @OptIn(ExperimentalPagingApi::class)
-class CharactersFiltersMediator(
-    private val api: CharactersApi,
+class LocationsFiltersMediator(
+    private val api: LocationsApi,
     private val database: RickAndMortyDatabase,
-    private val characterFilters: CharacterFilter
-) : RemoteMediator<Int, CharacterEntity>() {
+    private val locationFilters: LocationFilter
+) : RemoteMediator<Int, LocationEntity>() {
 
-    private val charactersDao = database.charactersDao
-    private val charactersRemoteKeysDao = database.charactersRemoteKeysDao
+    private val locationsDao = database.locationDao
+    private val locationsRemoteKeysDao = database.locationsRemoteKeysDao
 
     private var startingPage = 1
 
-    private var hiddenCharacters = listOf<CharacterEntity>()
+    private var hiddenLocations = listOf<LocationEntity>()
 
     override suspend fun initialize(): InitializeAction {
-        hiddenCharacters = charactersDao.getHiddenCharacters()
+        hiddenLocations = locationsDao.getHiddenLocations()
         return super.initialize()
     }
 
     override suspend fun load(
         loadType: LoadType,
-        state: PagingState<Int, CharacterEntity>
+        state: PagingState<Int, LocationEntity>
     ): MediatorResult {
-
         val keyPageData = getKeyPageData(loadType, state)
         val page = when (keyPageData) {
             is MediatorResult.Success -> {
@@ -48,56 +51,52 @@ class CharactersFiltersMediator(
 
         try {
             val filtersToApply = mapOf(
-                "name" to characterFilters.name,
-                "status" to characterFilters.status,
-                "species" to characterFilters.species,
-                "type" to characterFilters.type,
-                "gender" to characterFilters.gender
+                "name" to locationFilters.name,
+                "type" to locationFilters.type,
+                "dimension" to locationFilters.dimension
             ).filter { it.value != null }
 
-
-            val charactersApiResponse = api.getPagedCharactersByFilters(
+            val locationsApiResponse = api.getPagedLocationsByFilters(
                 page = page,
                 filters = filtersToApply
             )
 
-            val charactersFromApi = charactersApiResponse.results
+            val locationsFromApi = locationsApiResponse.results
 
-            val hiddenCharactersIds = hiddenCharacters.map { it.id }
+            val hiddenLocationsIds = hiddenLocations.map { it.id }
 
-            val idsOfHiddenCharactersList = mutableListOf<Int>()
-            charactersFromApi.forEach { character ->
-                val containsCharacter = hiddenCharactersIds.contains(-character.id)
-                if (containsCharacter) idsOfHiddenCharactersList.add(-character.id)
+            val idsOfHiddenLocationsList = mutableListOf<Int>()
+            locationsFromApi.forEach { location ->
+                val containsCharacter = hiddenLocationsIds.contains(-location.id)
+                if (containsCharacter) idsOfHiddenLocationsList.add(-location.id)
             }
 
-            charactersDao.deleteCharactersByIds(idsOfHiddenCharactersList)
-            charactersRemoteKeysDao.deleteKeysByIds(idsOfHiddenCharactersList)
+            locationsDao.deleteLocationsByIds(idsOfHiddenLocationsList)
+            locationsRemoteKeysDao.deleteKeysByIds(idsOfHiddenLocationsList)
 
-            val isEndOfList = charactersFromApi.isEmpty()
-                    || charactersApiResponse.info?.next.isNullOrBlank()
-                    || charactersApiResponse.toString().contains("error")
-
+            val isEndOfList = locationsFromApi.isEmpty()
+                    || locationsApiResponse.info?.next.isNullOrBlank()
+                    || locationsApiResponse.toString().contains("error")
 
             database.withTransaction {
-                val keys = charactersFromApi.map {
+                val keys = locationsFromApi.map {
                     var prevKey: Int? = (it.id - 1) / 20
                     if (prevKey != null && prevKey <= 0) prevKey = null
                     val nextKey = prevKey?.plus(2) ?: 2
 
-                    CharacterRemoteKeys(
+                    LocationRemoteKeys(
                         id = it.id,
                         prevKey = prevKey,
                         nextKey = nextKey
                     )
                 }
 
-                charactersRemoteKeysDao.insertKeys(keys)
+                locationsRemoteKeysDao.insertKeys(keys)
 
-                val mapperDtoToEntity = CharacterDtoToCharacterEntityMapper()
-                val charactersEntities = charactersFromApi.map { mapperDtoToEntity.map(it) }
+                val mapperDtoToEntity = LocationDtoToLocationEntityMapper()
+                val locationsEntities = locationsFromApi.map { mapperDtoToEntity.map(it) }
 
-                charactersDao.insertCharacters(charactersEntities)
+                locationsDao.insertLocations(locationsEntities)
             }
 
             return MediatorResult.Success(endOfPaginationReached = isEndOfList)
@@ -108,10 +107,9 @@ class CharactersFiltersMediator(
         }
     }
 
-
     private suspend fun getKeyPageData(
         loadType: LoadType,
-        state: PagingState<Int, CharacterEntity>,
+        state: PagingState<Int, LocationEntity>,
     ): Any {
         return when (loadType) {
             LoadType.REFRESH -> {
@@ -143,34 +141,38 @@ class CharactersFiltersMediator(
         }
     }
 
-    private suspend fun getFirstRemoteKey(state: PagingState<Int, CharacterEntity>): CharacterRemoteKeys? {
+    private suspend fun getFirstRemoteKey(
+        state: PagingState<Int, LocationEntity>
+    ): LocationRemoteKeys? {
         return state.pages
             .firstOrNull { it.data.isNotEmpty() }
             ?.data
             ?.firstOrNull()
             ?.let { character ->
-                charactersRemoteKeysDao.remoteKeysCharacterId(character.id)
+                locationsRemoteKeysDao.remoteKeysLocationId(character.id)
             }
     }
 
 
     private suspend fun getLastRemoteKey(
-        state: PagingState<Int, CharacterEntity>,
-    ): CharacterRemoteKeys? {
+        state: PagingState<Int, LocationEntity>,
+    ): LocationRemoteKeys? {
         return state.pages
             .lastOrNull { it.data.isNotEmpty() }
             ?.data
             ?.lastOrNull()
             ?.let { character ->
-                charactersRemoteKeysDao.remoteKeysCharacterId(character.id)
+                locationsRemoteKeysDao.remoteKeysLocationId(character.id)
             }
     }
 
-    private suspend fun getClosestRemoteKey(state: PagingState<Int, CharacterEntity>): CharacterRemoteKeys? {
+    private suspend fun getClosestRemoteKey(
+        state: PagingState<Int, LocationEntity>
+    ): LocationRemoteKeys? {
         return state.anchorPosition
             ?.let { position ->
                 state.closestItemToPosition(position)?.id?.let { id ->
-                    charactersRemoteKeysDao.remoteKeysCharacterId(id)
+                    locationsRemoteKeysDao.remoteKeysLocationId(id)
                 }
             }
     }

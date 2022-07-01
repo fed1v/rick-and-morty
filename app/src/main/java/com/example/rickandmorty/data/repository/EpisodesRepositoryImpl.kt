@@ -160,7 +160,6 @@ class EpisodesRepositoryImpl(
     }
 
     override suspend fun getEpisodesByFiltersWithPagination(filters: EpisodeFilter): Flow<PagingData<Episode>> {
-
         val filtersToApply = mapOf(
             "name" to filters.name,
             "episode" to filters.episode

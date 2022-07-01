@@ -28,10 +28,7 @@ class EpisodesFiltersMediator(
     private var hiddenEpisodes = listOf<EpisodeEntity>()
 
     override suspend fun initialize(): InitializeAction {
-        println("...............initialize episodesFilterMediator.............")
-
         hiddenEpisodes = episodesDao.getHiddenEpisodes()
-
         return super.initialize()
     }
 
@@ -45,7 +42,6 @@ class EpisodesFiltersMediator(
                 return keyPageData
             }
             else -> {
-                //        keyPageData as Int
                 startingPage++
             }
         }
@@ -64,8 +60,6 @@ class EpisodesFiltersMediator(
 
             val episodesFromApi = episodesApiResponse.results
 
-            println("Hidden episodes: ${hiddenEpisodes.map { it.id }}")
-
             val hiddenEpisodesIds = hiddenEpisodes.map { it.id }
 
             val idsOfHiddenEpisodesList = mutableListOf<Int>()
@@ -74,31 +68,12 @@ class EpisodesFiltersMediator(
                 if (containsCharacter) idsOfHiddenEpisodesList.add(-episode.id)
             }
 
-            //       println("Ids: ${idsOfHiddenCharactersList}")
             episodesDao.deleteEpisodesByIds(idsOfHiddenEpisodesList)
             episodesRemoteKeysDao.deleteKeysByIds(idsOfHiddenEpisodesList)
 
             val isEndOfList = episodesFromApi.isEmpty()
                     || episodesApiResponse.info?.next.isNullOrBlank()
                     || episodesApiResponse.toString().contains("error")
-
-
-            val prevKey = //if (page == 1) null else
-                page - 1
-            val nextKey = //if (isEndOfList) null else
-                page + 1
-
-
-            println("________")
-            println("Page: ${page}")
-            println("prevKey: $prevKey")
-            println("nextKey: $nextKey")
-            println("________")
-
-
-            println("IsEndOfList? $isEndOfList")
-            println("Episodes from api: ${episodesFromApi.map { "${it.id}: ${it.name}" }}")
-            println("List size: ${episodesFromApi.size}")
 
             database.withTransaction {
                 val keys = episodesFromApi.map {
@@ -117,15 +92,13 @@ class EpisodesFiltersMediator(
 
                 val mapperDtoToEntity = EpisodeDtoToEpisodeEntityMapper()
                 val episodesEntities = episodesFromApi.map { mapperDtoToEntity.map(it) }
-                episodesDao.insertEpisodes(episodesEntities)
 
-                println("End")
+                episodesDao.insertEpisodes(episodesEntities)
             }
 
             return MediatorResult.Success(endOfPaginationReached = isEndOfList)
 
         } catch (e: Exception) {
-            println("ERRORRRR")
             e.printStackTrace()
             return MediatorResult.Error(e)
         }
@@ -139,15 +112,12 @@ class EpisodesFiltersMediator(
         return when (loadType) {
             LoadType.REFRESH -> {
                 val remoteKeys = getClosestRemoteKey(state)
-                println("Refesh: $remoteKeys")
                 remoteKeys?.nextKey?.minus(1) ?: 1
             }
             LoadType.APPEND -> {
                 val remoteKeys = getLastRemoteKey(state)
-                println("Append: $remoteKeys")
                 val nextKey = remoteKeys?.nextKey
                 if (nextKey == null) {
-                    println("Append: nextKey == null")
                     return MediatorResult.Success(
                         endOfPaginationReached = remoteKeys != null
                     )
@@ -157,12 +127,10 @@ class EpisodesFiltersMediator(
             }
             LoadType.PREPEND -> {
                 val remoteKeys = getFirstRemoteKey(state)
-                println("Prepend: $remoteKeys")
                 val prevKey = remoteKeys?.prevKey
                 if (prevKey != null) {
                     return prevKey
                 } else {
-                    println("Prepend: nextKey == null")
                     return MediatorResult.Success(
                         endOfPaginationReached = remoteKeys != null
                     )

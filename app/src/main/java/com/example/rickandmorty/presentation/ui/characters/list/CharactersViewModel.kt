@@ -7,7 +7,7 @@ import androidx.paging.PagingData
 import androidx.paging.map
 import com.example.rickandmorty.domain.models.character.CharacterFilter
 import com.example.rickandmorty.domain.usecases.characters.*
-import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationModelMapper
+import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationMapper
 import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.util.resource.Resource
 import kotlinx.coroutines.Dispatchers
@@ -52,7 +52,7 @@ class CharactersViewModel(
 
 
     suspend fun getCharactersWithPagination() {
-        val mapperDomainToPresentation = CharacterDomainToCharacterPresentationModelMapper()
+        val mapperDomainToPresentation = CharacterDomainToCharacterPresentationMapper()
 
         getCharactersWithPaginationUseCase.execute()
             .onEach { data ->
@@ -63,7 +63,7 @@ class CharactersViewModel(
     }
 
     suspend fun getCharactersByFiltersWithPagination(filters: CharacterFilter) {
-        val mapperDomainToPresentation = CharacterDomainToCharacterPresentationModelMapper()
+        val mapperDomainToPresentation = CharacterDomainToCharacterPresentationMapper()
 
         getCharactersByFiltersWithPaginationUseCase.execute(filters)
             .onEach { data ->

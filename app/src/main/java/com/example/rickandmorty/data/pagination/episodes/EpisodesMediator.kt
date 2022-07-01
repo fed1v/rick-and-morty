@@ -30,12 +30,9 @@ class EpisodesMediator(
 
 
     override suspend fun initialize(): InitializeAction {
-        println(".............EpisodesMediator initialize...............")
-
-
         var rememberFromIndex = -1
 
-        val keys = episodesRemoteKeysDao.getAllKeys()//.map { it?.copy(id = abs(it.id)) }
+        val keys = episodesRemoteKeysDao.getAllKeys()
 
         for (i in keys.indices) {
             if (i + 1 <= keys.size - 1) {
@@ -43,10 +40,7 @@ class EpisodesMediator(
                     && (keys[i + 1]?.id ?: -1) > 0
                     && keys[i]?.id != keys[i + 1]?.id?.minus(1)
                 ) {
-                    println("i: $i; id=${keys[i]!!.id}")
-                    println("i+1: ${i + 1}; id=${keys[i + 1]!!.id}")
                     rememberFromIndex = keys[i]?.id ?: -1
-                    println("Remember from index: $rememberFromIndex")
                     startPaginationFromIndex = keys[i]?.id ?: -1
                     break
                 }
@@ -55,12 +49,9 @@ class EpisodesMediator(
 
         if (keys.isNotEmpty() && rememberFromIndex == -1) {
             if ((keys[keys.lastIndex]?.id?.rem(20) ?: -1) != 0) {
-                println("% != 0")
-                println("Last id: ${keys[keys.lastIndex]?.id}")
                 rememberFromIndex = keys[keys.lastIndex]?.id ?: 0
                 rememberFromIndex /= 20
                 rememberFromIndex *= 20
-                println("Then rememberFromIndex=$rememberFromIndex")
             }
         }
 
@@ -76,7 +67,6 @@ class EpisodesMediator(
         if (rememberFromIndex != -1) {
             rememberFromIndex /= 20
             rememberFromIndex *= 20
-            println("RememberFromIndex: $rememberFromIndex")
 
             database.withTransaction {
                 val episodesToDelete = episodesDao.getEpisodesFromId(rememberFromIndex)
@@ -96,9 +86,6 @@ class EpisodesMediator(
             }
         }
 
-        println("Start from: ${startPaginationFromIndex}")
-
-
         return super.initialize()
     }
 
@@ -106,9 +93,6 @@ class EpisodesMediator(
         loadType: LoadType,
         state: PagingState<Int, EpisodeEntity>
     ): MediatorResult {
-
-        println("____________________________________________________________________________________")
-
         val pageKeyData = getKeyPageData(loadType, state)
         val page = when (pageKeyData) {
             is MediatorResult.Success -> {
@@ -132,13 +116,6 @@ class EpisodesMediator(
                 val prevKey = if (page == 1) null else page - 1
                 val nextKey = if (isEndOfList) null else page + 1
 
-                println("________")
-                println("Page: $page")
-                println("prevKey: $prevKey")
-                println("nextKey: $nextKey")
-                println("________")
-
-
                 val keys = episodesFromApi.map {
                     EpisodeRemoteKeys(
                         id = it.id,
@@ -152,15 +129,10 @@ class EpisodesMediator(
                 val mapperDtoToEntity = EpisodeDtoToEpisodeEntityMapper()
                 val episodesEntities = episodesFromApi.map { mapperDtoToEntity.map(it) }
 
-                println("Insert Episodes: ${episodesEntities.map { it.id }}")
-
                 episodesDao.insertEpisodes(episodesEntities)
 
                 if (isEndOfList) {
-                    println("END OF LIST")
-                    //            charactersDao.insertCharacters(charactersToRemember)
                     episodesRemoteKeysDao.insertKeys(hiddenKeys)
-                    //            charactersRemoteKeysDao.insertAll(keysToRemember)
                     episodesDao.insertEpisodes(hiddenEpisodes)
 
                     episodesDao.clearHiddenEpisodes()
@@ -171,18 +143,11 @@ class EpisodesMediator(
             return MediatorResult.Success(endOfPaginationReached = isEndOfList)
 
         } catch (e: Exception) {
-            println("ERROR")
-
             database.withTransaction {
                 episodesDao.insertEpisodes(episodesToRemember)
                 episodesRemoteKeysDao.insertKeys(keysToRemember)
-                println("episodesToRemember: ${episodesToRemember.map { it.id }}")
-                println("keysToRemember: ${keysToRemember.map { it.id }}")
-                println("hiddenEpisodes: ${hiddenEpisodes.map { it.id }}")
-                println("hiddenKeys: ${hiddenKeys.map { it.id }}")
-                //        charactersRemoteKeysDao.insertAll(keysToRemember.map { it.copy(id = -it.id) })
+
                 episodesDao.insertEpisodes(hiddenEpisodes.map { it.copy(id = -it.id) })
-                //        charactersRemoteKeysDao.insertAll(hiddenKeys)
                 episodesRemoteKeysDao.insertKeys(hiddenKeys.map { it.copy(id = -it.id) })
 
                 episodesDao.clearHiddenEpisodes()

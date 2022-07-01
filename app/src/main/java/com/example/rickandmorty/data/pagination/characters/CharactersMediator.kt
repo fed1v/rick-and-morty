@@ -10,6 +10,7 @@ import com.example.rickandmorty.data.local.database.characters.CharacterEntity
 import com.example.rickandmorty.data.local.database.characters.remote_keys.CharacterRemoteKeys
 import com.example.rickandmorty.data.mapper.character.CharacterDtoToCharacterEntityMapper
 import com.example.rickandmorty.data.remote.characters.CharactersApi
+import kotlinx.coroutines.delay
 
 
 @OptIn(ExperimentalPagingApi::class)
@@ -30,8 +31,6 @@ class CharactersMediator(
     private var hiddenKeys = mutableListOf<CharacterRemoteKeys>()
 
     override suspend fun initialize(): InitializeAction {
-        println("................Initialize...............")
-
         var rememberFromIndex = -1
         val keys = charactersRemoteKeysDao.getAllKeys()
 
@@ -41,10 +40,7 @@ class CharactersMediator(
                     && (keys[i + 1]?.id ?: -1) > 0
                     && keys[i]?.id != keys[i + 1]?.id?.minus(1)
                 ) {
-                    println("i: $i; id=${keys[i]!!.id}")
-                    println("i+1: ${i + 1}; id=${keys[i + 1]!!.id}")
                     rememberFromIndex = keys[i]?.id ?: -1
-                    println("Remember from index: $rememberFromIndex")
                     startPaginationFromIndex = keys[i]?.id ?: -1
                     break
                 }
@@ -53,11 +49,9 @@ class CharactersMediator(
 
         if (keys.isNotEmpty() && rememberFromIndex == -1) {
             if ((keys[keys.lastIndex]?.id?.rem(20) ?: -1) != 0) {
-                println("% != 0")
                 rememberFromIndex = keys[keys.lastIndex]?.id ?: 0
                 rememberFromIndex /= 20
                 rememberFromIndex *= 20
-                println("Then rememberFromIndex=$rememberFromIndex")
             }
         }
 
@@ -73,7 +67,6 @@ class CharactersMediator(
         if (rememberFromIndex != -1) {
             rememberFromIndex /= 20
             rememberFromIndex *= 20
-            println("RememberFromIndex: $rememberFromIndex")
 
             database.withTransaction {
                 val charactersToDelete = charactersDao.getCharactersFromId(rememberFromIndex)
@@ -93,8 +86,6 @@ class CharactersMediator(
             }
         }
 
-        println("Start from: ${startPaginationFromIndex}")
-
         return super.initialize()
     }
 
@@ -102,8 +93,6 @@ class CharactersMediator(
         loadType: LoadType,
         state: PagingState<Int, CharacterEntity>
     ): MediatorResult {
-
-        println("____________________________________________________________________________________")
 
         val pageKeyData = getKeyPageData(loadType, state)
         val page = when (pageKeyData) {
@@ -128,13 +117,6 @@ class CharactersMediator(
                 val prevKey = if (page == 1) null else page - 1
                 val nextKey = if (isEndOfList) null else page + 1
 
-                println("________")
-                println("Page: $page")
-                println("prevKey: $prevKey")
-                println("nextKey: $nextKey")
-                println("________")
-
-
                 val keys = charactersFromApi.map {
                     CharacterRemoteKeys(
                         id = it.id,
@@ -148,15 +130,10 @@ class CharactersMediator(
                 val mapperDtoToEntity = CharacterDtoToCharacterEntityMapper()
                 val charactersEntities = charactersFromApi.map { mapperDtoToEntity.map(it) }
 
-                println("Insert Characters: ${charactersEntities.map { it.id }}")
-
                 charactersDao.insertCharacters(charactersEntities)
 
                 if (isEndOfList) {
-                    println("END OF LIST")
-                    //            charactersDao.insertCharacters(charactersToRemember)
                     charactersRemoteKeysDao.insertKeys(hiddenKeys)
-                    //            charactersRemoteKeysDao.insertAll(keysToRemember)
                     charactersDao.insertCharacters(hiddenCharacters)
 
                     charactersDao.clearHiddenCharacters()
@@ -167,14 +144,10 @@ class CharactersMediator(
             return MediatorResult.Success(endOfPaginationReached = isEndOfList)
 
         } catch (e: Exception) {
-            println("ERROR")
-
             database.withTransaction {
                 charactersDao.insertCharacters(charactersToRemember)
                 charactersRemoteKeysDao.insertKeys(keysToRemember)
-                //        charactersRemoteKeysDao.insertAll(keysToRemember.map { it.copy(id = -it.id) })
                 charactersDao.insertCharacters(hiddenCharacters.map { it.copy(id = -it.id) })
-                //        charactersRemoteKeysDao.insertAll(hiddenKeys)
                 charactersRemoteKeysDao.insertKeys(hiddenKeys.map { it.copy(id = -it.id) })
 
                 charactersDao.clearHiddenCharacters()

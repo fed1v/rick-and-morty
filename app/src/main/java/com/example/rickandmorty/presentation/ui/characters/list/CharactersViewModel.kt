@@ -9,7 +9,6 @@ import com.example.rickandmorty.domain.models.character.CharacterFilter
 import com.example.rickandmorty.domain.usecases.characters.*
 import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationMapper
 import com.example.rickandmorty.presentation.models.CharacterPresentation
-import com.example.rickandmorty.util.resource.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -30,24 +29,6 @@ class CharactersViewModel(
     fun getFilters() = liveData<Pair<String, List<String>>>(Dispatchers.IO) {
         emit(Pair("species", getCharactersFiltersUseCase.execute("species")))
         emit(Pair("type", getCharactersFiltersUseCase.execute("type")))
-    }
-
-    fun getCharacters() = liveData(Dispatchers.IO) {
-        emit(Resource.loading(null))
-        try {
-            emit(Resource.success(data = getCharactersUseCase.execute()))
-        } catch (e: Exception) {
-            emit(Resource.error(data = null, message = e.message ?: "Error"))
-        }
-    }
-
-    fun getCharactersByFilters(filters: CharacterFilter) = liveData(Dispatchers.IO) {
-        emit(Resource.loading(null))
-        try {
-            emit(Resource.success(data = getCharactersByFiltersUseCase.execute(filters)))
-        } catch (e: Exception) {
-            emit(Resource.error(data = null, message = "Nothing found"))
-        }
     }
 
 

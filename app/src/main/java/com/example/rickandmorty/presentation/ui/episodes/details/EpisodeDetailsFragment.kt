@@ -9,10 +9,12 @@ import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.paging.ExperimentalPagingApi
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.characters.CharactersDao
 import com.example.rickandmorty.data.local.database.episodes.EpisodesDao
+import com.example.rickandmorty.data.local.database.characters.remote_keys.CharactersRemoteKeysDao
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
 import com.example.rickandmorty.data.remote.episodes.EpisodesApi
@@ -24,8 +26,8 @@ import com.example.rickandmorty.domain.repository.CharactersRepository
 import com.example.rickandmorty.domain.repository.EpisodesRepository
 import com.example.rickandmorty.domain.usecases.characters.GetCharactersByIdsUseCase
 import com.example.rickandmorty.domain.usecases.episodes.GetEpisodeByIdUseCase
-import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationModelMapper
-import com.example.rickandmorty.presentation.mapper.EpisodeDomainToEpisodePresentationModelMapper
+import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationMapper
+import com.example.rickandmorty.presentation.mapper.EpisodeDomainToEpisodePresentationMapper
 import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.presentation.models.EpisodePresentation
 import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAdapter
@@ -33,6 +35,7 @@ import com.example.rickandmorty.presentation.ui.characters.details.CharacterDeta
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.util.resource.Status
 
+@OptIn(ExperimentalPagingApi::class)
 class EpisodeDetailsFragment : Fragment() {
 
     private lateinit var binding: FragmentEpisodeDetailsBinding
@@ -43,8 +46,11 @@ class EpisodeDetailsFragment : Fragment() {
     private lateinit var episodesApi: EpisodesApi
     private lateinit var charactersApi: CharactersApi
 
+    private lateinit var database: RickAndMortyDatabase
+
     private lateinit var episodesDao: EpisodesDao
     private lateinit var charactersDao: CharactersDao
+    private lateinit var keysDao: CharactersRemoteKeysDao
 
     private lateinit var episodesRepository: EpisodesRepository
     private lateinit var charactersRepository: CharactersRepository
@@ -92,18 +98,19 @@ class EpisodeDetailsFragment : Fragment() {
         episodesApi = EpisodesApiBuilder.apiService
         charactersApi = CharactersApiBuilder.apiService
 
-        episodesDao = RickAndMortyDatabase
-            .getInstance(requireContext().applicationContext).episodesDao
-        charactersDao = RickAndMortyDatabase
-            .getInstance(requireContext().applicationContext).charactersDao
+        database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
+
+        episodesDao = database.episodesDao
+        charactersDao = database.charactersDao
+        keysDao = database.charactersRemoteKeysDao
 
         episodesRepository = EpisodesRepositoryImpl(
             api = episodesApi,
-            dao = episodesDao
+            database = database
         )
         charactersRepository = CharactersRepositoryImpl(
             api = charactersApi,
-            dao = charactersDao
+            database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
         )
 
         getEpisodeByIdUseCase = GetEpisodeByIdUseCase(episodesRepository)
@@ -119,7 +126,7 @@ class EpisodeDetailsFragment : Fragment() {
         viewModel.getEpisodeCharactersByIds(ids).observe(viewLifecycleOwner) { resource ->
             when (resource.status) {
                 Status.SUCCESS -> {
-                    val mapper = CharacterDomainToCharacterPresentationModelMapper()
+                    val mapper = CharacterDomainToCharacterPresentationMapper()
                     showEpisodeCharacters(resource.data?.map { mapper.map(it) } ?: listOf())
                     binding.recyclerViewProgressBar.visibility = View.GONE
                 }
@@ -138,7 +145,7 @@ class EpisodeDetailsFragment : Fragment() {
         viewModel.getEpisode(id).observe(viewLifecycleOwner) { resource ->
             when (resource.status) {
                 Status.SUCCESS -> {
-                    val mapper = EpisodeDomainToEpisodePresentationModelMapper()
+                    val mapper = EpisodeDomainToEpisodePresentationMapper()
                     showEpisode(mapper.map(resource.data!!))
                     binding.episodeDetailsProgressBar.visibility = View.GONE
                 }

@@ -9,10 +9,12 @@ import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.paging.ExperimentalPagingApi
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.characters.CharactersDao
 import com.example.rickandmorty.data.local.database.locations.LocationsDao
+import com.example.rickandmorty.data.local.database.characters.remote_keys.CharactersRemoteKeysDao
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
 import com.example.rickandmorty.data.remote.locations.LocationsApi
@@ -24,7 +26,7 @@ import com.example.rickandmorty.domain.repository.CharactersRepository
 import com.example.rickandmorty.domain.repository.LocationsRepository
 import com.example.rickandmorty.domain.usecases.characters.GetCharactersByIdsUseCase
 import com.example.rickandmorty.domain.usecases.locations.GetLocationByIdUseCase
-import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationModelMapper
+import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationMapper
 import com.example.rickandmorty.presentation.mapper.LocationDomainToLocationPresentationMapper
 import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.presentation.models.LocationPresentation
@@ -33,6 +35,7 @@ import com.example.rickandmorty.presentation.ui.characters.details.CharacterDeta
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.util.resource.Status
 
+@ExperimentalPagingApi
 class LocationDetailsFragment : Fragment() {
 
     private lateinit var binding: FragmentLocationDetailsBinding
@@ -43,8 +46,11 @@ class LocationDetailsFragment : Fragment() {
     private lateinit var locationsApi: LocationsApi
     private lateinit var charactersApi: CharactersApi
 
+    private lateinit var database: RickAndMortyDatabase
+
     private lateinit var charactersDao: CharactersDao
     private lateinit var locationsDao: LocationsDao
+    private lateinit var keysDao: CharactersRemoteKeysDao
 
     private lateinit var locationsRepository: LocationsRepository
     private lateinit var charactersRepository: CharactersRepository
@@ -92,19 +98,19 @@ class LocationDetailsFragment : Fragment() {
         locationsApi = LocationsApiBuilder.apiService
         charactersApi = CharactersApiBuilder.apiService
 
-        charactersDao =
-            RickAndMortyDatabase.getInstance(requireContext().applicationContext).charactersDao
-        locationsDao =
-            RickAndMortyDatabase.getInstance(requireContext().applicationContext).locationDao
+        database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
 
+        charactersDao = database.charactersDao
+        locationsDao = database.locationDao
+        keysDao = database.charactersRemoteKeysDao
 
         locationsRepository = LocationsRepositoryImpl(
             api = locationsApi,
-            dao = locationsDao
+            database = database
         )
         charactersRepository = CharactersRepositoryImpl(
             api = charactersApi,
-            dao = charactersDao
+            database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
         )
 
         getLocationByIdUseCase = GetLocationByIdUseCase(locationsRepository)
@@ -120,7 +126,7 @@ class LocationDetailsFragment : Fragment() {
         viewModel.getResidents(ids).observe(viewLifecycleOwner) { resource ->
             when (resource.status) {
                 Status.SUCCESS -> {
-                    val mapper = CharacterDomainToCharacterPresentationModelMapper()
+                    val mapper = CharacterDomainToCharacterPresentationMapper()
                     val result = resource.data?.map { mapper.map(it) } ?: listOf()
                     location = location.copy(residents = result.map { it.id })
                     binding.recyclerViewProgressBar.visibility = View.GONE

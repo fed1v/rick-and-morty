@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.paging.ExperimentalPagingApi
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.example.rickandmorty.R
@@ -16,6 +17,7 @@ import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.characters.CharactersDao
 import com.example.rickandmorty.data.local.database.episodes.EpisodesDao
 import com.example.rickandmorty.data.local.database.locations.LocationsDao
+import com.example.rickandmorty.data.local.database.characters.remote_keys.CharactersRemoteKeysDao
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
 import com.example.rickandmorty.data.remote.episodes.EpisodesApi
@@ -32,8 +34,8 @@ import com.example.rickandmorty.domain.repository.LocationsRepository
 import com.example.rickandmorty.domain.usecases.characters.GetCharacterByIdUseCase
 import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesByIdsUseCase
 import com.example.rickandmorty.domain.usecases.locations.GetLocationByIdUseCase
-import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationModelMapper
-import com.example.rickandmorty.presentation.mapper.EpisodeDomainToEpisodePresentationModelMapper
+import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationMapper
+import com.example.rickandmorty.presentation.mapper.EpisodeDomainToEpisodePresentationMapper
 import com.example.rickandmorty.presentation.mapper.LocationDomainToLocationPresentationMapper
 import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.presentation.models.EpisodePresentation
@@ -44,7 +46,7 @@ import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.presentation.ui.locations.details.LocationDetailsFragment
 import com.example.rickandmorty.util.resource.Status
 
-
+@ExperimentalPagingApi
 class CharacterDetailsFragment : Fragment() {
 
     private lateinit var binding: FragmentCharacterDetailsBinding
@@ -56,9 +58,12 @@ class CharacterDetailsFragment : Fragment() {
     private lateinit var charactersApi: CharactersApi
     private lateinit var locationsApi: LocationsApi
 
+    private lateinit var database: RickAndMortyDatabase
+
     private lateinit var charactersDao: CharactersDao
     private lateinit var episodesDao: EpisodesDao
     private lateinit var locationsDao: LocationsDao
+    private lateinit var keysDao: CharactersRemoteKeysDao
 
     private lateinit var episodesRepository: EpisodesRepository
     private lateinit var charactersRepository: CharactersRepository
@@ -114,24 +119,24 @@ class CharacterDetailsFragment : Fragment() {
         charactersApi = CharactersApiBuilder.apiService
         locationsApi = LocationsApiBuilder.apiService
 
-        charactersDao = RickAndMortyDatabase
-            .getInstance(requireContext().applicationContext).charactersDao
-        episodesDao = RickAndMortyDatabase
-            .getInstance(requireContext().applicationContext).episodesDao
-        locationsDao = RickAndMortyDatabase
-            .getInstance(requireContext().applicationContext).locationDao
+        database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
+
+        charactersDao = database.charactersDao
+        episodesDao = database.episodesDao
+        locationsDao = database.locationDao
+        keysDao = database.charactersRemoteKeysDao
 
         episodesRepository = EpisodesRepositoryImpl(
             api = episodesApi,
-            dao = episodesDao
+            database = database
         )
         charactersRepository = CharactersRepositoryImpl(
             api = charactersApi,
-            dao = charactersDao
+            database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
         )
         locationsRepository = LocationsRepositoryImpl(
             api = locationsApi,
-            dao = locationsDao
+            database = database
         )
 
         getEpisodesByIdsUseCase = GetEpisodesByIdsUseCase(episodesRepository)
@@ -162,7 +167,6 @@ class CharacterDetailsFragment : Fragment() {
         setUpCharacterObserver(id = characterId)
     }
 
-    // Abradolf Lincler
     private fun setUpOriginsObserver(origin: LocationPresentation) {
         viewModel.getOrigin(origin = origin)
             .observe(viewLifecycleOwner) { resource ->
@@ -213,7 +217,7 @@ class CharacterDetailsFragment : Fragment() {
         viewModel.getCharacterById(id).observe(viewLifecycleOwner) { resource ->
             when (resource.status) {
                 Status.SUCCESS -> {
-                    val mapper = CharacterDomainToCharacterPresentationModelMapper()
+                    val mapper = CharacterDomainToCharacterPresentationMapper()
                     showCharacter(mapper.map(resource.data!!))
                     binding.characterDetailsProgressBar.visibility = View.GONE
                 }
@@ -232,7 +236,7 @@ class CharacterDetailsFragment : Fragment() {
         viewModel.getEpisodesByIds(ids).observe(viewLifecycleOwner) { resource ->
             when (resource.status) {
                 Status.SUCCESS -> {
-                    val mapper = EpisodeDomainToEpisodePresentationModelMapper()
+                    val mapper = EpisodeDomainToEpisodePresentationMapper()
                     val result = resource.data?.map { mapper.map(it) } ?: listOf()
                     binding.episodesProgressBar.visibility = View.GONE
                     showCharacterEpisodes(result)

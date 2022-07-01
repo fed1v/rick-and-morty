@@ -3,12 +3,14 @@ package com.example.rickandmorty.presentation.ui
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.fragment.app.Fragment
+import androidx.paging.ExperimentalPagingApi
 import com.example.rickandmorty.R
 import com.example.rickandmorty.databinding.ActivityMainBinding
 import com.example.rickandmorty.presentation.ui.characters.list.CharactersListFragment
 import com.example.rickandmorty.presentation.ui.episodes.list.EpisodesListFragment
 import com.example.rickandmorty.presentation.ui.locations.list.LocationsListFragment
 
+@OptIn(ExperimentalPagingApi::class)
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding

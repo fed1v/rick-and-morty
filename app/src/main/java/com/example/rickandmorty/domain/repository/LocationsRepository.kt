@@ -1,7 +1,9 @@
 package com.example.rickandmorty.domain.repository
 
+import androidx.paging.PagingData
 import com.example.rickandmorty.domain.models.location.Location
 import com.example.rickandmorty.domain.models.location.LocationFilter
+import kotlinx.coroutines.flow.Flow
 
 interface LocationsRepository {
 
@@ -14,4 +16,8 @@ interface LocationsRepository {
     suspend fun getLocationsByFilters(filters: LocationFilter): List<Location>
 
     suspend fun getFilters(filterName: String): List<String>
+
+    suspend fun getLocationsWithPagination(): Flow<PagingData<Location>>
+
+    suspend fun getLocationsByFiltersWithPagination(filters: LocationFilter): Flow<PagingData<Location>>
 }

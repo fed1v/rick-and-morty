@@ -6,34 +6,52 @@ import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.text.HtmlCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.R
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.characters.CharactersDao
+import com.example.rickandmorty.data.local.database.characters.remote_keys.CharactersRemoteKeysDao
 import com.example.rickandmorty.data.remote.characters.CharactersApi
 import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
 import com.example.rickandmorty.data.repository.CharactersRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentCharactersListBinding
 import com.example.rickandmorty.domain.models.character.CharacterFilter
 import com.example.rickandmorty.domain.repository.CharactersRepository
-import com.example.rickandmorty.domain.usecases.characters.GetCharactersByFiltersUseCase
-import com.example.rickandmorty.domain.usecases.characters.GetCharactersFiltersUseCase
-import com.example.rickandmorty.domain.usecases.characters.GetCharactersUseCase
-import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationModelMapper
+import com.example.rickandmorty.domain.usecases.characters.*
 import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAdapter
+import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersPagedAdapter
 import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
 import com.example.rickandmorty.presentation.ui.hostActivity
+import com.example.rickandmorty.util.OnItemSelectedListener
 import com.example.rickandmorty.util.filters.CharactersFiltersHelper
-import com.example.rickandmorty.util.resource.Status
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
-
+@OptIn(ExperimentalPagingApi::class)
 class CharactersListFragment : Fragment() {
 
     private lateinit var binding: FragmentCharactersListBinding
+
     private lateinit var charactersAdapter: CharactersAdapter
+    private lateinit var charactersPagedAdapter: CharactersPagedAdapter
+
+    private val onCharacterSelectedListener =
+        object : OnItemSelectedListener<CharacterPresentation> {
+            override fun onSelectItem(item: CharacterPresentation) {
+                hostActivity().openFragment(
+                    fragment = CharacterDetailsFragment.newInstance(item),
+                    tag = "CharacterDetailsFragment"
+                )
+            }
+        }
+
     private lateinit var toolbar: Toolbar
     private var charactersFiltersHelper: CharactersFiltersHelper? = null
 
@@ -42,11 +60,16 @@ class CharactersListFragment : Fragment() {
     private lateinit var api: CharactersApi
     private lateinit var repository: CharactersRepository
 
+    private lateinit var database: RickAndMortyDatabase
+
     private lateinit var charactersDao: CharactersDao
+    private lateinit var charactersRemoteKeysDao: CharactersRemoteKeysDao
 
     private lateinit var getCharactersUseCase: GetCharactersUseCase
     private lateinit var getCharactersByFiltersUseCase: GetCharactersByFiltersUseCase
     private lateinit var getCharactersFiltersUseCase: GetCharactersFiltersUseCase
+    private lateinit var getCharactersWithPaginationUseCase: GetCharactersWithPaginationUseCase
+    private lateinit var getCharactersByFiltersWithPaginationUseCase: GetCharactersByFiltersWithPaginationUseCase
 
     private lateinit var viewModel: CharactersViewModel
 
@@ -64,15 +87,31 @@ class CharactersListFragment : Fragment() {
         initToolbar()
         initRecyclerView()
 
-
         initDependencies()
         initViewModel()
         initFilters()
 
         setUpObservers()
 
+        getCharacters()
+
         return binding.root
     }
+
+    private fun setUpObservers() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.charactersFlow.collectLatest {
+                charactersPagedAdapter.submitData(it)
+            }
+        }
+    }
+
+    private fun getCharacters() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.getCharactersWithPagination()
+        }
+    }
+
 
     private fun initFilters() {
         charactersFiltersHelper = CharactersFiltersHelper(
@@ -98,23 +137,32 @@ class CharactersListFragment : Fragment() {
             factory = CharactersViewModelFactory(
                 getCharactersUseCase = getCharactersUseCase,
                 getCharactersByFiltersUseCase = getCharactersByFiltersUseCase,
-                getCharactersFiltersUseCase = getCharactersFiltersUseCase
+                getCharactersFiltersUseCase = getCharactersFiltersUseCase,
+                getCharactersWithPaginationUseCase = getCharactersWithPaginationUseCase,
+                getCharactersByFiltersWithPaginationUseCase = getCharactersByFiltersWithPaginationUseCase
             )
         ).get(CharactersViewModel::class.java)
     }
 
     private fun initDependencies() {
         api = CharactersApiBuilder.apiService
-        charactersDao =
-            RickAndMortyDatabase.getInstance(requireContext().applicationContext).charactersDao
+
+        database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
+
+        charactersDao = database.charactersDao
+        charactersRemoteKeysDao = database.charactersRemoteKeysDao
 
         repository = CharactersRepositoryImpl(
             api = api,
-            dao = charactersDao
+            database = database
         )
+
         getCharactersUseCase = GetCharactersUseCase(repository)
         getCharactersByFiltersUseCase = GetCharactersByFiltersUseCase(repository)
         getCharactersFiltersUseCase = GetCharactersFiltersUseCase(repository)
+        getCharactersWithPaginationUseCase = GetCharactersWithPaginationUseCase(repository)
+        getCharactersByFiltersWithPaginationUseCase =
+            GetCharactersByFiltersWithPaginationUseCase(repository)
     }
 
     private fun initToolbar() {
@@ -122,77 +170,59 @@ class CharactersListFragment : Fragment() {
         hostActivity().setSupportActionBar(toolbar)
     }
 
-    private fun setUpObservers() {
-        setUpCharactersObserver()
-        //    setUpCharactersByFiltersObserver()
-    }
-
-    private fun setUpCharactersByFiltersObserver(filters: CharacterFilter) {
-        viewModel.getCharactersByFilters(filters).observe(viewLifecycleOwner) { resource ->
-            when (resource.status) {
-                Status.SUCCESS -> {
-                    val mapper = CharacterDomainToCharacterPresentationModelMapper()
-                    val result =
-                        resource.data?.map { character -> mapper.map(character) } ?: listOf()
-                    showCharacters(result)
-                    binding.charactersProgressBar.visibility = View.GONE
-                }
-                Status.ERROR -> {
-                    Toast.makeText(requireContext(), resource.message, Toast.LENGTH_SHORT).show()
-                    binding.charactersProgressBar.visibility = View.GONE
-                }
-                Status.LOADING -> {
-                    binding.charactersProgressBar.visibility = View.VISIBLE
-                }
-            }
-        }
-    }
-
-    private fun setUpCharactersObserver() {
-        viewModel.getCharacters().observe(viewLifecycleOwner) {
-            it?.let { resource ->
-                when (resource.status) {
-                    Status.SUCCESS -> {
-                        val mapper = CharacterDomainToCharacterPresentationModelMapper()
-                        val result =
-                            resource.data?.map { character -> mapper.map(character) } ?: listOf()
-                        showCharacters(result)
-                        binding.charactersProgressBar.visibility = View.GONE
-                    }
-                    Status.ERROR -> {
-                        Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
-                        binding.charactersProgressBar.visibility = View.GONE
-                    }
-                    Status.LOADING -> {
-                        binding.charactersProgressBar.visibility = View.VISIBLE
-                    }
-                }
-            }
-        }
-    }
 
     private fun initRecyclerView() {
-        charactersAdapter = CharactersAdapter { onCharacterClicked(it) }
+        charactersPagedAdapter = CharactersPagedAdapter(
+            onItemSelectedListener = onCharacterSelectedListener
+        )
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            charactersPagedAdapter.loadStateFlow.collect { state ->
+
+                println("State: $state")
+
+                if (state.append is LoadState.Loading) {
+                    println("Loading")
+                    binding.charactersBottomProgressBar.isVisible = true
+                }
+                if (state.append is LoadState.NotLoading
+                    || state.append is LoadState.Error
+                ) {
+                    println("Not Loading")
+                    binding.charactersBottomProgressBar.isVisible = false
+                }
+
+                if (state.refresh is LoadState.Loading) {
+                    binding.charactersProgressBar.isVisible = true
+                    println("Refresh: Loading")
+                }
+
+                if (state.refresh is LoadState.NotLoading
+                    || state.refresh is LoadState.Error
+                ) {
+                    binding.charactersProgressBar.isVisible = false
+                    println("Refresh: NotLoading")
+                }
+
+                if (state.source.refresh is LoadState.NotLoading
+                    && state.refresh is LoadState.Error
+                    && charactersPagedAdapter.itemCount == 0
+                ) {
+                    println("Nothing found")
+                    binding.charactersProgressBar.isVisible = false
+                    Toast.makeText(requireContext(), "Nothing found", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        binding.rvCharacters.itemAnimator = null
         binding.rvCharacters.layoutManager = GridLayoutManager(requireContext(), 2)
-        binding.rvCharacters.adapter = charactersAdapter
+        binding.rvCharacters.adapter = charactersPagedAdapter
     }
 
-    private fun showCharacters(characters: List<CharacterPresentation>) {
-        if (characters.isEmpty()) {
-            Toast.makeText(requireContext(), "Nothing found", Toast.LENGTH_SHORT).show()
-        }
-        charactersAdapter.charactersList = characters
-    }
 
     private fun setBottomNavigationCheckedItem() {
         hostActivity().setBottomNavItemChecked(MENU_ITEM_NUMBER)
-    }
-
-    private fun onCharacterClicked(character: CharacterPresentation) {
-        hostActivity().openFragment(
-            fragment = CharacterDetailsFragment.newInstance(character),
-            tag = "CharacterDetailsFragment"
-        )
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -236,23 +266,28 @@ class CharactersListFragment : Fragment() {
     }
 
     private fun onFiltersApplied(filters: CharacterFilter) {
-        println("Filters applied: ${filters}")
         val name = filters.name ?: appliedFilters.name
         appliedFilters = filters.copy(name = name)
-        setUpCharactersByFiltersObserver(appliedFilters)
+        viewLifecycleOwner.lifecycleScope.launch {
+            binding.charactersProgressBar.visibility = View.VISIBLE
+            viewModel.getCharactersByFiltersWithPagination(appliedFilters)
+        }
     }
 
     private fun onResetClicked() {
-
         appliedFilters = CharacterFilter()
-        setUpCharactersByFiltersObserver(appliedFilters)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.getCharactersWithPagination()
+        }
     }
 
 
     private fun searchByQuery(query: String?) {
-        println("Query: $query")
         appliedFilters.name = query
-        setUpCharactersByFiltersObserver(appliedFilters)
+        viewLifecycleOwner.lifecycleScope.launch {
+            binding.charactersProgressBar.visibility = View.VISIBLE
+            viewModel.getCharactersByFiltersWithPagination(appliedFilters)
+        }
     }
 
     override fun onDestroy() {
@@ -263,6 +298,4 @@ class CharactersListFragment : Fragment() {
     companion object {
         private const val MENU_ITEM_NUMBER: Int = 0
     }
-
-
 }

@@ -5,7 +5,7 @@ import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.presentation.models.LocationPresentation
 import com.example.rickandmorty.util.mapper.Mapper
 
-class CharacterDomainToCharacterPresentationModelMapper : Mapper<Character, CharacterPresentation> {
+class CharacterDomainToCharacterPresentationMapper : Mapper<Character, CharacterPresentation> {
 
     override fun map(data: Character): CharacterPresentation = CharacterPresentation(
         id = data.id,

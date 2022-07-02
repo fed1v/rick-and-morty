@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.rickandmorty.App
 import com.example.rickandmorty.R
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.locations.LocationsDao
@@ -32,6 +33,7 @@ import com.example.rickandmorty.util.OnItemSelectedListener
 import com.example.rickandmorty.util.filters.LocationsFiltersHelper
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @ExperimentalPagingApi
 class LocationsListFragment : Fragment() {
@@ -54,7 +56,7 @@ class LocationsListFragment : Fragment() {
 
     private var appliedFilters = LocationFilter()
 
-    private lateinit var locationsApi: LocationsApi
+    /*private lateinit var locationsApi: LocationsApi
 
     private lateinit var database: RickAndMortyDatabase
 
@@ -66,8 +68,10 @@ class LocationsListFragment : Fragment() {
     private lateinit var getLocationsByFiltersUseCase: GetLocationsByFiltersUseCase
     private lateinit var getLocationsFiltersUseCase: GetLocationsFiltersUseCase
     private lateinit var getLocationsWithPaginationUseCase: GetLocationsWithPaginationUseCase
-    private lateinit var getLocationsByFiltersWithPaginationUseCase: GetLocationsByFiltersWithPaginationUseCase
+    private lateinit var getLocationsByFiltersWithPaginationUseCase: GetLocationsByFiltersWithPaginationUseCase*/
 
+    @Inject
+    lateinit var viewModelFactory: LocationsViewModelFactory
     private lateinit var viewModel: LocationsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,6 +87,9 @@ class LocationsListFragment : Fragment() {
         setBottomNavigationCheckedItem()
         initToolbar()
         initRecyclerView()
+
+        val appComponent = (requireContext().applicationContext as App).appComponent
+        appComponent.inject(this)
 
         initDependencies()
         initViewModel()
@@ -148,18 +155,19 @@ class LocationsListFragment : Fragment() {
     private fun initViewModel() {
         viewModel = ViewModelProvider(
             owner = this,
-            factory = LocationsViewModelFactory(
+            factory = viewModelFactory
+            /*LocationsViewModelFactory(
                 getLocationsUseCase = getLocationsUseCase,
                 getLocationsByFiltersUseCase = getLocationsByFiltersUseCase,
                 getLocationsFiltersUseCase = getLocationsFiltersUseCase,
                 getLocationsWithPaginationUseCase = getLocationsWithPaginationUseCase,
                 getLocationsByFiltersWithPaginationUseCase = getLocationsByFiltersWithPaginationUseCase
-            )
+            )*/
         ).get(LocationsViewModel::class.java)
     }
 
     private fun initDependencies() {
-        locationsApi = LocationsApiBuilder.apiService
+        /*locationsApi = LocationsApiBuilder.apiService
 
         database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
 
@@ -175,7 +183,7 @@ class LocationsListFragment : Fragment() {
         getLocationsFiltersUseCase = GetLocationsFiltersUseCase(repository)
         getLocationsWithPaginationUseCase = GetLocationsWithPaginationUseCase(repository)
         getLocationsByFiltersWithPaginationUseCase =
-            GetLocationsByFiltersWithPaginationUseCase(repository)
+            GetLocationsByFiltersWithPaginationUseCase(repository)*/
     }
 
     private fun initToolbar() {

@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.rickandmorty.App
 import com.example.rickandmorty.R
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.episodes.EpisodesDao
@@ -32,6 +33,7 @@ import com.example.rickandmorty.util.OnItemSelectedListener
 import com.example.rickandmorty.util.filters.EpisodesFiltersHelper
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class EpisodesListFragment : Fragment() {
 
@@ -55,7 +57,7 @@ class EpisodesListFragment : Fragment() {
 
     private var appliedFilters = EpisodeFilter()
 
-    private lateinit var api: EpisodesApi
+    /*private lateinit var api: EpisodesApi
 
     private lateinit var database: RickAndMortyDatabase
 
@@ -67,9 +69,10 @@ class EpisodesListFragment : Fragment() {
     private lateinit var getEpisodesByFiltersUseCase: GetEpisodesByFiltersUseCase
     private lateinit var getEpisodesFiltersUseCase: GetEpisodesFiltersUseCase
     private lateinit var getEpisodesWithPaginationUseCase: GetEpisodesWithPaginationUseCase
-    private lateinit var getEpisodesByFiltersWithPaginationUseCase: GetEpisodesByFiltersWithPaginationUseCase
+    private lateinit var getEpisodesByFiltersWithPaginationUseCase: GetEpisodesByFiltersWithPaginationUseCase*/
 
-
+    @Inject
+    lateinit var viewModelFactory: EpisodesViewModelFactory
     private lateinit var viewModel: EpisodesViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,6 +88,9 @@ class EpisodesListFragment : Fragment() {
         setBottomNavigationCheckedItem()
         initToolbar()
         initRecyclerView()
+
+        val appComponent = (requireContext().applicationContext as App).appComponent
+        appComponent.inject(this)
 
         initDependencies()
         initViewModel()
@@ -148,18 +154,19 @@ class EpisodesListFragment : Fragment() {
     private fun initViewModel() {
         viewModel = ViewModelProvider(
             owner = this,
-            factory = EpisodesViewModelFactory(
+            factory = viewModelFactory
+            /*EpisodesViewModelFactory(
                 getEpisodesUseCase = getEpisodesUseCase,
                 getEpisodesByFiltersUseCase = getEpisodesByFiltersUseCase,
                 getEpisodesFiltersUseCase = getEpisodesFiltersUseCase,
                 getEpisodesWithPaginationUseCase = getEpisodesWithPaginationUseCase,
                 getEpisodesByFiltersWithPaginationUseCase = getEpisodesByFiltersWithPaginationUseCase
-            )
+            )*/
         ).get(EpisodesViewModel::class.java)
     }
 
     private fun initDependencies() {
-        api = EpisodesApiBuilder.apiService
+        /*api = EpisodesApiBuilder.apiService
         database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
         episodesDao = database.episodesDao
         repository = EpisodesRepositoryImpl(
@@ -172,7 +179,7 @@ class EpisodesListFragment : Fragment() {
         getEpisodesFiltersUseCase = GetEpisodesFiltersUseCase(repository)
         getEpisodesWithPaginationUseCase = GetEpisodesWithPaginationUseCase(repository)
         getEpisodesByFiltersWithPaginationUseCase =
-            GetEpisodesByFiltersWithPaginationUseCase(repository)
+            GetEpisodesByFiltersWithPaginationUseCase(repository)*/
     }
 
 

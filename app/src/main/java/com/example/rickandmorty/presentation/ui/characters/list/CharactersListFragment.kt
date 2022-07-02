@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.rickandmorty.App
 import com.example.rickandmorty.R
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.characters.CharactersDao
@@ -33,6 +34,7 @@ import com.example.rickandmorty.util.OnItemSelectedListener
 import com.example.rickandmorty.util.filters.CharactersFiltersHelper
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @OptIn(ExperimentalPagingApi::class)
 class CharactersListFragment : Fragment() {
@@ -56,11 +58,12 @@ class CharactersListFragment : Fragment() {
 
     private var appliedFilters: CharacterFilter = CharacterFilter()
 
-    private lateinit var api: CharactersApi
-    private lateinit var repository: CharactersRepository
 
-    private lateinit var database: RickAndMortyDatabase
+    //   lateinit var api: CharactersApi
+    //   private lateinit var repository: CharactersRepository
 
+    //  lateinit var database: RickAndMortyDatabase
+/*
     private lateinit var charactersDao: CharactersDao
     private lateinit var charactersRemoteKeysDao: CharactersRemoteKeysDao
 
@@ -68,8 +71,10 @@ class CharactersListFragment : Fragment() {
     private lateinit var getCharactersByFiltersUseCase: GetCharactersByFiltersUseCase
     private lateinit var getCharactersFiltersUseCase: GetCharactersFiltersUseCase
     private lateinit var getCharactersWithPaginationUseCase: GetCharactersWithPaginationUseCase
-    private lateinit var getCharactersByFiltersWithPaginationUseCase: GetCharactersByFiltersWithPaginationUseCase
+    private lateinit var getCharactersByFiltersWithPaginationUseCase: GetCharactersByFiltersWithPaginationUseCase*/
 
+    @Inject
+    lateinit var viewModelFactory: CharactersViewModelFactory
     private lateinit var viewModel: CharactersViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,6 +90,9 @@ class CharactersListFragment : Fragment() {
         setBottomNavigationCheckedItem()
         initToolbar()
         initRecyclerView()
+
+        val appComponent = (requireContext().applicationContext as App).appComponent
+        appComponent.inject(this)
 
         initDependencies()
         initViewModel()
@@ -150,22 +158,23 @@ class CharactersListFragment : Fragment() {
     private fun initViewModel() {
         viewModel = ViewModelProvider(
             owner = this,
-            factory = CharactersViewModelFactory(
+            factory = viewModelFactory
+            /*CharactersViewModelFactory(
                 getCharactersUseCase = getCharactersUseCase,
                 getCharactersByFiltersUseCase = getCharactersByFiltersUseCase,
                 getCharactersFiltersUseCase = getCharactersFiltersUseCase,
                 getCharactersWithPaginationUseCase = getCharactersWithPaginationUseCase,
                 getCharactersByFiltersWithPaginationUseCase = getCharactersByFiltersWithPaginationUseCase
-            )
+            )*/
         ).get(CharactersViewModel::class.java)
     }
 
     private fun initDependencies() {
-        api = CharactersApiBuilder.apiService
+        //    api = CharactersApiBuilder.apiService
 
-        database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
+        //    database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
 
-        charactersDao = database.charactersDao
+        /*charactersDao = database.charactersDao
         charactersRemoteKeysDao = database.charactersRemoteKeysDao
 
         repository = CharactersRepositoryImpl(
@@ -178,7 +187,7 @@ class CharactersListFragment : Fragment() {
         getCharactersFiltersUseCase = GetCharactersFiltersUseCase(repository)
         getCharactersWithPaginationUseCase = GetCharactersWithPaginationUseCase(repository)
         getCharactersByFiltersWithPaginationUseCase =
-            GetCharactersByFiltersWithPaginationUseCase(repository)
+            GetCharactersByFiltersWithPaginationUseCase(repository)*/
     }
 
     private fun initToolbar() {

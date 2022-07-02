@@ -54,8 +54,8 @@ dependencies {
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.3")
-    implementation'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1'
-    implementation'androidx.lifecycle:lifecycle-runtime-ktx:2.4.1'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.1'
 
     implementation 'androidx.lifecycle:lifecycle-common:2.4.1'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.4.1'
@@ -75,4 +75,8 @@ dependencies {
 
     // Pull To Refresh
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
+
+    // Dagger
+    implementation 'com.google.dagger:dagger:2.42'
+    kapt 'com.google.dagger:dagger-compiler:2.42'
 }

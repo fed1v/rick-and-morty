@@ -39,7 +39,6 @@ class CharactersListFragment : Fragment() {
 
     private lateinit var binding: FragmentCharactersListBinding
 
-    private lateinit var charactersAdapter: CharactersAdapter
     private lateinit var charactersPagedAdapter: CharactersPagedAdapter
 
     private val onCharacterSelectedListener =
@@ -95,7 +94,20 @@ class CharactersListFragment : Fragment() {
 
         getCharacters()
 
+        initSwipeRefreshListener()
+
         return binding.root
+    }
+
+    private fun initSwipeRefreshListener() {
+        binding.swipeRefreshLayout.apply {
+            setOnRefreshListener {
+                isRefreshing = true
+                getCharacters()
+                binding.rvCharacters.scrollToPosition(0)
+                isRefreshing = false
+            }
+        }
     }
 
     private fun setUpObservers() {
@@ -109,9 +121,13 @@ class CharactersListFragment : Fragment() {
     private fun getCharacters() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.getCharactersWithPagination()
+            viewModel.getCharactersWithPagination()
         }
     }
 
+    private suspend fun getCharactersByFilters(filters: CharacterFilter) {
+        viewModel.getCharactersByFiltersWithPagination(filters)
+    }
 
     private fun initFilters() {
         charactersFiltersHelper = CharactersFiltersHelper(
@@ -179,36 +195,13 @@ class CharactersListFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             charactersPagedAdapter.loadStateFlow.collect { state ->
 
-                println("State: $state")
-
-                if (state.append is LoadState.Loading) {
-                    println("Loading")
-                    binding.charactersBottomProgressBar.isVisible = true
-                }
-                if (state.append is LoadState.NotLoading
-                    || state.append is LoadState.Error
-                ) {
-                    println("Not Loading")
-                    binding.charactersBottomProgressBar.isVisible = false
-                }
-
-                if (state.refresh is LoadState.Loading) {
-                    binding.charactersProgressBar.isVisible = true
-                    println("Refresh: Loading")
-                }
-
-                if (state.refresh is LoadState.NotLoading
-                    || state.refresh is LoadState.Error
-                ) {
-                    binding.charactersProgressBar.isVisible = false
-                    println("Refresh: NotLoading")
-                }
+                binding.charactersBottomProgressBar.isVisible = state.append is LoadState.Loading
+                binding.charactersProgressBar.isVisible = state.refresh is LoadState.Loading
 
                 if (state.source.refresh is LoadState.NotLoading
                     && state.refresh is LoadState.Error
                     && charactersPagedAdapter.itemCount == 0
                 ) {
-                    println("Nothing found")
                     binding.charactersProgressBar.isVisible = false
                     Toast.makeText(requireContext(), "Nothing found", Toast.LENGTH_SHORT).show()
                 }
@@ -270,23 +263,22 @@ class CharactersListFragment : Fragment() {
         appliedFilters = filters.copy(name = name)
         viewLifecycleOwner.lifecycleScope.launch {
             binding.charactersProgressBar.visibility = View.VISIBLE
-            viewModel.getCharactersByFiltersWithPagination(appliedFilters)
+            getCharactersByFilters(appliedFilters)
+        }
+    }
+
+    private fun searchByQuery(query: String?) {
+        appliedFilters.name = query
+        viewLifecycleOwner.lifecycleScope.launch {
+            binding.charactersProgressBar.visibility = View.VISIBLE
+            getCharactersByFilters(appliedFilters)
         }
     }
 
     private fun onResetClicked() {
         appliedFilters = CharacterFilter()
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.getCharactersWithPagination()
-        }
-    }
-
-
-    private fun searchByQuery(query: String?) {
-        appliedFilters.name = query
-        viewLifecycleOwner.lifecycleScope.launch {
-            binding.charactersProgressBar.visibility = View.VISIBLE
-            viewModel.getCharactersByFiltersWithPagination(appliedFilters)
+            getCharacters()
         }
     }
 

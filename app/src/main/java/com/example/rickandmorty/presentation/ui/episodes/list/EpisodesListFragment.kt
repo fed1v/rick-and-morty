@@ -37,7 +37,6 @@ class EpisodesListFragment : Fragment() {
 
     private lateinit var binding: FragmentEpisodesListBinding
 
-    private lateinit var episodesAdapter: EpisodesAdapter
     private lateinit var episodesPagedAdapter: EpisodesPagedAdapter
 
     @OptIn(ExperimentalPagingApi::class)
@@ -93,9 +92,22 @@ class EpisodesListFragment : Fragment() {
 
         setUpObservers()
 
-        getCharacters()
+        getEpisodes()
+
+        initSwipeRefreshListener()
 
         return binding.root
+    }
+
+    private fun initSwipeRefreshListener() {
+        binding.swipeRefreshLayout.apply {
+            setOnRefreshListener {
+                isRefreshing = true
+                getEpisodes()
+                binding.rvEpisodes.scrollToPosition(0)
+                isRefreshing = false
+            }
+        }
     }
 
     private fun setUpObservers() {
@@ -106,10 +118,15 @@ class EpisodesListFragment : Fragment() {
         }
     }
 
-    private fun getCharacters() {
+    private fun getEpisodes() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.getEpisodesWithPagination()
+            viewModel.getEpisodesWithPagination()
         }
+    }
+
+    private suspend fun getEpisodesByFilters(filters: EpisodeFilter) {
+        viewModel.getEpisodesByFiltersWithPagination(filters)
     }
 
 
@@ -213,43 +230,16 @@ class EpisodesListFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             episodesPagedAdapter.loadStateFlow.collect { state ->
 
-
-                println("State: $state")
-
-                if (state.append is LoadState.Loading) {
-                    println("Loading")
-                    binding.episodesBottomProgressBar.isVisible = true
-                }
-                if (state.append is LoadState.NotLoading
-                    || state.append is LoadState.Error
-                ) {
-                    println("Not Loading")
-                    binding.episodesBottomProgressBar.isVisible = false
-                }
-
-                if (state.refresh is LoadState.Loading) {
-                    binding.episodesProgressBar.isVisible = true
-                    println("Refresh: Loading")
-                }
-
-                if (state.refresh is LoadState.NotLoading
-                    || state.refresh is LoadState.Error
-                ) {
-                    binding.episodesProgressBar.isVisible = false
-                    println("Refresh: NotLoading")
-                }
-
-
+                binding.episodesBottomProgressBar.isVisible = state.append is LoadState.Loading
+                binding.episodesProgressBar.isVisible = state.refresh is LoadState.Loading
 
                 if (state.source.refresh is LoadState.NotLoading
                     && state.refresh is LoadState.Error
                     && episodesPagedAdapter.itemCount == 0
                 ) {
-                    println("Nothing found")
-                    binding.episodesProgressBar.visibility = View.GONE
+                    binding.episodesProgressBar.isVisible = false
                     Toast.makeText(requireContext(), "Nothing found", Toast.LENGTH_SHORT).show()
                 }
-
             }
         }
 
@@ -262,28 +252,20 @@ class EpisodesListFragment : Fragment() {
         hostActivity().setBottomNavItemChecked(MENU_ITEM_NUMBER)
     }
 
-    private fun onEpisodeClicked(episode: EpisodePresentation) {
-        println("EpisodeDetailsFragment: ${episode.name}")
-        hostActivity().openFragment(
-            EpisodeDetailsFragment.newInstance(episode),
-            "EpisodeDetailsFragment"
-        )
+    private fun onFiltersApplied(filters: EpisodeFilter) {
+        val name = filters.name ?: appliedFilters.name
+        appliedFilters = filters.copy(name = name)
+        viewLifecycleOwner.lifecycleScope.launch {
+            binding.episodesProgressBar.visibility = View.VISIBLE
+            getEpisodesByFilters(appliedFilters)
+        }
     }
 
     private fun searchByQuery(query: String?) {
         appliedFilters.name = query
         viewLifecycleOwner.lifecycleScope.launch {
             binding.episodesProgressBar.visibility = View.VISIBLE
-            viewModel.getEpisodesByFiltersWithPagination(appliedFilters)
-        }
-    }
-
-    private fun onFiltersApplied(filters: EpisodeFilter) {
-        val name = filters.name ?: appliedFilters.name
-        appliedFilters = filters.copy(name = name)
-        viewLifecycleOwner.lifecycleScope.launch {
-            binding.episodesProgressBar.visibility = View.VISIBLE
-            viewModel.getEpisodesByFiltersWithPagination(appliedFilters) // ?? TODO
+            getEpisodesByFilters(appliedFilters)
         }
     }
 
@@ -291,7 +273,7 @@ class EpisodesListFragment : Fragment() {
         appliedFilters = EpisodeFilter()
         viewLifecycleOwner.lifecycleScope.launch {
             binding.episodesProgressBar.visibility = View.VISIBLE
-            viewModel.getEpisodesWithPagination()
+            getEpisodes()
         }
     }
 

@@ -15,18 +15,9 @@ import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.App
 import com.example.rickandmorty.R
-import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
-import com.example.rickandmorty.data.local.database.characters.CharactersDao
-import com.example.rickandmorty.data.local.database.characters.remote_keys.CharactersRemoteKeysDao
-import com.example.rickandmorty.data.remote.characters.CharactersApi
-import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
-import com.example.rickandmorty.data.repository.CharactersRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentCharactersListBinding
 import com.example.rickandmorty.domain.models.character.CharacterFilter
-import com.example.rickandmorty.domain.repository.CharactersRepository
-import com.example.rickandmorty.domain.usecases.characters.*
 import com.example.rickandmorty.presentation.models.CharacterPresentation
-import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAdapter
 import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersPagedAdapter
 import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
 import com.example.rickandmorty.presentation.ui.hostActivity
@@ -58,21 +49,6 @@ class CharactersListFragment : Fragment() {
 
     private var appliedFilters: CharacterFilter = CharacterFilter()
 
-
-    //   lateinit var api: CharactersApi
-    //   private lateinit var repository: CharactersRepository
-
-    //  lateinit var database: RickAndMortyDatabase
-/*
-    private lateinit var charactersDao: CharactersDao
-    private lateinit var charactersRemoteKeysDao: CharactersRemoteKeysDao
-
-    private lateinit var getCharactersUseCase: GetCharactersUseCase
-    private lateinit var getCharactersByFiltersUseCase: GetCharactersByFiltersUseCase
-    private lateinit var getCharactersFiltersUseCase: GetCharactersFiltersUseCase
-    private lateinit var getCharactersWithPaginationUseCase: GetCharactersWithPaginationUseCase
-    private lateinit var getCharactersByFiltersWithPaginationUseCase: GetCharactersByFiltersWithPaginationUseCase*/
-
     @Inject
     lateinit var viewModelFactory: CharactersViewModelFactory
     private lateinit var viewModel: CharactersViewModel
@@ -91,20 +67,22 @@ class CharactersListFragment : Fragment() {
         initToolbar()
         initRecyclerView()
 
-        val appComponent = (requireContext().applicationContext as App).appComponent
-        appComponent.inject(this)
+        injectDependencies()
 
-        initDependencies()
         initViewModel()
         initFilters()
 
         setUpObservers()
-
         getCharacters()
 
         initSwipeRefreshListener()
 
         return binding.root
+    }
+
+    private fun injectDependencies() {
+        val appComponent = (requireContext().applicationContext as App).appComponent
+        appComponent.inject(this)
     }
 
     private fun initSwipeRefreshListener() {
@@ -159,36 +137,9 @@ class CharactersListFragment : Fragment() {
         viewModel = ViewModelProvider(
             owner = this,
             factory = viewModelFactory
-            /*CharactersViewModelFactory(
-                getCharactersUseCase = getCharactersUseCase,
-                getCharactersByFiltersUseCase = getCharactersByFiltersUseCase,
-                getCharactersFiltersUseCase = getCharactersFiltersUseCase,
-                getCharactersWithPaginationUseCase = getCharactersWithPaginationUseCase,
-                getCharactersByFiltersWithPaginationUseCase = getCharactersByFiltersWithPaginationUseCase
-            )*/
         ).get(CharactersViewModel::class.java)
     }
 
-    private fun initDependencies() {
-        //    api = CharactersApiBuilder.apiService
-
-        //    database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
-
-        /*charactersDao = database.charactersDao
-        charactersRemoteKeysDao = database.charactersRemoteKeysDao
-
-        repository = CharactersRepositoryImpl(
-            api = api,
-            database = database
-        )
-
-        getCharactersUseCase = GetCharactersUseCase(repository)
-        getCharactersByFiltersUseCase = GetCharactersByFiltersUseCase(repository)
-        getCharactersFiltersUseCase = GetCharactersFiltersUseCase(repository)
-        getCharactersWithPaginationUseCase = GetCharactersWithPaginationUseCase(repository)
-        getCharactersByFiltersWithPaginationUseCase =
-            GetCharactersByFiltersWithPaginationUseCase(repository)*/
-    }
 
     private fun initToolbar() {
         toolbar = binding.charactersToolbar

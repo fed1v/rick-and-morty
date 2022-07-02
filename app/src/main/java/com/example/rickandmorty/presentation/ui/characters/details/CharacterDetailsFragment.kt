@@ -14,35 +14,15 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.example.rickandmorty.App
 import com.example.rickandmorty.R
-import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
-import com.example.rickandmorty.data.local.database.characters.CharactersDao
-import com.example.rickandmorty.data.local.database.episodes.EpisodesDao
-import com.example.rickandmorty.data.local.database.locations.LocationsDao
-import com.example.rickandmorty.data.local.database.characters.remote_keys.CharactersRemoteKeysDao
-import com.example.rickandmorty.data.remote.characters.CharactersApi
-import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
-import com.example.rickandmorty.data.remote.episodes.EpisodesApi
-import com.example.rickandmorty.data.remote.episodes.EpisodesApiBuilder
-import com.example.rickandmorty.data.remote.locations.LocationsApi
-import com.example.rickandmorty.data.remote.locations.LocationsApiBuilder
-import com.example.rickandmorty.data.repository.CharactersRepositoryImpl
-import com.example.rickandmorty.data.repository.EpisodesRepositoryImpl
-import com.example.rickandmorty.data.repository.LocationsRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentCharacterDetailsBinding
-import com.example.rickandmorty.domain.repository.CharactersRepository
-import com.example.rickandmorty.domain.repository.EpisodesRepository
-import com.example.rickandmorty.domain.repository.LocationsRepository
-import com.example.rickandmorty.domain.usecases.characters.GetCharacterByIdUseCase
-import com.example.rickandmorty.domain.usecases.episodes.GetEpisodesByIdsUseCase
-import com.example.rickandmorty.domain.usecases.locations.GetLocationByIdUseCase
 import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationMapper
 import com.example.rickandmorty.presentation.mapper.EpisodeDomainToEpisodePresentationMapper
 import com.example.rickandmorty.presentation.mapper.LocationDomainToLocationPresentationMapper
 import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.presentation.models.EpisodePresentation
 import com.example.rickandmorty.presentation.models.LocationPresentation
-import com.example.rickandmorty.presentation.ui.episodes.details.EpisodeDetailsFragment
 import com.example.rickandmorty.presentation.ui.episodes.adapters.EpisodesAdapter
+import com.example.rickandmorty.presentation.ui.episodes.details.EpisodeDetailsFragment
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.presentation.ui.locations.details.LocationDetailsFragment
 import com.example.rickandmorty.util.resource.Status
@@ -55,25 +35,6 @@ class CharacterDetailsFragment : Fragment() {
     private lateinit var character: CharacterPresentation
     private lateinit var toolbar: Toolbar
     private lateinit var episodesAdapter: EpisodesAdapter
-
-    /*private lateinit var episodesApi: EpisodesApi
-    private lateinit var charactersApi: CharactersApi
-    private lateinit var locationsApi: LocationsApi
-
-    private lateinit var database: RickAndMortyDatabase
-
-    private lateinit var charactersDao: CharactersDao
-    private lateinit var episodesDao: EpisodesDao
-    private lateinit var locationsDao: LocationsDao
-    private lateinit var keysDao: CharactersRemoteKeysDao
-
-    private lateinit var episodesRepository: EpisodesRepository
-    private lateinit var charactersRepository: CharactersRepository
-    private lateinit var locationsRepository: LocationsRepository
-
-    private lateinit var getEpisodesByIdsUseCase: GetEpisodesByIdsUseCase
-    private lateinit var getCharacterByIdUseCase: GetCharacterByIdUseCase
-    private lateinit var getLocationByIdUseCase: GetLocationByIdUseCase*/
 
     @Inject
     lateinit var viewModelFactory: CharacterDetailsViewModelFactory
@@ -105,10 +66,8 @@ class CharacterDetailsFragment : Fragment() {
         initToolbar()
         initRecyclerView()
 
-        val appComponent = (requireContext().applicationContext as App).appComponent
-        appComponent.inject(this)
+        injectDependencies()
 
-        initDependencies()
         initViewModel()
 
         setUpObservers(
@@ -121,45 +80,16 @@ class CharacterDetailsFragment : Fragment() {
         return binding.root
     }
 
-    private fun initDependencies() {
-        /*episodesApi = EpisodesApiBuilder.apiService
-        charactersApi = CharactersApiBuilder.apiService
-        locationsApi = LocationsApiBuilder.apiService
-
-        database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
-
-        charactersDao = database.charactersDao
-        episodesDao = database.episodesDao
-        locationsDao = database.locationDao
-        keysDao = database.charactersRemoteKeysDao
-
-        episodesRepository = EpisodesRepositoryImpl(
-            api = episodesApi,
-            database = database
-        )
-        charactersRepository = CharactersRepositoryImpl(
-            api = charactersApi,
-            database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
-        )
-        locationsRepository = LocationsRepositoryImpl(
-            api = locationsApi,
-            database = database
-        )
-
-        getEpisodesByIdsUseCase = GetEpisodesByIdsUseCase(episodesRepository)
-        getCharacterByIdUseCase = GetCharacterByIdUseCase(charactersRepository)
-        getLocationByIdUseCase = GetLocationByIdUseCase(locationsRepository)*/
+    private fun injectDependencies() {
+        val appComponent = (requireContext().applicationContext as App).appComponent
+        appComponent.inject(this)
     }
+
 
     private fun initViewModel() {
         viewModel = ViewModelProvider(
             owner = this,
             factory = viewModelFactory
-            /*CharacterDetailsViewModelFactory(
-                getEpisodesByIdsUseCase = getEpisodesByIdsUseCase,
-                getCharacterByIdUseCase = getCharacterByIdUseCase,
-                getLocationByIdUseCase = getLocationByIdUseCase
-            )*/
         ).get(CharacterDetailsViewModel::class.java)
     }
 

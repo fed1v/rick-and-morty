@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.paging.ExperimentalPagingApi
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
+import com.example.rickandmorty.App
 import com.example.rickandmorty.R
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.characters.CharactersDao
@@ -45,6 +46,7 @@ import com.example.rickandmorty.presentation.ui.episodes.adapters.EpisodesAdapte
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.presentation.ui.locations.details.LocationDetailsFragment
 import com.example.rickandmorty.util.resource.Status
+import javax.inject.Inject
 
 @ExperimentalPagingApi
 class CharacterDetailsFragment : Fragment() {
@@ -54,7 +56,7 @@ class CharacterDetailsFragment : Fragment() {
     private lateinit var toolbar: Toolbar
     private lateinit var episodesAdapter: EpisodesAdapter
 
-    private lateinit var episodesApi: EpisodesApi
+    /*private lateinit var episodesApi: EpisodesApi
     private lateinit var charactersApi: CharactersApi
     private lateinit var locationsApi: LocationsApi
 
@@ -71,8 +73,10 @@ class CharacterDetailsFragment : Fragment() {
 
     private lateinit var getEpisodesByIdsUseCase: GetEpisodesByIdsUseCase
     private lateinit var getCharacterByIdUseCase: GetCharacterByIdUseCase
-    private lateinit var getLocationByIdUseCase: GetLocationByIdUseCase
+    private lateinit var getLocationByIdUseCase: GetLocationByIdUseCase*/
 
+    @Inject
+    lateinit var viewModelFactory: CharacterDetailsViewModelFactory
     private lateinit var viewModel: CharacterDetailsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -101,6 +105,9 @@ class CharacterDetailsFragment : Fragment() {
         initToolbar()
         initRecyclerView()
 
+        val appComponent = (requireContext().applicationContext as App).appComponent
+        appComponent.inject(this)
+
         initDependencies()
         initViewModel()
 
@@ -115,7 +122,7 @@ class CharacterDetailsFragment : Fragment() {
     }
 
     private fun initDependencies() {
-        episodesApi = EpisodesApiBuilder.apiService
+        /*episodesApi = EpisodesApiBuilder.apiService
         charactersApi = CharactersApiBuilder.apiService
         locationsApi = LocationsApiBuilder.apiService
 
@@ -141,17 +148,18 @@ class CharacterDetailsFragment : Fragment() {
 
         getEpisodesByIdsUseCase = GetEpisodesByIdsUseCase(episodesRepository)
         getCharacterByIdUseCase = GetCharacterByIdUseCase(charactersRepository)
-        getLocationByIdUseCase = GetLocationByIdUseCase(locationsRepository)
+        getLocationByIdUseCase = GetLocationByIdUseCase(locationsRepository)*/
     }
 
     private fun initViewModel() {
         viewModel = ViewModelProvider(
             owner = this,
-            factory = CharacterDetailsViewModelFactory(
+            factory = viewModelFactory
+            /*CharacterDetailsViewModelFactory(
                 getEpisodesByIdsUseCase = getEpisodesByIdsUseCase,
                 getCharacterByIdUseCase = getCharacterByIdUseCase,
                 getLocationByIdUseCase = getLocationByIdUseCase
-            )
+            )*/
         ).get(CharacterDetailsViewModel::class.java)
     }
 

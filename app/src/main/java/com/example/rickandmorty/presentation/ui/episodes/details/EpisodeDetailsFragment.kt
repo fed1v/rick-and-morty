@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.ExperimentalPagingApi
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.rickandmorty.App
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.characters.CharactersDao
 import com.example.rickandmorty.data.local.database.episodes.EpisodesDao
@@ -34,6 +35,7 @@ import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAd
 import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.util.resource.Status
+import javax.inject.Inject
 
 @OptIn(ExperimentalPagingApi::class)
 class EpisodeDetailsFragment : Fragment() {
@@ -43,7 +45,7 @@ class EpisodeDetailsFragment : Fragment() {
     private lateinit var toolbar: Toolbar
     private lateinit var charactersAdapter: CharactersAdapter
 
-    private lateinit var episodesApi: EpisodesApi
+    /*private lateinit var episodesApi: EpisodesApi
     private lateinit var charactersApi: CharactersApi
 
     private lateinit var database: RickAndMortyDatabase
@@ -56,8 +58,10 @@ class EpisodeDetailsFragment : Fragment() {
     private lateinit var charactersRepository: CharactersRepository
 
     private lateinit var getEpisodeByIdUseCase: GetEpisodeByIdUseCase
-    private lateinit var getCharactersByIdsUseCase: GetCharactersByIdsUseCase
+    private lateinit var getCharactersByIdsUseCase: GetCharactersByIdsUseCase*/
 
+    @Inject
+    lateinit var viewModelFactory: EpisodeDetailsViewModelFactory
     private lateinit var viewModel: EpisodeDetailsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,6 +81,9 @@ class EpisodeDetailsFragment : Fragment() {
         initToolbar()
         initRecyclerView()
 
+        val appComponent = (requireContext().applicationContext as App).appComponent
+        appComponent.inject(this)
+
         initDependencies()
         initViewModel()
 
@@ -87,15 +94,17 @@ class EpisodeDetailsFragment : Fragment() {
 
     private fun initViewModel() {
         viewModel = ViewModelProvider(
-            this, EpisodeDetailsViewModelFactory(
+            owner = this,
+            factory = viewModelFactory
+            /*EpisodeDetailsViewModelFactory(
                 getEpisodeByIdUseCase = getEpisodeByIdUseCase,
                 getCharactersByIdsUseCase = getCharactersByIdsUseCase
-            )
+            )*/
         ).get(EpisodeDetailsViewModel::class.java)
     }
 
     private fun initDependencies() {
-        episodesApi = EpisodesApiBuilder.apiService
+        /*episodesApi = EpisodesApiBuilder.apiService
         charactersApi = CharactersApiBuilder.apiService
 
         database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
@@ -114,7 +123,7 @@ class EpisodeDetailsFragment : Fragment() {
         )
 
         getEpisodeByIdUseCase = GetEpisodeByIdUseCase(episodesRepository)
-        getCharactersByIdsUseCase = GetCharactersByIdsUseCase(charactersRepository)
+        getCharactersByIdsUseCase = GetCharactersByIdsUseCase(charactersRepository)*/
     }
 
     private fun setUpObservers(id: Int, ids: List<Int?>) {

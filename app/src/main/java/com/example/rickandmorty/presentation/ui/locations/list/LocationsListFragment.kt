@@ -13,25 +13,19 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.rickandmorty.App
 import com.example.rickandmorty.R
-import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
-import com.example.rickandmorty.data.local.database.locations.LocationsDao
-import com.example.rickandmorty.data.remote.locations.LocationsApi
-import com.example.rickandmorty.data.remote.locations.LocationsApiBuilder
-import com.example.rickandmorty.data.repository.LocationsRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentLocationsListBinding
 import com.example.rickandmorty.domain.models.location.LocationFilter
-import com.example.rickandmorty.domain.repository.LocationsRepository
-import com.example.rickandmorty.domain.usecases.locations.*
 import com.example.rickandmorty.presentation.models.LocationPresentation
 import com.example.rickandmorty.presentation.ui.hostActivity
-import com.example.rickandmorty.presentation.ui.locations.adapters.LocationsAdapter
 import com.example.rickandmorty.presentation.ui.locations.adapters.LocationsPagedAdapter
 import com.example.rickandmorty.presentation.ui.locations.details.LocationDetailsFragment
 import com.example.rickandmorty.util.OnItemSelectedListener
 import com.example.rickandmorty.util.filters.LocationsFiltersHelper
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @ExperimentalPagingApi
 class LocationsListFragment : Fragment() {
@@ -54,20 +48,8 @@ class LocationsListFragment : Fragment() {
 
     private var appliedFilters = LocationFilter()
 
-    private lateinit var locationsApi: LocationsApi
-
-    private lateinit var database: RickAndMortyDatabase
-
-    private lateinit var locationsDao: LocationsDao
-
-    private lateinit var repository: LocationsRepository
-
-    private lateinit var getLocationsUseCase: GetLocationsUseCase
-    private lateinit var getLocationsByFiltersUseCase: GetLocationsByFiltersUseCase
-    private lateinit var getLocationsFiltersUseCase: GetLocationsFiltersUseCase
-    private lateinit var getLocationsWithPaginationUseCase: GetLocationsWithPaginationUseCase
-    private lateinit var getLocationsByFiltersWithPaginationUseCase: GetLocationsByFiltersWithPaginationUseCase
-
+    @Inject
+    lateinit var viewModelFactory: LocationsViewModelFactory
     private lateinit var viewModel: LocationsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,17 +66,22 @@ class LocationsListFragment : Fragment() {
         initToolbar()
         initRecyclerView()
 
-        initDependencies()
+        injectDependencies()
+
         initViewModel()
         initFilters()
 
         setUpObservers()
-
         getLocations()
 
         initSwipeRefreshListener()
 
         return binding.root
+    }
+
+    private fun injectDependencies() {
+        val appComponent = (requireContext().applicationContext as App).appComponent
+        appComponent.inject(this)
     }
 
     private fun initSwipeRefreshListener() {
@@ -148,34 +135,8 @@ class LocationsListFragment : Fragment() {
     private fun initViewModel() {
         viewModel = ViewModelProvider(
             owner = this,
-            factory = LocationsViewModelFactory(
-                getLocationsUseCase = getLocationsUseCase,
-                getLocationsByFiltersUseCase = getLocationsByFiltersUseCase,
-                getLocationsFiltersUseCase = getLocationsFiltersUseCase,
-                getLocationsWithPaginationUseCase = getLocationsWithPaginationUseCase,
-                getLocationsByFiltersWithPaginationUseCase = getLocationsByFiltersWithPaginationUseCase
-            )
+            factory = viewModelFactory
         ).get(LocationsViewModel::class.java)
-    }
-
-    private fun initDependencies() {
-        locationsApi = LocationsApiBuilder.apiService
-
-        database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
-
-        locationsDao = database.locationDao
-
-        repository = LocationsRepositoryImpl(
-            api = locationsApi,
-            database = database
-        )
-
-        getLocationsUseCase = GetLocationsUseCase(repository)
-        getLocationsByFiltersUseCase = GetLocationsByFiltersUseCase(repository)
-        getLocationsFiltersUseCase = GetLocationsFiltersUseCase(repository)
-        getLocationsWithPaginationUseCase = GetLocationsWithPaginationUseCase(repository)
-        getLocationsByFiltersWithPaginationUseCase =
-            GetLocationsByFiltersWithPaginationUseCase(repository)
     }
 
     private fun initToolbar() {

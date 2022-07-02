@@ -11,21 +11,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.ExperimentalPagingApi
 import androidx.recyclerview.widget.GridLayoutManager
-import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
-import com.example.rickandmorty.data.local.database.characters.CharactersDao
-import com.example.rickandmorty.data.local.database.locations.LocationsDao
-import com.example.rickandmorty.data.local.database.characters.remote_keys.CharactersRemoteKeysDao
-import com.example.rickandmorty.data.remote.characters.CharactersApi
-import com.example.rickandmorty.data.remote.characters.CharactersApiBuilder
-import com.example.rickandmorty.data.remote.locations.LocationsApi
-import com.example.rickandmorty.data.remote.locations.LocationsApiBuilder
-import com.example.rickandmorty.data.repository.CharactersRepositoryImpl
-import com.example.rickandmorty.data.repository.LocationsRepositoryImpl
+import com.example.rickandmorty.App
 import com.example.rickandmorty.databinding.FragmentLocationDetailsBinding
-import com.example.rickandmorty.domain.repository.CharactersRepository
-import com.example.rickandmorty.domain.repository.LocationsRepository
-import com.example.rickandmorty.domain.usecases.characters.GetCharactersByIdsUseCase
-import com.example.rickandmorty.domain.usecases.locations.GetLocationByIdUseCase
 import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationMapper
 import com.example.rickandmorty.presentation.mapper.LocationDomainToLocationPresentationMapper
 import com.example.rickandmorty.presentation.models.CharacterPresentation
@@ -34,6 +21,7 @@ import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAd
 import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.util.resource.Status
+import javax.inject.Inject
 
 @ExperimentalPagingApi
 class LocationDetailsFragment : Fragment() {
@@ -43,21 +31,8 @@ class LocationDetailsFragment : Fragment() {
     private lateinit var toolbar: Toolbar
     private lateinit var charactersAdapter: CharactersAdapter
 
-    private lateinit var locationsApi: LocationsApi
-    private lateinit var charactersApi: CharactersApi
-
-    private lateinit var database: RickAndMortyDatabase
-
-    private lateinit var charactersDao: CharactersDao
-    private lateinit var locationsDao: LocationsDao
-    private lateinit var keysDao: CharactersRemoteKeysDao
-
-    private lateinit var locationsRepository: LocationsRepository
-    private lateinit var charactersRepository: CharactersRepository
-
-    private lateinit var getLocationByIdUseCase: GetLocationByIdUseCase
-    private lateinit var getCharactersByIdsUseCase: GetCharactersByIdsUseCase
-
+    @Inject
+    lateinit var viewModelFactory: LocationDetailsViewModelFactory
     private lateinit var viewModel: LocationDetailsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,7 +51,8 @@ class LocationDetailsFragment : Fragment() {
         initToolbar()
         initRecyclerView()
 
-        initDependencies()
+        injectDependencies()
+
         initViewModel()
 
         setUpObservers(id = location.id, ids = location.residents)
@@ -84,37 +60,16 @@ class LocationDetailsFragment : Fragment() {
         return binding.root
     }
 
+    private fun injectDependencies() {
+        val appComponent = (requireContext().applicationContext as App).appComponent
+        appComponent.inject(this)
+    }
+
     private fun initViewModel() {
         viewModel = ViewModelProvider(
             owner = this,
-            factory = LocationDetailsViewModelFactory(
-                getLocationByIdUseCase = getLocationByIdUseCase,
-                getCharactersByIdsUseCase = getCharactersByIdsUseCase
-            )
+            factory = viewModelFactory
         ).get(LocationDetailsViewModel::class.java)
-    }
-
-    private fun initDependencies() {
-        locationsApi = LocationsApiBuilder.apiService
-        charactersApi = CharactersApiBuilder.apiService
-
-        database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
-
-        charactersDao = database.charactersDao
-        locationsDao = database.locationDao
-        keysDao = database.charactersRemoteKeysDao
-
-        locationsRepository = LocationsRepositoryImpl(
-            api = locationsApi,
-            database = database
-        )
-        charactersRepository = CharactersRepositoryImpl(
-            api = charactersApi,
-            database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
-        )
-
-        getLocationByIdUseCase = GetLocationByIdUseCase(locationsRepository)
-        getCharactersByIdsUseCase = GetCharactersByIdsUseCase(charactersRepository)
     }
 
     private fun setUpObservers(id: Int, ids: List<Int?>) {

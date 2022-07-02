@@ -13,18 +13,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.rickandmorty.App
 import com.example.rickandmorty.R
-import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
-import com.example.rickandmorty.data.local.database.episodes.EpisodesDao
-import com.example.rickandmorty.data.remote.episodes.EpisodesApi
-import com.example.rickandmorty.data.remote.episodes.EpisodesApiBuilder
-import com.example.rickandmorty.data.repository.EpisodesRepositoryImpl
 import com.example.rickandmorty.databinding.FragmentEpisodesListBinding
 import com.example.rickandmorty.domain.models.episode.EpisodeFilter
-import com.example.rickandmorty.domain.repository.EpisodesRepository
-import com.example.rickandmorty.domain.usecases.episodes.*
 import com.example.rickandmorty.presentation.models.EpisodePresentation
-import com.example.rickandmorty.presentation.ui.episodes.adapters.EpisodesAdapter
 import com.example.rickandmorty.presentation.ui.episodes.adapters.EpisodesPagedAdapter
 import com.example.rickandmorty.presentation.ui.episodes.details.EpisodeDetailsFragment
 import com.example.rickandmorty.presentation.ui.hostActivity
@@ -32,6 +25,7 @@ import com.example.rickandmorty.util.OnItemSelectedListener
 import com.example.rickandmorty.util.filters.EpisodesFiltersHelper
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class EpisodesListFragment : Fragment() {
 
@@ -39,7 +33,6 @@ class EpisodesListFragment : Fragment() {
 
     private lateinit var episodesPagedAdapter: EpisodesPagedAdapter
 
-    @OptIn(ExperimentalPagingApi::class)
     private val onEpisodeSelectedListener =
         object : OnItemSelectedListener<EpisodePresentation> {
             override fun onSelectItem(item: EpisodePresentation) {
@@ -55,21 +48,8 @@ class EpisodesListFragment : Fragment() {
 
     private var appliedFilters = EpisodeFilter()
 
-    private lateinit var api: EpisodesApi
-
-    private lateinit var database: RickAndMortyDatabase
-
-    private lateinit var episodesDao: EpisodesDao
-
-    private lateinit var repository: EpisodesRepository
-
-    private lateinit var getEpisodesUseCase: GetEpisodesUseCase
-    private lateinit var getEpisodesByFiltersUseCase: GetEpisodesByFiltersUseCase
-    private lateinit var getEpisodesFiltersUseCase: GetEpisodesFiltersUseCase
-    private lateinit var getEpisodesWithPaginationUseCase: GetEpisodesWithPaginationUseCase
-    private lateinit var getEpisodesByFiltersWithPaginationUseCase: GetEpisodesByFiltersWithPaginationUseCase
-
-
+    @Inject
+    lateinit var viewModelFactory: EpisodesViewModelFactory
     private lateinit var viewModel: EpisodesViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -86,17 +66,22 @@ class EpisodesListFragment : Fragment() {
         initToolbar()
         initRecyclerView()
 
-        initDependencies()
+        injectDependencies()
+
         initViewModel()
         initFilters()
 
         setUpObservers()
-
         getEpisodes()
 
         initSwipeRefreshListener()
 
         return binding.root
+    }
+
+    private fun injectDependencies() {
+        val appComponent = (requireContext().applicationContext as App).appComponent
+        appComponent.inject(this)
     }
 
     private fun initSwipeRefreshListener() {
@@ -148,31 +133,8 @@ class EpisodesListFragment : Fragment() {
     private fun initViewModel() {
         viewModel = ViewModelProvider(
             owner = this,
-            factory = EpisodesViewModelFactory(
-                getEpisodesUseCase = getEpisodesUseCase,
-                getEpisodesByFiltersUseCase = getEpisodesByFiltersUseCase,
-                getEpisodesFiltersUseCase = getEpisodesFiltersUseCase,
-                getEpisodesWithPaginationUseCase = getEpisodesWithPaginationUseCase,
-                getEpisodesByFiltersWithPaginationUseCase = getEpisodesByFiltersWithPaginationUseCase
-            )
+            factory = viewModelFactory
         ).get(EpisodesViewModel::class.java)
-    }
-
-    private fun initDependencies() {
-        api = EpisodesApiBuilder.apiService
-        database = RickAndMortyDatabase.getInstance(requireContext().applicationContext)
-        episodesDao = database.episodesDao
-        repository = EpisodesRepositoryImpl(
-            api = api,
-            database = database
-        )
-
-        getEpisodesUseCase = GetEpisodesUseCase(repository)
-        getEpisodesByFiltersUseCase = GetEpisodesByFiltersUseCase(repository)
-        getEpisodesFiltersUseCase = GetEpisodesFiltersUseCase(repository)
-        getEpisodesWithPaginationUseCase = GetEpisodesWithPaginationUseCase(repository)
-        getEpisodesByFiltersWithPaginationUseCase =
-            GetEpisodesByFiltersWithPaginationUseCase(repository)
     }
 
 

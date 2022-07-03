@@ -144,6 +144,13 @@ class EpisodesMediator(
 
         } catch (e: Exception) {
             database.withTransaction {
+                if (hiddenEpisodes.isEmpty()) {
+                    hiddenEpisodes.addAll(episodesDao.getHiddenEpisodes())
+                }
+                if (hiddenKeys.isEmpty()) {
+                    hiddenKeys.addAll(episodesRemoteKeysDao.getHiddenKeys())
+                }
+
                 episodesDao.insertEpisodes(episodesToRemember)
                 episodesRemoteKeysDao.insertKeys(keysToRemember)
 

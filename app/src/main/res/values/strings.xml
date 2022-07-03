@@ -13,4 +13,7 @@
     <string name="residents">Residents</string>
     <string name="unknown">unknown</string>
     <string name="no_residents">No residents</string>
+    <string name="origin">Origin</string>
+    <string name="species">Species</string>
+    <string name="type">Type</string>
 </resources>

@@ -3,7 +3,7 @@ package com.example.rickandmorty.presentation.ui.episodes.adapters
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.rickandmorty.databinding.ItemEpisodeBinding
+import com.example.rickandmorty.databinding.ItemEpisodeInCharacterDetailsBinding
 import com.example.rickandmorty.presentation.models.EpisodePresentation
 
 class EpisodesAdapter(
@@ -17,7 +17,13 @@ class EpisodesAdapter(
         }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EpisodesViewHolder {
-        return EpisodesViewHolder(ItemEpisodeBinding.inflate(LayoutInflater.from(parent.context)))
+        return EpisodesViewHolder(
+            ItemEpisodeInCharacterDetailsBinding.inflate(
+                LayoutInflater.from(
+                    parent.context
+                )
+            )
+        )
     }
 
     override fun onBindViewHolder(holder: EpisodesViewHolder, position: Int) {
@@ -31,7 +37,7 @@ class EpisodesAdapter(
     override fun getItemCount(): Int = episodesList.size
 
     class EpisodesViewHolder(
-        val binding: ItemEpisodeBinding,
+        val binding: ItemEpisodeInCharacterDetailsBinding,
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(episode: EpisodePresentation) {

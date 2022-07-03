@@ -7,10 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.ExperimentalPagingApi
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.*
 import com.bumptech.glide.Glide
 import com.example.rickandmorty.App
 import com.example.rickandmorty.R
@@ -301,10 +303,30 @@ class CharacterDetailsFragment : Fragment() {
             .into(binding.characterImage)
 
         binding.characterName.text = character.name
-        binding.characterSpecies.text = character.species
         binding.characterStatus.text = character.status
-        binding.characterGender.text = character.gender
-        binding.characterType.text = character.type
+
+        var speciesText = requireContext().getString(R.string.species)
+        speciesText += if (character.species.isBlank()) {
+            ": unknown"
+        } else {
+            ": ${character.species}"
+        }
+        binding.characterSpecies.text = speciesText
+
+        val typeText = requireContext().getString(R.string.type) + ": ${character.type}"
+        if (character.type.isBlank()) {
+            binding.characterType.isVisible = false
+        }
+        binding.characterType.text = typeText
+
+        val genderDrawable = when (character.gender) {
+            "Male" -> ContextCompat.getDrawable(requireContext(), R.drawable.ic_male)
+            "Female" -> ContextCompat.getDrawable(requireContext(), R.drawable.ic_female)
+            "Genderless" -> ContextCompat.getDrawable(requireContext(), R.drawable.ic_genderless)
+            else -> ContextCompat.getDrawable(requireContext(), R.drawable.ic_question_mark)
+        }
+
+        binding.iconGender.setImageDrawable(genderDrawable)
     }
 
     private fun openFragment(fragment: Fragment, tag: String) {

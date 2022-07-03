@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.rickandmorty.R
-import com.example.rickandmorty.databinding.ItemCharacterBinding
+import com.example.rickandmorty.databinding.ItemCharacterInDetailsFragmentsBinding
 import com.example.rickandmorty.presentation.models.CharacterPresentation
 
 class CharactersAdapter(
@@ -19,7 +19,7 @@ class CharactersAdapter(
         }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CharacterViewHolder {
-        return CharacterViewHolder(ItemCharacterBinding.inflate(LayoutInflater.from(parent.context)))
+        return CharacterViewHolder(ItemCharacterInDetailsFragmentsBinding.inflate(LayoutInflater.from(parent.context)))
     }
 
     override fun onBindViewHolder(holder: CharacterViewHolder, position: Int) {
@@ -33,7 +33,7 @@ class CharactersAdapter(
     override fun getItemCount(): Int = charactersList.size
 
     class CharacterViewHolder(
-        val binding: ItemCharacterBinding,
+        val binding: ItemCharacterInDetailsFragmentsBinding,
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(character: CharacterPresentation) {

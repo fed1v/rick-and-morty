@@ -7,11 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.ExperimentalPagingApi
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.App
+import com.example.rickandmorty.R
 import com.example.rickandmorty.databinding.FragmentLocationDetailsBinding
 import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationMapper
 import com.example.rickandmorty.presentation.mapper.LocationDomainToLocationPresentationMapper
@@ -165,9 +167,22 @@ class LocationDetailsFragment : Fragment() {
     }
 
     private fun showLocation(location: LocationPresentation) {
-        binding.locationDimension.text = location.dimension
         binding.locationName.text = location.name
-        binding.locationType.text = location.type
+
+        var dimensionText = requireContext().getString(R.string.dimension)
+        if (dimensionText.isBlank()) {
+            binding.locationDimension.isVisible = false
+        }
+        dimensionText += ": ${location.dimension}"
+        binding.locationDimension.text = dimensionText
+
+        var typeText = requireContext().getString(R.string.type)
+        if (typeText.isBlank()) {
+            binding.locationType.isVisible = false
+        }
+        typeText += ": ${location.type}"
+
+        binding.locationType.text = typeText
     }
 
 

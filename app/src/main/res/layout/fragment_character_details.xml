@@ -99,6 +99,7 @@
             android:layout_height="match_parent"
             android:layout_margin="5dp"
             android:layout_weight="0.5"
+            app:cardElevation="4dp"
             app:contentPadding="5dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -142,6 +143,7 @@
             android:layout_height="match_parent"
             android:layout_margin="5dp"
             android:layout_weight="0.5"
+            app:cardElevation="4dp"
             app:contentPadding="5dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout

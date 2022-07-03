@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.paging.ExperimentalPagingApi
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.App
+import com.example.rickandmorty.R
 import com.example.rickandmorty.databinding.FragmentEpisodeDetailsBinding
 import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationMapper
 import com.example.rickandmorty.presentation.mapper.EpisodeDomainToEpisodePresentationMapper
@@ -158,9 +159,12 @@ class EpisodeDetailsFragment : Fragment() {
 
     private fun showEpisode(episode: EpisodePresentation?) {
         if (episode == null) return
-        binding.episodeAirDate.text = episode.airDate
-        binding.episodeEpisode.text = episode.episode
         binding.episodeName.text = episode.name
+        binding.episodeEpisode.text = episode.episode
+
+        var airDateText = requireContext().getString(R.string.air_date)
+        airDateText += ": ${episode.airDate}"
+        binding.episodeAirDate.text = airDateText
     }
 
 

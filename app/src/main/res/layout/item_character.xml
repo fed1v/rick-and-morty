@@ -20,8 +20,8 @@
 
         <ImageView
             android:id="@+id/character_image"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
             android:src="@drawable/rick_image"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -53,19 +53,19 @@
             android:id="@+id/character_status"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@id/character_gender"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="@id/character_name"
             app:layout_constraintTop_toBottomOf="@id/character_species"
             tools:text="Status" />
 
-        <TextView
-            android:id="@+id/character_gender"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="@+id/character_image"
-            app:layout_constraintStart_toStartOf="@id/character_name"
-            app:layout_constraintTop_toBottomOf="@id/character_status"
-            tools:text="Gender" />
+        <ImageView
+            android:id="@+id/gender_image"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_question_mark"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 

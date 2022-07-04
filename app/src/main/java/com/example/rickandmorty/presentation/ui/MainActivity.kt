@@ -65,6 +65,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
+        supportFragmentManager.fragments.let { fragments ->
+            if (fragments[fragments.lastIndex].tag == "CharactersListFragment") {
+                finish()
+            }
+        }
+
         if (supportFragmentManager.backStackEntryCount == 0) {
             super.onBackPressed()
         } else {

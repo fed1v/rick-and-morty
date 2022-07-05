@@ -7,11 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.ExperimentalPagingApi
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.App
+import com.example.rickandmorty.R
 import com.example.rickandmorty.databinding.FragmentLocationDetailsBinding
 import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationMapper
 import com.example.rickandmorty.presentation.mapper.LocationDomainToLocationPresentationMapper
@@ -20,6 +22,7 @@ import com.example.rickandmorty.presentation.models.LocationPresentation
 import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAdapter
 import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
 import com.example.rickandmorty.presentation.ui.hostActivity
+import com.example.rickandmorty.util.OnItemSelectedListener
 import com.example.rickandmorty.util.resource.Status
 import javax.inject.Inject
 
@@ -30,6 +33,16 @@ class LocationDetailsFragment : Fragment() {
     private lateinit var location: LocationPresentation
     private lateinit var toolbar: Toolbar
     private lateinit var charactersAdapter: CharactersAdapter
+
+    private val onCharacterSelectedListener =
+        object : OnItemSelectedListener<CharacterPresentation> {
+            override fun onSelectItem(item: CharacterPresentation) {
+                hostActivity().openFragment(
+                    fragment = CharacterDetailsFragment.newInstance(item),
+                    tag = "CharacterDetailsFragment"
+                )
+            }
+        }
 
     @Inject
     lateinit var viewModelFactory: LocationDetailsViewModelFactory
@@ -128,16 +141,9 @@ class LocationDetailsFragment : Fragment() {
     }
 
     private fun initRecyclerView() {
-        charactersAdapter = CharactersAdapter { onCharacterClicked(it) }
+        charactersAdapter = CharactersAdapter(onCharacterSelectedListener)
         binding.rvLocationResidents.layoutManager = GridLayoutManager(requireContext(), 2)
         binding.rvLocationResidents.adapter = charactersAdapter
-    }
-
-    private fun onCharacterClicked(character: CharacterPresentation) {
-        hostActivity().openFragment(
-            CharacterDetailsFragment.newInstance(character),
-            "CharacterDetailsFragment"
-        )
     }
 
     private fun initToolbar() {
@@ -165,9 +171,22 @@ class LocationDetailsFragment : Fragment() {
     }
 
     private fun showLocation(location: LocationPresentation) {
-        binding.locationDimension.text = location.dimension
         binding.locationName.text = location.name
-        binding.locationType.text = location.type
+
+        var dimensionText = requireContext().getString(R.string.dimension)
+        if (dimensionText.isBlank()) {
+            binding.locationDimension.isVisible = false
+        }
+        dimensionText += ": ${location.dimension}"
+        binding.locationDimension.text = dimensionText
+
+        var typeText = requireContext().getString(R.string.type)
+        if (typeText.isBlank()) {
+            binding.locationType.isVisible = false
+        }
+        typeText += ": ${location.type}"
+
+        binding.locationType.text = typeText
     }
 
 

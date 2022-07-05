@@ -145,6 +145,13 @@ class LocationsMediator(
 
         } catch (e: Exception) {
             database.withTransaction {
+                if (hiddenLocations.isEmpty()) {
+                    hiddenLocations.addAll(locationsDao.getHiddenLocations())
+                }
+                if (hiddenKeys.isEmpty()) {
+                    hiddenKeys.addAll(locationsRemoteKeysDao.getHiddenKeys())
+                }
+
                 locationsDao.insertLocations(locationsToRemember)
                 locationsRemoteKeysDao.insertKeys(keysToRemember)
 

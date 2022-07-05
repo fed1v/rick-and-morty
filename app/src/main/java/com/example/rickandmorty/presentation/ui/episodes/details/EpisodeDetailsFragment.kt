@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.paging.ExperimentalPagingApi
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.App
+import com.example.rickandmorty.R
 import com.example.rickandmorty.databinding.FragmentEpisodeDetailsBinding
 import com.example.rickandmorty.presentation.mapper.CharacterDomainToCharacterPresentationMapper
 import com.example.rickandmorty.presentation.mapper.EpisodeDomainToEpisodePresentationMapper
@@ -20,6 +21,7 @@ import com.example.rickandmorty.presentation.models.EpisodePresentation
 import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAdapter
 import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
 import com.example.rickandmorty.presentation.ui.hostActivity
+import com.example.rickandmorty.util.OnItemSelectedListener
 import com.example.rickandmorty.util.resource.Status
 import javax.inject.Inject
 
@@ -30,6 +32,16 @@ class EpisodeDetailsFragment : Fragment() {
     private lateinit var episode: EpisodePresentation
     private lateinit var toolbar: Toolbar
     private lateinit var charactersAdapter: CharactersAdapter
+
+    private val onCharacterSelectedListener =
+        object : OnItemSelectedListener<CharacterPresentation> {
+            override fun onSelectItem(item: CharacterPresentation) {
+                hostActivity().openFragment(
+                    fragment = CharacterDetailsFragment.newInstance(item),
+                    tag = "CharacterDetailsFragment"
+                )
+            }
+        }
 
     @Inject
     lateinit var viewModelFactory: EpisodeDetailsViewModelFactory
@@ -121,16 +133,9 @@ class EpisodeDetailsFragment : Fragment() {
     }
 
     private fun initRecyclerView() {
-        charactersAdapter = CharactersAdapter { onCharacterClicked(it) }
+        charactersAdapter = CharactersAdapter(onCharacterSelectedListener)
         binding.rvEpisodeCharacters.layoutManager = GridLayoutManager(requireContext(), 2)
         binding.rvEpisodeCharacters.adapter = charactersAdapter
-    }
-
-    private fun onCharacterClicked(character: CharacterPresentation) {
-        hostActivity().openFragment(
-            CharacterDetailsFragment.newInstance(character),
-            "CharacterDetailsFragment"
-        )
     }
 
     private fun initToolbar() {
@@ -158,9 +163,12 @@ class EpisodeDetailsFragment : Fragment() {
 
     private fun showEpisode(episode: EpisodePresentation?) {
         if (episode == null) return
-        binding.episodeAirDate.text = episode.airDate
-        binding.episodeEpisode.text = episode.episode
         binding.episodeName.text = episode.name
+        binding.episodeEpisode.text = episode.episode
+
+        var airDateText = requireContext().getString(R.string.air_date)
+        airDateText += ": ${episode.airDate}"
+        binding.episodeAirDate.text = airDateText
     }
 
 

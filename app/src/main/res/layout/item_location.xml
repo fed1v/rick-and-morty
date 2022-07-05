@@ -3,7 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="2dp"
+    android:layout_marginVertical="2dp"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="2dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -30,8 +34,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
+            android:maxLines="2"
             android:textColor="@color/black"
-            android:textSize="20sp"
+            android:textSize="@dimen/name_text_size"
             app:layout_constraintBottom_toTopOf="@id/location_type"
             app:layout_constraintStart_toEndOf="@+id/location_image"
             app:layout_constraintTop_toTopOf="@+id/location_image"
@@ -41,6 +46,7 @@
             android:id="@+id/location_type"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:maxLines="1"
             app:layout_constraintBottom_toTopOf="@id/location_dimension"
             app:layout_constraintStart_toStartOf="@id/location_name"
             app:layout_constraintTop_toBottomOf="@id/location_name"
@@ -50,6 +56,8 @@
             android:id="@+id/location_dimension"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
             app:layout_constraintBottom_toBottomOf="@id/location_image"
             app:layout_constraintStart_toStartOf="@id/location_name"
             app:layout_constraintTop_toBottomOf="@id/location_type"

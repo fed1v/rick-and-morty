@@ -18,6 +18,7 @@ import com.example.rickandmorty.R
 import com.example.rickandmorty.databinding.FragmentEpisodesListBinding
 import com.example.rickandmorty.domain.models.episode.EpisodeFilter
 import com.example.rickandmorty.presentation.models.EpisodePresentation
+import com.example.rickandmorty.presentation.ui.characters.list.isInternetAvailable
 import com.example.rickandmorty.presentation.ui.episodes.adapters.EpisodesPagedAdapter
 import com.example.rickandmorty.presentation.ui.episodes.details.EpisodeDetailsFragment
 import com.example.rickandmorty.presentation.ui.hostActivity
@@ -76,7 +77,15 @@ class EpisodesListFragment : Fragment() {
 
         initSwipeRefreshListener()
 
+        checkInternetConnection()
+
         return binding.root
+    }
+
+    private fun checkInternetConnection() {
+        if (!isInternetAvailable(requireContext())) {
+            Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun injectDependencies() {

@@ -145,8 +145,16 @@ class CharactersMediator(
 
         } catch (e: Exception) {
             database.withTransaction {
+                if (hiddenCharacters.isEmpty()) {
+                    hiddenCharacters.addAll(charactersDao.getHiddenCharacters())
+                }
+                if (hiddenKeys.isEmpty()) {
+                    hiddenKeys.addAll(charactersRemoteKeysDao.getHiddenKeys())
+                }
+
                 charactersDao.insertCharacters(charactersToRemember)
                 charactersRemoteKeysDao.insertKeys(keysToRemember)
+
                 charactersDao.insertCharacters(hiddenCharacters.map { it.copy(id = -it.id) })
                 charactersRemoteKeysDao.insertKeys(hiddenKeys.map { it.copy(id = -it.id) })
 

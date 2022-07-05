@@ -18,6 +18,7 @@ import com.example.rickandmorty.R
 import com.example.rickandmorty.databinding.FragmentLocationsListBinding
 import com.example.rickandmorty.domain.models.location.LocationFilter
 import com.example.rickandmorty.presentation.models.LocationPresentation
+import com.example.rickandmorty.presentation.ui.characters.list.isInternetAvailable
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.presentation.ui.locations.adapters.LocationsPagedAdapter
 import com.example.rickandmorty.presentation.ui.locations.details.LocationDetailsFragment
@@ -76,7 +77,15 @@ class LocationsListFragment : Fragment() {
 
         initSwipeRefreshListener()
 
+        checkInternetConnection()
+
         return binding.root
+    }
+
+    private fun checkInternetConnection() {
+        if (!isInternetAvailable(requireContext())) {
+            Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun injectDependencies() {

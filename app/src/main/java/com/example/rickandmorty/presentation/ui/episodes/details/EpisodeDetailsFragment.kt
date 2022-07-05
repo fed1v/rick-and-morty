@@ -21,6 +21,7 @@ import com.example.rickandmorty.presentation.models.EpisodePresentation
 import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAdapter
 import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
 import com.example.rickandmorty.presentation.ui.hostActivity
+import com.example.rickandmorty.util.OnItemSelectedListener
 import com.example.rickandmorty.util.resource.Status
 import javax.inject.Inject
 
@@ -31,6 +32,16 @@ class EpisodeDetailsFragment : Fragment() {
     private lateinit var episode: EpisodePresentation
     private lateinit var toolbar: Toolbar
     private lateinit var charactersAdapter: CharactersAdapter
+
+    private val onCharacterSelectedListener =
+        object : OnItemSelectedListener<CharacterPresentation> {
+            override fun onSelectItem(item: CharacterPresentation) {
+                hostActivity().openFragment(
+                    fragment = CharacterDetailsFragment.newInstance(item),
+                    tag = "CharacterDetailsFragment"
+                )
+            }
+        }
 
     @Inject
     lateinit var viewModelFactory: EpisodeDetailsViewModelFactory
@@ -122,16 +133,9 @@ class EpisodeDetailsFragment : Fragment() {
     }
 
     private fun initRecyclerView() {
-        charactersAdapter = CharactersAdapter { onCharacterClicked(it) }
+        charactersAdapter = CharactersAdapter(onCharacterSelectedListener)
         binding.rvEpisodeCharacters.layoutManager = GridLayoutManager(requireContext(), 2)
         binding.rvEpisodeCharacters.adapter = charactersAdapter
-    }
-
-    private fun onCharacterClicked(character: CharacterPresentation) {
-        hostActivity().openFragment(
-            CharacterDetailsFragment.newInstance(character),
-            "CharacterDetailsFragment"
-        )
     }
 
     private fun initToolbar() {

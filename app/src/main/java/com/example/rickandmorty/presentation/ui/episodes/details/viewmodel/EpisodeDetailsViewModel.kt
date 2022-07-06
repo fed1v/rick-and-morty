@@ -1,4 +1,4 @@
-package com.example.rickandmorty.presentation.ui.episodes.details
+package com.example.rickandmorty.presentation.ui.episodes.details.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData

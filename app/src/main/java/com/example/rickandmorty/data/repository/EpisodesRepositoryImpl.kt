@@ -28,20 +28,6 @@ class EpisodesRepositoryImpl(
     private val mapperDtoToEntity = EpisodeDtoToEpisodeEntityMapper()
     private val mapperEntityToDomain = EpisodeEntityToEpisodeDomainMapper()
 
-    override suspend fun getEpisodes(): List<Episode> {
-        try {
-            val episodesFromApi = api.getEpisodes().results
-            val episodesEntities = episodesFromApi.map { mapperDtoToEntity.map(it) }
-            dao.insertEpisodes(episodesEntities)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-        val episodesFromDB = dao.getEpisodes()
-
-        return episodesFromDB.map { mapperEntityToDomain.map(it) }
-    }
-
     override suspend fun getEpisodeById(id: Int): Episode {
         try {
             val episodeFromApi = api.getEpisodeById(id)
@@ -97,42 +83,6 @@ class EpisodesRepositoryImpl(
         return episodesFromDB.map { mapperEntityToDomain.map(it) }
             .distinctBy { it.id }
             .sortedBy { it.id }
-    }
-
-    override suspend fun getEpisodesByFilters(filters: EpisodeFilter): List<Episode> {
-        val filtersToApply = mapOf<String, String?>(
-            "name" to filters.name,
-            "episode" to filters.episode
-        ).filter { it.value != null }
-
-        try {
-            val episodesFromApi = api.getEpisodesByFilters(filtersToApply).results
-            val episodesEntities = episodesFromApi.map { mapperDtoToEntity.map(it) }
-            dao.insertEpisodes(episodesEntities)
-
-            val keys = episodesFromApi.map {
-                var prevKey: Int? = (it.id - 1) / 20
-                if (prevKey != null && prevKey <= 0) prevKey = null
-                val nextKey = (prevKey?.plus(2)) ?: 2
-
-                EpisodeRemoteKeys(
-                    id = it.id,
-                    prevKey = prevKey,
-                    nextKey = nextKey
-                )
-            }
-
-            keysDao.insertKeys(keys)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-        val episodesFromDB = dao.getEpisodesByFilters(
-            name = filtersToApply["name"],
-            episode = filtersToApply["episode"]
-        )
-
-        return episodesFromDB.map { mapperEntityToDomain.map(it) }
     }
 
     override suspend fun getFilters(filterName: String): List<String> {

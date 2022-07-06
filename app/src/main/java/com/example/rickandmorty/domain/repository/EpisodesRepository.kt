@@ -7,13 +7,9 @@ import kotlinx.coroutines.flow.Flow
 
 interface EpisodesRepository {
 
-    suspend fun getEpisodes(): List<Episode>
-
     suspend fun getEpisodeById(id: Int): Episode
 
     suspend fun getEpisodesByIds(ids: String): List<Episode>
-
-    suspend fun getEpisodesByFilters(filters: EpisodeFilter): List<Episode>
 
     suspend fun getFilters(filterName: String): List<String>
 

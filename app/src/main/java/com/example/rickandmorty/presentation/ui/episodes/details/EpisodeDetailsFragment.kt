@@ -20,6 +20,8 @@ import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.presentation.models.EpisodePresentation
 import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAdapter
 import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
+import com.example.rickandmorty.presentation.ui.episodes.details.viewmodel.EpisodeDetailsViewModel
+import com.example.rickandmorty.presentation.ui.episodes.details.viewmodel.EpisodeDetailsViewModelFactory
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.util.OnItemSelectedListener
 import com.example.rickandmorty.util.resource.Status

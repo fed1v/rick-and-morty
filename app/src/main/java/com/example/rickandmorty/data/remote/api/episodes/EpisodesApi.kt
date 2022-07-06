@@ -9,17 +9,11 @@ import retrofit2.http.QueryMap
 
 interface EpisodesApi {
 
-    @GET("episode")
-    suspend fun getEpisodes(): EpisodesApiResponse
-
     @GET("episode/{id}")
     suspend fun getEpisodeById(@Path("id") id: Int): EpisodeDto
 
     @GET("episode/{ids}")
     suspend fun getEpisodesByIds(@Path("ids") ids: String): List<EpisodeDto>
-
-    @GET("episode")
-    suspend fun getEpisodesByFilters(@QueryMap filters: Map<String, String?>): EpisodesApiResponse
 
     @GET("episode")
     suspend fun getPagedEpisodes(@Query("page") page: Int): EpisodesApiResponse
@@ -29,8 +23,4 @@ interface EpisodesApi {
         @Query("page") page: Int,
         @QueryMap filters: Map<String, String?>
     ): EpisodesApiResponse
-
-    companion object {
-        const val BASE_URL = "https://rickandmortyapi.com/api/"
-    }
 }

@@ -2,14 +2,16 @@ package com.example.rickandmorty.presentation.di
 
 import com.example.rickandmorty.domain.usecases.characters.*
 import com.example.rickandmorty.domain.usecases.episodes.*
-import com.example.rickandmorty.domain.usecases.locations.*
-import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsViewModel
-import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsViewModelFactory
-import com.example.rickandmorty.presentation.ui.characters.list.CharactersViewModelFactory
-import com.example.rickandmorty.presentation.ui.episodes.details.EpisodeDetailsViewModelFactory
-import com.example.rickandmorty.presentation.ui.episodes.list.EpisodesViewModelFactory
-import com.example.rickandmorty.presentation.ui.locations.details.LocationDetailsViewModelFactory
-import com.example.rickandmorty.presentation.ui.locations.list.LocationsViewModelFactory
+import com.example.rickandmorty.domain.usecases.locations.GetLocationByIdUseCase
+import com.example.rickandmorty.domain.usecases.locations.GetLocationsByFiltersWithPaginationUseCase
+import com.example.rickandmorty.domain.usecases.locations.GetLocationsFiltersUseCase
+import com.example.rickandmorty.domain.usecases.locations.GetLocationsWithPaginationUseCase
+import com.example.rickandmorty.presentation.ui.characters.details.viewmodel.CharacterDetailsViewModelFactory
+import com.example.rickandmorty.presentation.ui.characters.list.viewmodel.CharactersViewModelFactory
+import com.example.rickandmorty.presentation.ui.episodes.details.viewmodel.EpisodeDetailsViewModelFactory
+import com.example.rickandmorty.presentation.ui.episodes.list.viewmodel.EpisodesViewModelFactory
+import com.example.rickandmorty.presentation.ui.locations.details.viewmodel.LocationDetailsViewModelFactory
+import com.example.rickandmorty.presentation.ui.locations.list.viewmodel.LocationsViewModelFactory
 import dagger.Module
 import dagger.Provides
 

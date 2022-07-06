@@ -2,9 +2,7 @@ package com.example.rickandmorty.presentation.ui.characters.list
 
 import android.content.Context
 import android.net.ConnectivityManager
-import android.net.Network
 import android.net.NetworkCapabilities
-import android.net.NetworkRequest
 import android.os.Build
 import android.os.Bundle
 import android.view.*
@@ -26,6 +24,8 @@ import com.example.rickandmorty.domain.models.character.CharacterFilter
 import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersPagedAdapter
 import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
+import com.example.rickandmorty.presentation.ui.characters.list.viewmodel.CharactersViewModel
+import com.example.rickandmorty.presentation.ui.characters.list.viewmodel.CharactersViewModelFactory
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.util.OnItemSelectedListener
 import com.example.rickandmorty.util.filters.CharactersFiltersHelper

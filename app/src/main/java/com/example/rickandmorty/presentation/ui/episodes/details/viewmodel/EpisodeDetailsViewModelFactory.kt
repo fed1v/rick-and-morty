@@ -1,18 +1,17 @@
-package com.example.rickandmorty.presentation.ui.locations.details
+package com.example.rickandmorty.presentation.ui.episodes.details.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.rickandmorty.domain.usecases.characters.GetCharactersByIdsUseCase
-import com.example.rickandmorty.domain.usecases.locations.GetLocationByIdUseCase
+import com.example.rickandmorty.domain.usecases.episodes.GetEpisodeByIdUseCase
 
-class LocationDetailsViewModelFactory(
-    private val getLocationByIdUseCase: GetLocationByIdUseCase,
+class EpisodeDetailsViewModelFactory(
+    private val getEpisodeByIdUseCase: GetEpisodeByIdUseCase,
     private val getCharactersByIdsUseCase: GetCharactersByIdsUseCase
 ) : ViewModelProvider.Factory {
-
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return LocationDetailsViewModel(
-            getLocationByIdUseCase = getLocationByIdUseCase,
+        return EpisodeDetailsViewModel(
+            getEpisodeByIdUseCase = getEpisodeByIdUseCase,
             getCharactersByIdsUseCase = getCharactersByIdsUseCase
         ) as T
     }

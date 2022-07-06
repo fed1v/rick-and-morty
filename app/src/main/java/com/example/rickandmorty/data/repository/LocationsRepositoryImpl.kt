@@ -28,20 +28,6 @@ class LocationsRepositoryImpl(
     private val mapperDtoToEntity = LocationDtoToLocationEntityMapper()
     private val mapperEntityToDomain = LocationEntityToLocationDomainMapper()
 
-    override suspend fun getLocations(): List<Location> {
-        try {
-            val locationsFromApi = api.getLocations().results
-            val locationsEntities = locationsFromApi.map { mapperDtoToEntity.map(it) }
-            dao.insertLocations(locationsEntities)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-        val locationsFromDB = dao.getLocations()
-
-        return locationsFromDB.map { mapperEntityToDomain.map(it) }
-    }
-
     override suspend fun getLocationById(id: Int): Location {
         try {
             val locationFromApi = api.getLocationById(id)
@@ -100,44 +86,6 @@ class LocationsRepositoryImpl(
             .sortedBy { it.id }
     }
 
-    override suspend fun getLocationsByFilters(filters: LocationFilter): List<Location> {
-        val filtersToApply = mapOf<String, String?>(
-            "name" to filters.name,
-            "type" to filters.type,
-            "dimension" to filters.dimension
-        ).filter { it.value != null }
-
-        try {
-            val locationsFromApi = api.getLocationsByFilters(filtersToApply).results
-            val locationsEntities = locationsFromApi.map { mapperDtoToEntity.map(it) }
-            dao.insertLocations(locationsEntities)
-
-            val keys = locationsFromApi.map {
-                var prevKey: Int? = (it.id - 1) / 20
-                if (prevKey != null && prevKey <= 0) prevKey = null
-                val nextKey = (prevKey?.plus(2)) ?: 2
-
-                LocationRemoteKeys(
-                    id = it.id,
-                    prevKey = prevKey,
-                    nextKey = nextKey
-                )
-            }
-
-            locationsRemoteKeysDao.insertKeys(keys)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-        val locationsFromDB = dao.getLocationsByFilters(
-            name = filtersToApply["name"],
-            type = filtersToApply["type"],
-            dimension = filtersToApply["dimension"]
-        )
-
-        return locationsFromDB.map { mapperEntityToDomain.map(it) }
-    }
-
     override suspend fun getFilters(filterName: String): List<String> {
         val query = SimpleSQLiteQuery("SELECT DISTINCT $filterName FROM locations")
         return dao.getFilters(query)
@@ -172,7 +120,7 @@ class LocationsRepositoryImpl(
         ).filter { it.value != null }
 
         val pagingSourceFactory = {
-            dao.getPagedCharactersByFilters(
+            dao.getPagedLocationsByFilters(
                 name = filtersToApply["name"],
                 type = filtersToApply["type"],
                 dimension = filtersToApply["dimension"]

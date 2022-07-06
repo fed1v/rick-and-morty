@@ -16,8 +16,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 class LocationsViewModel(
-    private val getLocationsUseCase: GetLocationsUseCase,
-    private val getLocationsByFiltersUseCase: GetLocationsByFiltersUseCase,
     private val getLocationsFiltersUseCase: GetLocationsFiltersUseCase,
     private val getLocationsWithPaginationUseCase: GetLocationsWithPaginationUseCase,
     private val getLocationsByFiltersWithPaginationUseCase: GetLocationsByFiltersWithPaginationUseCase

@@ -1,4 +1,4 @@
-package com.example.rickandmorty.data.remote.episodes
+package com.example.rickandmorty.data.remote.api.episodes
 
 import com.example.rickandmorty.data.models.episode.EpisodeDto
 import com.example.rickandmorty.data.models.episode.EpisodesApiResponse

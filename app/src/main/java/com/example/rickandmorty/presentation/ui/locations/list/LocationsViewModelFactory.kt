@@ -5,8 +5,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.rickandmorty.domain.usecases.locations.*
 
 class LocationsViewModelFactory(
-    private val getLocationsUseCase: GetLocationsUseCase,
-    private val getLocationsByFiltersUseCase: GetLocationsByFiltersUseCase,
     private val getLocationsFiltersUseCase: GetLocationsFiltersUseCase,
     private val getLocationsWithPaginationUseCase: GetLocationsWithPaginationUseCase,
     private val getLocationsByFiltersWithPaginationUseCase: GetLocationsByFiltersWithPaginationUseCase
@@ -14,8 +12,6 @@ class LocationsViewModelFactory(
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return LocationsViewModel(
-            getLocationsUseCase = getLocationsUseCase,
-            getLocationsByFiltersUseCase = getLocationsByFiltersUseCase,
             getLocationsFiltersUseCase = getLocationsFiltersUseCase,
             getLocationsWithPaginationUseCase = getLocationsWithPaginationUseCase,
             getLocationsByFiltersWithPaginationUseCase = getLocationsByFiltersWithPaginationUseCase

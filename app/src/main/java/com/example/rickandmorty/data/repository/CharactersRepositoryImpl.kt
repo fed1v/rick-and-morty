@@ -9,7 +9,7 @@ import com.example.rickandmorty.data.mapper.character.CharacterEntityToCharacter
 import com.example.rickandmorty.data.pagination.characters.CharactersFiltersMediator
 import com.example.rickandmorty.data.pagination.characters.CharactersMediator
 import com.example.rickandmorty.data.local.database.characters.remote_keys.CharacterRemoteKeys
-import com.example.rickandmorty.data.remote.characters.CharactersApi
+import com.example.rickandmorty.data.remote.api.characters.CharactersApi
 import com.example.rickandmorty.domain.models.character.Character
 import com.example.rickandmorty.domain.models.character.CharacterFilter
 import com.example.rickandmorty.domain.repository.CharactersRepository

@@ -6,14 +6,10 @@ import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
-import com.example.rickandmorty.data.local.database.episodes.EpisodeEntity
-import com.example.rickandmorty.data.local.database.episodes.remote_keys.EpisodeRemoteKeys
 import com.example.rickandmorty.data.local.database.locations.LocationEntity
 import com.example.rickandmorty.data.local.database.locations.remote_keys.LocationRemoteKeys
-import com.example.rickandmorty.data.mapper.episode.EpisodeDtoToEpisodeEntityMapper
 import com.example.rickandmorty.data.mapper.location.LocationDtoToLocationEntityMapper
-import com.example.rickandmorty.data.remote.locations.LocationsApi
-import com.example.rickandmorty.domain.models.episode.EpisodeFilter
+import com.example.rickandmorty.data.remote.api.locations.LocationsApi
 import com.example.rickandmorty.domain.models.location.LocationFilter
 
 @OptIn(ExperimentalPagingApi::class)

@@ -3,9 +3,9 @@ package com.example.rickandmorty.data.di
 import android.content.Context
 import androidx.paging.ExperimentalPagingApi
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
-import com.example.rickandmorty.data.remote.characters.CharactersApi
-import com.example.rickandmorty.data.remote.episodes.EpisodesApi
-import com.example.rickandmorty.data.remote.locations.LocationsApi
+import com.example.rickandmorty.data.remote.api.characters.CharactersApi
+import com.example.rickandmorty.data.remote.api.episodes.EpisodesApi
+import com.example.rickandmorty.data.remote.api.locations.LocationsApi
 import com.example.rickandmorty.data.repository.CharactersRepositoryImpl
 import com.example.rickandmorty.data.repository.EpisodesRepositoryImpl
 import com.example.rickandmorty.data.repository.LocationsRepositoryImpl
@@ -90,5 +90,4 @@ class DataModule(val context: Context) {
             database = database
         )
     }
-
 }

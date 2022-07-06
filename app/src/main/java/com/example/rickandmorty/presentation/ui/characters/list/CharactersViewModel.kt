@@ -16,8 +16,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 class CharactersViewModel(
-    private val getCharactersUseCase: GetCharactersUseCase,
-    private val getCharactersByFiltersUseCase: GetCharactersByFiltersUseCase,
     private val getCharactersFiltersUseCase: GetCharactersFiltersUseCase,
     private val getCharactersWithPaginationUseCase: GetCharactersWithPaginationUseCase,
     private val getCharactersByFiltersWithPaginationUseCase: GetCharactersByFiltersWithPaginationUseCase

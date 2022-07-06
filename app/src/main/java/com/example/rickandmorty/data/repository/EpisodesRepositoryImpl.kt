@@ -9,7 +9,7 @@ import com.example.rickandmorty.data.mapper.episode.EpisodeDtoToEpisodeEntityMap
 import com.example.rickandmorty.data.mapper.episode.EpisodeEntityToEpisodeDomainMapper
 import com.example.rickandmorty.data.pagination.episodes.EpisodesFiltersMediator
 import com.example.rickandmorty.data.pagination.episodes.EpisodesMediator
-import com.example.rickandmorty.data.remote.episodes.EpisodesApi
+import com.example.rickandmorty.data.remote.api.episodes.EpisodesApi
 import com.example.rickandmorty.domain.models.episode.Episode
 import com.example.rickandmorty.domain.models.episode.EpisodeFilter
 import com.example.rickandmorty.domain.repository.EpisodesRepository
@@ -23,7 +23,7 @@ class EpisodesRepositoryImpl(
 ) : EpisodesRepository {
 
     private val dao = database.episodesDao
-    private val keysDao = database.episodesRemoteKeysDao // insert keys
+    private val keysDao = database.episodesRemoteKeysDao
 
     private val mapperDtoToEntity = EpisodeDtoToEpisodeEntityMapper()
     private val mapperEntityToDomain = EpisodeEntityToEpisodeDomainMapper()

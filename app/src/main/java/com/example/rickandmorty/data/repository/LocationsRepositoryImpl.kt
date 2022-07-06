@@ -4,14 +4,12 @@ import androidx.paging.*
 import androidx.sqlite.db.SimpleSQLiteQuery
 import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.converters.IdsConverter
-import com.example.rickandmorty.data.local.database.episodes.remote_keys.EpisodeRemoteKeys
-import com.example.rickandmorty.data.local.database.locations.LocationsDao
 import com.example.rickandmorty.data.local.database.locations.remote_keys.LocationRemoteKeys
 import com.example.rickandmorty.data.mapper.location.LocationDtoToLocationEntityMapper
 import com.example.rickandmorty.data.mapper.location.LocationEntityToLocationDomainMapper
 import com.example.rickandmorty.data.pagination.locations.LocationsFiltersMediator
 import com.example.rickandmorty.data.pagination.locations.LocationsMediator
-import com.example.rickandmorty.data.remote.locations.LocationsApi
+import com.example.rickandmorty.data.remote.api.locations.LocationsApi
 import com.example.rickandmorty.domain.models.location.Location
 import com.example.rickandmorty.domain.models.location.LocationFilter
 import com.example.rickandmorty.domain.repository.LocationsRepository

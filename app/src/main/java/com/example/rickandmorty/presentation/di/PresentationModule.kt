@@ -20,15 +20,11 @@ class PresentationModule {
 
     @Provides
     fun provideCharactersViewModelFactory(
-        getCharactersUseCase: GetCharactersUseCase,
-        getCharactersByFiltersUseCase: GetCharactersByFiltersUseCase,
         getCharactersFiltersUseCase: GetCharactersFiltersUseCase,
         getCharactersWithPaginationUseCase: GetCharactersWithPaginationUseCase,
         getCharactersByFiltersWithPaginationUseCase: GetCharactersByFiltersWithPaginationUseCase
     ): CharactersViewModelFactory {
         return CharactersViewModelFactory(
-            getCharactersUseCase = getCharactersUseCase,
-            getCharactersByFiltersUseCase = getCharactersByFiltersUseCase,
             getCharactersFiltersUseCase = getCharactersFiltersUseCase,
             getCharactersWithPaginationUseCase = getCharactersWithPaginationUseCase,
             getCharactersByFiltersWithPaginationUseCase = getCharactersByFiltersWithPaginationUseCase
@@ -52,15 +48,11 @@ class PresentationModule {
 
     @Provides
     fun provideEpisodesViewModelFactory(
-        getEpisodesUseCase: GetEpisodesUseCase,
-        getEpisodesByFiltersUseCase: GetEpisodesByFiltersUseCase,
         getEpisodesFiltersUseCase: GetEpisodesFiltersUseCase,
         getEpisodesWithPaginationUseCase: GetEpisodesWithPaginationUseCase,
         getEpisodesByFiltersWithPaginationUseCase: GetEpisodesByFiltersWithPaginationUseCase
     ): EpisodesViewModelFactory {
         return EpisodesViewModelFactory(
-            getEpisodesUseCase = getEpisodesUseCase,
-            getEpisodesByFiltersUseCase = getEpisodesByFiltersUseCase,
             getEpisodesFiltersUseCase = getEpisodesFiltersUseCase,
             getEpisodesWithPaginationUseCase = getEpisodesWithPaginationUseCase,
             getEpisodesByFiltersWithPaginationUseCase = getEpisodesByFiltersWithPaginationUseCase
@@ -82,15 +74,11 @@ class PresentationModule {
 
     @Provides
     fun provideLocationsViewModelFactory(
-        getLocationsUseCase: GetLocationsUseCase,
-        getLocationsByFiltersUseCase: GetLocationsByFiltersUseCase,
         getLocationsFiltersUseCase: GetLocationsFiltersUseCase,
         getLocationsWithPaginationUseCase: GetLocationsWithPaginationUseCase,
         getLocationsByFiltersWithPaginationUseCase: GetLocationsByFiltersWithPaginationUseCase
     ): LocationsViewModelFactory {
         return LocationsViewModelFactory(
-            getLocationsUseCase = getLocationsUseCase,
-            getLocationsByFiltersUseCase = getLocationsByFiltersUseCase,
             getLocationsFiltersUseCase = getLocationsFiltersUseCase,
             getLocationsWithPaginationUseCase = getLocationsWithPaginationUseCase,
             getLocationsByFiltersWithPaginationUseCase = getLocationsByFiltersWithPaginationUseCase
@@ -107,5 +95,4 @@ class PresentationModule {
             getCharactersByIdsUseCase = getCharactersByIdsUseCase
         )
     }
-
 }

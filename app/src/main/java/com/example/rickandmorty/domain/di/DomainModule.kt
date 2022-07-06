@@ -24,15 +24,6 @@ class DomainModule {
     }
 
     @Provides
-    fun provideGetCharactersByFiltersUseCase(
-        repository: CharactersRepository
-    ): GetCharactersByFiltersUseCase {
-        return GetCharactersByFiltersUseCase(
-            repository = repository
-        )
-    }
-
-    @Provides
     fun provideGetCharactersByFiltersWithPaginationUseCase(
         repository: CharactersRepository
     ): GetCharactersByFiltersWithPaginationUseCase {
@@ -59,14 +50,6 @@ class DomainModule {
         )
     }
 
-    @Provides
-    fun provideGetCharactersUseCase(
-        repository: CharactersRepository
-    ): GetCharactersUseCase {
-        return GetCharactersUseCase(
-            repository = repository
-        )
-    }
 
     @Provides
     fun provideGetCharactersWithPaginationUseCase(
@@ -84,15 +67,6 @@ class DomainModule {
         repository: EpisodesRepository
     ): GetEpisodeByIdUseCase {
         return GetEpisodeByIdUseCase(
-            repository = repository
-        )
-    }
-
-    @Provides
-    fun provideGetEpisodesByFiltersUseCase(
-        repository: EpisodesRepository
-    ): GetEpisodesByFiltersUseCase {
-        return GetEpisodesByFiltersUseCase(
             repository = repository
         )
     }
@@ -125,15 +99,6 @@ class DomainModule {
     }
 
     @Provides
-    fun provideGetEpisodesUseCase(
-        repository: EpisodesRepository
-    ): GetEpisodesUseCase {
-        return GetEpisodesUseCase(
-            repository = repository
-        )
-    }
-
-    @Provides
     fun provideGetEpisodesWithPaginationUseCase(
         repository: EpisodesRepository
     ): GetEpisodesWithPaginationUseCase {
@@ -152,16 +117,6 @@ class DomainModule {
             repository = repository
         )
     }
-
-    @Provides
-    fun provideGetLocationsByFiltersUseCase(
-        repository: LocationsRepository
-    ): GetLocationsByFiltersUseCase {
-        return GetLocationsByFiltersUseCase(
-            repository = repository
-        )
-    }
-
 
     @Provides
     fun provideGetLocationsByFiltersWithPaginationUseCase(
@@ -186,15 +141,6 @@ class DomainModule {
         repository: LocationsRepository
     ): GetLocationsFiltersUseCase {
         return GetLocationsFiltersUseCase(
-            repository = repository
-        )
-    }
-
-    @Provides
-    fun provideGetLocationsUseCase(
-        repository: LocationsRepository
-    ): GetLocationsUseCase {
-        return GetLocationsUseCase(
             repository = repository
         )
     }

@@ -16,8 +16,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 class EpisodesViewModel(
-    private val getEpisodesUseCase: GetEpisodesUseCase,
-    private val getEpisodesByFiltersUseCase: GetEpisodesByFiltersUseCase,
     private val getEpisodesFiltersUseCase: GetEpisodesFiltersUseCase,
     private val getEpisodesWithPaginationUseCase: GetEpisodesWithPaginationUseCase,
     private val getEpisodesByFiltersWithPaginationUseCase: GetEpisodesByFiltersWithPaginationUseCase

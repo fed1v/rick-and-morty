@@ -5,7 +5,7 @@ import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.characters.CharactersDao
 import com.example.rickandmorty.data.mapper.character.CharacterDtoToCharacterEntityMapper
 import com.example.rickandmorty.data.models.character.CharacterDto
-import com.example.rickandmorty.data.remote.characters.CharactersApi
+import com.example.rickandmorty.data.remote.api.characters.CharactersApi
 import com.example.rickandmorty.domain.models.character.Character
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule

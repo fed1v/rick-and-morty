@@ -9,7 +9,7 @@ import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.locations.LocationEntity
 import com.example.rickandmorty.data.local.database.locations.remote_keys.LocationRemoteKeys
 import com.example.rickandmorty.data.mapper.location.LocationDtoToLocationEntityMapper
-import com.example.rickandmorty.data.remote.locations.LocationsApi
+import com.example.rickandmorty.data.remote.api.locations.LocationsApi
 
 @ExperimentalPagingApi
 class LocationsMediator(

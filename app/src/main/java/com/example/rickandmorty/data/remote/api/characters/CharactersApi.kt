@@ -1,4 +1,4 @@
-package com.example.rickandmorty.data.remote.characters
+package com.example.rickandmorty.data.remote.api.characters
 
 import com.example.rickandmorty.data.models.character.CharacterDto
 import com.example.rickandmorty.data.models.character.CharactersApiResponse

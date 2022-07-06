@@ -1,4 +1,4 @@
-package com.example.rickandmorty.data.remote.locations
+package com.example.rickandmorty.data.remote.api.locations
 
 import com.example.rickandmorty.data.models.location.LocationDto
 import com.example.rickandmorty.data.models.location.LocationsApiResponse

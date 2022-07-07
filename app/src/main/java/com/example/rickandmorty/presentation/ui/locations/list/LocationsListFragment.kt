@@ -22,6 +22,8 @@ import com.example.rickandmorty.presentation.ui.characters.list.isInternetAvaila
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.presentation.ui.locations.adapters.LocationsPagedAdapter
 import com.example.rickandmorty.presentation.ui.locations.details.LocationDetailsFragment
+import com.example.rickandmorty.presentation.ui.locations.list.viewmodel.LocationsViewModel
+import com.example.rickandmorty.presentation.ui.locations.list.viewmodel.LocationsViewModelFactory
 import com.example.rickandmorty.util.OnItemSelectedListener
 import com.example.rickandmorty.util.filters.LocationsFiltersHelper
 import kotlinx.coroutines.flow.collectLatest

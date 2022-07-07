@@ -1,6 +1,5 @@
 package com.example.rickandmorty.domain.usecases.episodes
 
-import androidx.lifecycle.LiveData
 import com.example.rickandmorty.domain.models.episode.Episode
 import com.example.rickandmorty.domain.repository.EpisodesRepository
 

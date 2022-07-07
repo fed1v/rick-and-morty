@@ -20,7 +20,7 @@ class CharacterDomainToCharacterPresentationMapper : Mapper<Character, Character
             type = "unknown",
             dimension = "unknown",
             residents = listOf()
-        ), // TODO
+        ),
         origin = LocationPresentation(
             id = data.origin.id,
             name = data.origin.name,

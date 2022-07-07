@@ -10,7 +10,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.rickandmorty.App
@@ -21,6 +20,8 @@ import com.example.rickandmorty.presentation.models.EpisodePresentation
 import com.example.rickandmorty.presentation.ui.characters.list.isInternetAvailable
 import com.example.rickandmorty.presentation.ui.episodes.adapters.EpisodesPagedAdapter
 import com.example.rickandmorty.presentation.ui.episodes.details.EpisodeDetailsFragment
+import com.example.rickandmorty.presentation.ui.episodes.list.viewmodel.EpisodesViewModel
+import com.example.rickandmorty.presentation.ui.episodes.list.viewmodel.EpisodesViewModelFactory
 import com.example.rickandmorty.presentation.ui.hostActivity
 import com.example.rickandmorty.util.OnItemSelectedListener
 import com.example.rickandmorty.util.filters.EpisodesFiltersHelper

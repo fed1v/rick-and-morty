@@ -22,7 +22,6 @@ class CharactersFiltersHelper(
     private var currentStatus: String? = null
 
 
-    // TODO
     var speciesArray = arrayOf(
         "Human",
         "Humanoid",
@@ -32,7 +31,7 @@ class CharactersFiltersHelper(
     )
     private var currentSpecies: String? = null
 
-    // TODO
+
     var typesArray = arrayOf(
         "",
         "Genetic experiment"

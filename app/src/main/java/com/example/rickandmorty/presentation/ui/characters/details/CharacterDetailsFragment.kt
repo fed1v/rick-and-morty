@@ -23,6 +23,8 @@ import com.example.rickandmorty.presentation.mapper.LocationDomainToLocationPres
 import com.example.rickandmorty.presentation.models.CharacterPresentation
 import com.example.rickandmorty.presentation.models.EpisodePresentation
 import com.example.rickandmorty.presentation.models.LocationPresentation
+import com.example.rickandmorty.presentation.ui.characters.details.viewmodel.CharacterDetailsViewModel
+import com.example.rickandmorty.presentation.ui.characters.details.viewmodel.CharacterDetailsViewModelFactory
 import com.example.rickandmorty.presentation.ui.episodes.adapters.EpisodesAdapter
 import com.example.rickandmorty.presentation.ui.episodes.details.EpisodeDetailsFragment
 import com.example.rickandmorty.presentation.ui.hostActivity

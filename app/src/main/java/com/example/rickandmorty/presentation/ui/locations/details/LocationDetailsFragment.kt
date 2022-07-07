@@ -22,6 +22,8 @@ import com.example.rickandmorty.presentation.models.LocationPresentation
 import com.example.rickandmorty.presentation.ui.characters.adapters.CharactersAdapter
 import com.example.rickandmorty.presentation.ui.characters.details.CharacterDetailsFragment
 import com.example.rickandmorty.presentation.ui.hostActivity
+import com.example.rickandmorty.presentation.ui.locations.details.viewmodel.LocationDetailsViewModel
+import com.example.rickandmorty.presentation.ui.locations.details.viewmodel.LocationDetailsViewModelFactory
 import com.example.rickandmorty.util.OnItemSelectedListener
 import com.example.rickandmorty.util.resource.Status
 import javax.inject.Inject

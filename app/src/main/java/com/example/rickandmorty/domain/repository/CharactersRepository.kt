@@ -7,13 +7,9 @@ import kotlinx.coroutines.flow.Flow
 
 interface CharactersRepository {
 
-    suspend fun getCharacters(): List<Character>
-
     suspend fun getCharacterById(id: Int): Character
 
     suspend fun getCharactersByIds(ids: String): List<Character>
-
-    suspend fun getCharactersByFilters(filters: CharacterFilter): List<Character>
 
     suspend fun getFilters(filterName: String): List<String>
 

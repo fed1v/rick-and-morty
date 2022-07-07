@@ -9,7 +9,7 @@ import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.characters.CharacterEntity
 import com.example.rickandmorty.data.local.database.characters.remote_keys.CharacterRemoteKeys
 import com.example.rickandmorty.data.mapper.character.CharacterDtoToCharacterEntityMapper
-import com.example.rickandmorty.data.remote.characters.CharactersApi
+import com.example.rickandmorty.data.remote.api.characters.CharactersApi
 import com.example.rickandmorty.domain.models.character.CharacterFilter
 
 @OptIn(ExperimentalPagingApi::class)

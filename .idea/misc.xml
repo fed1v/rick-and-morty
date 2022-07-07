@@ -12,6 +12,7 @@
         <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/ic_female.xml" value="0.198" />
         <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/ic_filter_horizontal.xml" value="0.19947916666666668" />
         <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/ic_filter_vertical.xml" value="0.19947916666666668" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/ic_launcher_foreground.xml" value="0.18" />
         <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/ic_male.xml" value="0.198" />
         <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/ic_morty.xml" value="0.3828125" />
         <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/drawable/ic_question_mark.xml" value="0.3205" />
@@ -32,6 +33,8 @@
         <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/layout/item_location.xml" value="0.33" />
         <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/menu/bottom_navigation.xml" value="0.20520833333333333" />
         <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/menu/toolbar_menu.xml" value="0.25" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.18" />
+        <entry key="..\:/Users/Ivan/AndroidStudioProjects/RickAndMorty/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.18" />
       </map>
     </option>
   </component>

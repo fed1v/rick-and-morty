@@ -9,7 +9,7 @@ import com.example.rickandmorty.data.local.database.RickAndMortyDatabase
 import com.example.rickandmorty.data.local.database.episodes.EpisodeEntity
 import com.example.rickandmorty.data.local.database.episodes.remote_keys.EpisodeRemoteKeys
 import com.example.rickandmorty.data.mapper.episode.EpisodeDtoToEpisodeEntityMapper
-import com.example.rickandmorty.data.remote.episodes.EpisodesApi
+import com.example.rickandmorty.data.remote.api.episodes.EpisodesApi
 
 @OptIn(ExperimentalPagingApi::class)
 class EpisodesMediator(

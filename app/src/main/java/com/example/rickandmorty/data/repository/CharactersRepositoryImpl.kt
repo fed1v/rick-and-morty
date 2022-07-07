@@ -9,7 +9,7 @@ import com.example.rickandmorty.data.mapper.character.CharacterEntityToCharacter
 import com.example.rickandmorty.data.pagination.characters.CharactersFiltersMediator
 import com.example.rickandmorty.data.pagination.characters.CharactersMediator
 import com.example.rickandmorty.data.local.database.characters.remote_keys.CharacterRemoteKeys
-import com.example.rickandmorty.data.remote.characters.CharactersApi
+import com.example.rickandmorty.data.remote.api.characters.CharactersApi
 import com.example.rickandmorty.domain.models.character.Character
 import com.example.rickandmorty.domain.models.character.CharacterFilter
 import com.example.rickandmorty.domain.repository.CharactersRepository
@@ -27,20 +27,6 @@ class CharactersRepositoryImpl(
 
     private val mapperDtoToEntity = CharacterDtoToCharacterEntityMapper()
     private val mapperEntityToDomain = CharacterEntityToCharacterDomainMapper()
-
-    override suspend fun getCharacters(): List<Character> {
-        try {
-            val charactersFromApi = api.getCharacters().results
-            val charactersEntities = charactersFromApi.map { mapperDtoToEntity.map(it) }
-            dao.insertCharacters(charactersEntities)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-        val charactersFromDB = dao.getCharacters()
-
-        return charactersFromDB.map { mapperEntityToDomain.map(it) }
-    }
 
     override suspend fun getCharacterById(id: Int): Character {
         try {
@@ -98,49 +84,6 @@ class CharactersRepositoryImpl(
         return charactersFromDB.map { mapperEntityToDomain.map(it) }
             .distinctBy { it.id }
             .sortedBy { it.id }
-    }
-
-    override suspend fun getCharactersByFilters(filters: CharacterFilter): List<Character> {
-        val filtersToApply = mapOf(
-            "name" to filters.name,
-            "status" to filters.status,
-            "species" to filters.species,
-            "type" to filters.type,
-            "gender" to filters.gender,
-        ).filter { it.value != null }
-
-        try {
-            val charactersFromApi = api.getCharactersByFilters(filtersToApply)
-            val charactersEntities = charactersFromApi.results.map { mapperDtoToEntity.map(it) }
-            dao.insertCharacters(charactersEntities)
-
-            val keys = charactersEntities.map {
-                var prevKey: Int? = (it.id - 1) / 20
-                if (prevKey != null && prevKey <= 0) prevKey = null
-                val nextKey = (prevKey?.plus(2)) ?: 2
-
-                CharacterRemoteKeys(
-                    id = it.id,
-                    prevKey = prevKey,
-                    nextKey = nextKey
-                )
-            }
-
-            charactersRemoteKeysDao.insertKeys(keys)
-
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-        val charactersFromDB = dao.getCharactersByFilters(
-            name = filtersToApply["name"],
-            status = filtersToApply["status"],
-            species = filtersToApply["species"],
-            type = filtersToApply["type"],
-            gender = filtersToApply["gender"],
-        )
-
-        return charactersFromDB.map { mapperEntityToDomain.map(it) }
     }
 
     override suspend fun getFilters(filterName: String): List<String> {
